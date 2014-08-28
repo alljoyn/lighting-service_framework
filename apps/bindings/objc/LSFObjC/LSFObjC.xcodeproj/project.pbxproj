@@ -1,0 +1,1169 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		8707A011193F7C260007490F /* LSFResponseCodes.cc in Sources */ = {isa = PBXBuildFile; fileRef = 8707A00F193F7C260007490F /* LSFResponseCodes.cc */; };
+		8707A012193F7C260007490F /* LSFTypes.cc in Sources */ = {isa = PBXBuildFile; fileRef = 8707A010193F7C260007490F /* LSFTypes.cc */; };
+		8707A01C193F7C550007490F /* ControllerClient.cc in Sources */ = {isa = PBXBuildFile; fileRef = 8707A013193F7C550007490F /* ControllerClient.cc */; };
+		8707A01D193F7C550007490F /* ControllerClientDefs.cc in Sources */ = {isa = PBXBuildFile; fileRef = 8707A014193F7C550007490F /* ControllerClientDefs.cc */; };
+		8707A01E193F7C550007490F /* ControllerServiceManager.cc in Sources */ = {isa = PBXBuildFile; fileRef = 8707A015193F7C550007490F /* ControllerServiceManager.cc */; };
+		8707A01F193F7C550007490F /* LampGroupManager.cc in Sources */ = {isa = PBXBuildFile; fileRef = 8707A016193F7C550007490F /* LampGroupManager.cc */; };
+		8707A020193F7C550007490F /* LampManager.cc in Sources */ = {isa = PBXBuildFile; fileRef = 8707A017193F7C550007490F /* LampManager.cc */; };
+		8707A021193F7C550007490F /* Manager.cc in Sources */ = {isa = PBXBuildFile; fileRef = 8707A018193F7C550007490F /* Manager.cc */; };
+		8707A022193F7C550007490F /* MasterSceneManager.cc in Sources */ = {isa = PBXBuildFile; fileRef = 8707A019193F7C550007490F /* MasterSceneManager.cc */; };
+		8707A023193F7C550007490F /* PresetManager.cc in Sources */ = {isa = PBXBuildFile; fileRef = 8707A01A193F7C550007490F /* PresetManager.cc */; };
+		8707A024193F7C550007490F /* SceneManager.cc in Sources */ = {isa = PBXBuildFile; fileRef = 8707A01B193F7C550007490F /* SceneManager.cc */; };
+		870C0B17196A2928009E1408 /* LSFPresetManagerCallback.mm in Sources */ = {isa = PBXBuildFile; fileRef = 870C0B16196A2928009E1408 /* LSFPresetManagerCallback.mm */; };
+		870C0B1B196A3586009E1408 /* LSFPresetManager.mm in Sources */ = {isa = PBXBuildFile; fileRef = 870C0B1A196A3586009E1408 /* LSFPresetManager.mm */; };
+		870C0B1E196A3D9A009E1408 /* MockPresetManagerCallbackDelegateHandler.mm in Sources */ = {isa = PBXBuildFile; fileRef = 870C0B1D196A3D9A009E1408 /* MockPresetManagerCallbackDelegateHandler.mm */; };
+		870C0B21196A3F05009E1408 /* LSFPresetManagerCallbackTests.mm in Sources */ = {isa = PBXBuildFile; fileRef = 870C0B20196A3F05009E1408 /* LSFPresetManagerCallbackTests.mm */; };
+		8719C90C18D8C3740011CD45 /* LSFLampState.mm in Sources */ = {isa = PBXBuildFile; fileRef = 8719C90B18D8C3740011CD45 /* LSFLampState.mm */; };
+		8719C92118D90DF60011CD45 /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 87D813D218CA4B8300903D59 /* SystemConfiguration.framework */; };
+		8719C92318D90ECD0011CD45 /* LSFObjCTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 87D813B618CA483D00903D59 /* LSFObjCTests.m */; };
+		8719C92618D910630011CD45 /* LSFLampStateTests.mm in Sources */ = {isa = PBXBuildFile; fileRef = 8719C92518D910630011CD45 /* LSFLampStateTests.mm */; };
+		8719C95118DA28A70011CD45 /* libstdc++.6.0.9.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 8719C95018DA28A70011CD45 /* libstdc++.6.0.9.dylib */; };
+		8719C95D18DCB1F00011CD45 /* LSFObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 8719C95C18DCB1F00011CD45 /* LSFObject.m */; };
+		871F207F18D2168400784E84 /* LSFControllerClientCallback.mm in Sources */ = {isa = PBXBuildFile; fileRef = 871F207E18D2168400784E84 /* LSFControllerClientCallback.mm */; };
+		871F208618D2274300784E84 /* LSFLampGroupManagerCallback.mm in Sources */ = {isa = PBXBuildFile; fileRef = 871F208518D2274300784E84 /* LSFLampGroupManagerCallback.mm */; };
+		871F208D18D259E500784E84 /* LSFLampManagerCallback.mm in Sources */ = {isa = PBXBuildFile; fileRef = 871F208C18D259E500784E84 /* LSFLampManagerCallback.mm */; };
+		873A5E9C1940DEC500D5B736 /* Mutex.cc in Sources */ = {isa = PBXBuildFile; fileRef = 873A5E9B1940DEC500D5B736 /* Mutex.cc */; };
+		87443D25195C5AF5008EEF36 /* LSFControllerClientCallback.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 871F207D18D2168400784E84 /* LSFControllerClientCallback.h */; };
+		87443D26195C5AF5008EEF36 /* LSFControllerServiceManagerCallback.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 87C2D21418EB547E00E3D895 /* LSFControllerServiceManagerCallback.h */; };
+		87443D27195C5AF5008EEF36 /* LSFLampGroupManagerCallback.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 871F208418D2274300784E84 /* LSFLampGroupManagerCallback.h */; };
+		87443D28195C5AF5008EEF36 /* LSFLampManagerCallback.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 871F208B18D259E500784E84 /* LSFLampManagerCallback.h */; };
+		87443D2C195C5AF5008EEF36 /* LSFControllerClientCallbackDelegate.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 871F208118D21C1800784E84 /* LSFControllerClientCallbackDelegate.h */; };
+		87443D2D195C5AF5008EEF36 /* LSFControllerServiceManagerCallbackDelegate.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 87C2D21318EB513600E3D895 /* LSFControllerServiceManagerCallbackDelegate.h */; };
+		87443D2E195C5AF5008EEF36 /* LSFLampGroupManagerCallbackDelegate.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 871F208718D22BD600784E84 /* LSFLampGroupManagerCallbackDelegate.h */; };
+		87443D2F195C5AF5008EEF36 /* LSFLampManagerCallbackDelegate.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 871F208E18D2630E00784E84 /* LSFLampManagerCallbackDelegate.h */; };
+		87443D35195C5AF5008EEF36 /* LSFLampDetails.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 877184F418E3359A0085D153 /* LSFLampDetails.h */; };
+		87443D36195C5AF5008EEF36 /* LSFLampGroup.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 87AAF0AA18E2228C00742828 /* LSFLampGroup.h */; };
+		87443D37195C5AF5008EEF36 /* LSFLampParameters.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 877184F918E342980085D153 /* LSFLampParameters.h */; };
+		87443D38195C5AF5008EEF36 /* LSFLampState.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 8719C90A18D8C3740011CD45 /* LSFLampState.h */; };
+		87443D3C195C5AF5008EEF36 /* LSFControllerServiceManager.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 87C2D21718EB5B8900E3D895 /* LSFControllerServiceManager.h */; };
+		87443D3D195C5AF5008EEF36 /* LSFLampGroupManager.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 878EC57218E8912D0023C1B7 /* LSFLampGroupManager.h */; };
+		87443D3E195C5AF5008EEF36 /* LSFLampManager.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 878EC56F18E88A0F0023C1B7 /* LSFLampManager.h */; };
+		87443D46195C5AF5008EEF36 /* LSFHandle.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 8719C95A18DCB0640011CD45 /* LSFHandle.h */; };
+		87443D49195C5AF5008EEF36 /* LSFObject.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 8719C95B18DCB1F00011CD45 /* LSFObject.h */; };
+		87443D4B195C5AF5008EEF36 /* LSFUtils.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 8771850418E4BC7A0085D153 /* LSFUtils.h */; };
+		87443D4C195C5AF5008EEF36 /* ControllerClient.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 8707A006193F7BEA0007490F /* ControllerClient.h */; };
+		87443D4D195C5AF5008EEF36 /* ControllerClientDefs.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 8707A007193F7BEA0007490F /* ControllerClientDefs.h */; };
+		87443D4E195C5AF5008EEF36 /* ControllerServiceManager.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 8707A008193F7BEA0007490F /* ControllerServiceManager.h */; };
+		87443D4F195C5AF5008EEF36 /* LampGroupManager.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 8707A009193F7BEA0007490F /* LampGroupManager.h */; };
+		87443D50195C5AF5008EEF36 /* LampManager.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 8707A00A193F7BEA0007490F /* LampManager.h */; };
+		87443D51195C5AF5008EEF36 /* LampResponseCodes.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 8707A000193F7BB40007490F /* LampResponseCodes.h */; };
+		87443D52195C5AF5008EEF36 /* LampValues.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 8707A001193F7BB40007490F /* LampValues.h */; };
+		87443D53195C5AF5008EEF36 /* Manager.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 8707A00B193F7BEA0007490F /* Manager.h */; };
+		87443D54195C5AF5008EEF36 /* MasterSceneManager.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 8707A00C193F7BEA0007490F /* MasterSceneManager.h */; };
+		87443D55195C5AF5008EEF36 /* Mutex.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 873A5E981940DEB300D5B736 /* Mutex.h */; };
+		87443D56195C5AF5008EEF36 /* PresetManager.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 8707A00D193F7BEA0007490F /* PresetManager.h */; };
+		87443D57195C5AF5008EEF36 /* SceneManager.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 8707A00E193F7BEA0007490F /* SceneManager.h */; };
+		87443D58195C5AF5008EEF36 /* LSFResponseCodes.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 8707A004193F7BCF0007490F /* LSFResponseCodes.h */; };
+		87443D59195C5AF5008EEF36 /* LSFTypes.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 8707A005193F7BCF0007490F /* LSFTypes.h */; };
+		8747E73F18E5C5BD00900199 /* LSFLampParametersTests.mm in Sources */ = {isa = PBXBuildFile; fileRef = 8747E73E18E5C5BD00900199 /* LSFLampParametersTests.mm */; };
+		874B22F018F855D300C486CC /* MockControllerServiceManagerCallbackDelegateHandler.mm in Sources */ = {isa = PBXBuildFile; fileRef = 874B22EF18F855D300C486CC /* MockControllerServiceManagerCallbackDelegateHandler.mm */; };
+		874B22F518F857FB00C486CC /* LSFControllerServiceManagerCallbackTests.mm in Sources */ = {isa = PBXBuildFile; fileRef = 874B22F418F857FB00C486CC /* LSFControllerServiceManagerCallbackTests.mm */; };
+		874B22FA18F8651600C486CC /* MockLampGroupManageCallbackDelegateHandler.mm in Sources */ = {isa = PBXBuildFile; fileRef = 874B22F918F8651600C486CC /* MockLampGroupManageCallbackDelegateHandler.mm */; };
+		874B22FD18F8682300C486CC /* LSFLampGroupManagerCallbackTests.mm in Sources */ = {isa = PBXBuildFile; fileRef = 874B22FC18F8682300C486CC /* LSFLampGroupManagerCallbackTests.mm */; };
+		874CFEC41971AD6000E30A48 /* LSFMasterScene.mm in Sources */ = {isa = PBXBuildFile; fileRef = 874CFEC31971AD6000E30A48 /* LSFMasterScene.mm */; };
+		874CFEC71971B14700E30A48 /* LSFMasterSceneTests.mm in Sources */ = {isa = PBXBuildFile; fileRef = 874CFEC61971B14700E30A48 /* LSFMasterSceneTests.mm */; };
+		874CFECA1971BD6100E30A48 /* LSFSceneManager.mm in Sources */ = {isa = PBXBuildFile; fileRef = 874CFEC91971BD6100E30A48 /* LSFSceneManager.mm */; };
+		874CFECD1971BDC900E30A48 /* LSFSceneManagerCallback.mm in Sources */ = {isa = PBXBuildFile; fileRef = 874CFECC1971BDC900E30A48 /* LSFSceneManagerCallback.mm */; };
+		874CFED21971D44600E30A48 /* LSFMasterSceneManagerCallback.mm in Sources */ = {isa = PBXBuildFile; fileRef = 874CFED11971D44600E30A48 /* LSFMasterSceneManagerCallback.mm */; };
+		874CFED51971D97C00E30A48 /* LSFMasterSceneManager.mm in Sources */ = {isa = PBXBuildFile; fileRef = 874CFED41971D97C00E30A48 /* LSFMasterSceneManager.mm */; };
+		874CFED81972224100E30A48 /* MockSceneManagerCallbackDelegateHandler.mm in Sources */ = {isa = PBXBuildFile; fileRef = 874CFED71972224100E30A48 /* MockSceneManagerCallbackDelegateHandler.mm */; };
+		874CFEDD1972247900E30A48 /* LSFSceneManagerCallbackTests.mm in Sources */ = {isa = PBXBuildFile; fileRef = 874CFEDC1972247900E30A48 /* LSFSceneManagerCallbackTests.mm */; };
+		874CFEE019723B0700E30A48 /* LSFMasterSceneManagerCallbackTest.mm in Sources */ = {isa = PBXBuildFile; fileRef = 874CFEDF19723B0700E30A48 /* LSFMasterSceneManagerCallbackTest.mm */; };
+		874CFEE319723C8F00E30A48 /* MockMasterSceneManagerCallbackDelegateHandler.mm in Sources */ = {isa = PBXBuildFile; fileRef = 874CFEE219723C8F00E30A48 /* MockMasterSceneManagerCallbackDelegateHandler.mm */; };
+		8755907A18F43C9100CA8715 /* LSFControllerClientCallbackTests.mm in Sources */ = {isa = PBXBuildFile; fileRef = 8755907918F43C9100CA8715 /* LSFControllerClientCallbackTests.mm */; };
+		8755907E18F4426B00CA8715 /* MockControllerClientCallbackDelegateHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 8755907D18F4426B00CA8715 /* MockControllerClientCallbackDelegateHandler.m */; };
+		877184F618E3359A0085D153 /* LSFLampDetails.mm in Sources */ = {isa = PBXBuildFile; fileRef = 877184F518E3359A0085D153 /* LSFLampDetails.mm */; };
+		877184FB18E342980085D153 /* LSFLampParameters.mm in Sources */ = {isa = PBXBuildFile; fileRef = 877184FA18E342980085D153 /* LSFLampParameters.mm */; };
+		8771850018E4B3400085D153 /* LSFLampDetailsTest.mm in Sources */ = {isa = PBXBuildFile; fileRef = 877184FF18E4B3400085D153 /* LSFLampDetailsTest.mm */; };
+		8771850618E4BC7A0085D153 /* LSFUtils.mm in Sources */ = {isa = PBXBuildFile; fileRef = 8771850518E4BC7A0085D153 /* LSFUtils.mm */; };
+		877725BE198820D500390287 /* liballjoyn_about_cpp.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 87443CC2195B826F008EEF36 /* liballjoyn_about_cpp.a */; };
+		877725BF198820D500390287 /* libAllJoynFramework_iOS.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 87443CC3195B826F008EEF36 /* libAllJoynFramework_iOS.a */; };
+		878EC57118E88A0F0023C1B7 /* LSFLampManager.mm in Sources */ = {isa = PBXBuildFile; fileRef = 878EC57018E88A0F0023C1B7 /* LSFLampManager.mm */; };
+		878EC57418E8912D0023C1B7 /* LSFLampGroupManager.mm in Sources */ = {isa = PBXBuildFile; fileRef = 878EC57318E8912D0023C1B7 /* LSFLampGroupManager.mm */; };
+		879694F519711C5700C4C81D /* LSFSceneTests.mm in Sources */ = {isa = PBXBuildFile; fileRef = 879694F419711C5700C4C81D /* LSFSceneTests.mm */; };
+		879A3FD7197085E60082B204 /* LSFStateTransitionEffect.mm in Sources */ = {isa = PBXBuildFile; fileRef = 879A3FD6197085E60082B204 /* LSFStateTransitionEffect.mm */; };
+		879A3FDA197094600082B204 /* LSFStateTransitionEffectTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 879A3FD9197094600082B204 /* LSFStateTransitionEffectTests.m */; };
+		879A3FDD1970A3DA0082B204 /* LSFPresetTransitionEffect.mm in Sources */ = {isa = PBXBuildFile; fileRef = 879A3FDC1970A3DA0082B204 /* LSFPresetTransitionEffect.mm */; };
+		879A3FE01970A68E0082B204 /* LSFPresetTransitionEffectTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 879A3FDF1970A68E0082B204 /* LSFPresetTransitionEffectTests.m */; };
+		879A3FE41970ACAD0082B204 /* LSFStatePulseEffect.mm in Sources */ = {isa = PBXBuildFile; fileRef = 879A3FE31970ACAD0082B204 /* LSFStatePulseEffect.mm */; };
+		879A3FE71970B3B80082B204 /* LSFStatePulseEffectTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 879A3FE61970B3B80082B204 /* LSFStatePulseEffectTests.m */; };
+		879A3FEA1970BDE70082B204 /* LSFPresetPulseEffect.mm in Sources */ = {isa = PBXBuildFile; fileRef = 879A3FE91970BDE70082B204 /* LSFPresetPulseEffect.mm */; };
+		879A3FED1970CF1B0082B204 /* LSFPresetPulseEffectTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 879A3FEC1970CF1B0082B204 /* LSFPresetPulseEffectTests.m */; };
+		879A3FF01970DBA80082B204 /* LSFScene.mm in Sources */ = {isa = PBXBuildFile; fileRef = 879A3FEF1970DBA80082B204 /* LSFScene.mm */; };
+		87AAF0AC18E2228C00742828 /* LSFLampGroup.mm in Sources */ = {isa = PBXBuildFile; fileRef = 87AAF0AB18E2228C00742828 /* LSFLampGroup.mm */; };
+		87AAF0AF18E22F4100742828 /* LSFLampGroupTests.mm in Sources */ = {isa = PBXBuildFile; fileRef = 87AAF0AE18E22F4100742828 /* LSFLampGroupTests.mm */; };
+		87AD9F2318F48DFA000D0608 /* LSFLampManagerCallbackTests.mm in Sources */ = {isa = PBXBuildFile; fileRef = 87AD9F2218F48DFA000D0608 /* LSFLampManagerCallbackTests.mm */; };
+		87AD9F2818F48EF6000D0608 /* MockLampManagerCallbackDelegateHandler.mm in Sources */ = {isa = PBXBuildFile; fileRef = 87AD9F2718F48EF6000D0608 /* MockLampManagerCallbackDelegateHandler.mm */; };
+		87C2D21618EB547E00E3D895 /* LSFControllerServiceManagerCallback.mm in Sources */ = {isa = PBXBuildFile; fileRef = 87C2D21518EB547E00E3D895 /* LSFControllerServiceManagerCallback.mm */; };
+		87C2D21918EB5B8900E3D895 /* LSFControllerServiceManager.mm in Sources */ = {isa = PBXBuildFile; fileRef = 87C2D21818EB5B8900E3D895 /* LSFControllerServiceManager.mm */; };
+		87D8139B18CA483C00903D59 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 87D8139A18CA483C00903D59 /* Foundation.framework */; };
+		87D813A018CA483C00903D59 /* LSFControllerClient.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 87D8139F18CA483C00903D59 /* LSFControllerClient.h */; };
+		87D813A218CA483C00903D59 /* LSFControllerClient.mm in Sources */ = {isa = PBXBuildFile; fileRef = 87D813A118CA483C00903D59 /* LSFControllerClient.mm */; };
+		87D813A918CA483C00903D59 /* XCTest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 87D813A818CA483C00903D59 /* XCTest.framework */; };
+		87D813AA18CA483C00903D59 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 87D8139A18CA483C00903D59 /* Foundation.framework */; };
+		87D813AC18CA483C00903D59 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 87D813AB18CA483C00903D59 /* UIKit.framework */; };
+		87D813AF18CA483D00903D59 /* libLSFObjC.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 87D8139718CA483C00903D59 /* libLSFObjC.a */; };
+		87D813B518CA483D00903D59 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 87D813B318CA483D00903D59 /* InfoPlist.strings */; };
+		87D813D318CA4B8300903D59 /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 87D813D218CA4B8300903D59 /* SystemConfiguration.framework */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		87D813AD18CA483D00903D59 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 87D8138F18CA483C00903D59 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 87D8139618CA483C00903D59;
+			remoteInfo = LSFObjC;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		87D8139518CA483C00903D59 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "include/$(PRODUCT_NAME)";
+			dstSubfolderSpec = 16;
+			files = (
+				87443D25195C5AF5008EEF36 /* LSFControllerClientCallback.h in CopyFiles */,
+				87443D26195C5AF5008EEF36 /* LSFControllerServiceManagerCallback.h in CopyFiles */,
+				87443D27195C5AF5008EEF36 /* LSFLampGroupManagerCallback.h in CopyFiles */,
+				87443D28195C5AF5008EEF36 /* LSFLampManagerCallback.h in CopyFiles */,
+				87443D2C195C5AF5008EEF36 /* LSFControllerClientCallbackDelegate.h in CopyFiles */,
+				87443D2D195C5AF5008EEF36 /* LSFControllerServiceManagerCallbackDelegate.h in CopyFiles */,
+				87443D2E195C5AF5008EEF36 /* LSFLampGroupManagerCallbackDelegate.h in CopyFiles */,
+				87443D2F195C5AF5008EEF36 /* LSFLampManagerCallbackDelegate.h in CopyFiles */,
+				87443D35195C5AF5008EEF36 /* LSFLampDetails.h in CopyFiles */,
+				87443D36195C5AF5008EEF36 /* LSFLampGroup.h in CopyFiles */,
+				87443D37195C5AF5008EEF36 /* LSFLampParameters.h in CopyFiles */,
+				87443D38195C5AF5008EEF36 /* LSFLampState.h in CopyFiles */,
+				87443D3C195C5AF5008EEF36 /* LSFControllerServiceManager.h in CopyFiles */,
+				87443D3D195C5AF5008EEF36 /* LSFLampGroupManager.h in CopyFiles */,
+				87443D3E195C5AF5008EEF36 /* LSFLampManager.h in CopyFiles */,
+				87443D46195C5AF5008EEF36 /* LSFHandle.h in CopyFiles */,
+				87443D49195C5AF5008EEF36 /* LSFObject.h in CopyFiles */,
+				87443D4B195C5AF5008EEF36 /* LSFUtils.h in CopyFiles */,
+				87443D4C195C5AF5008EEF36 /* ControllerClient.h in CopyFiles */,
+				87443D4D195C5AF5008EEF36 /* ControllerClientDefs.h in CopyFiles */,
+				87443D4E195C5AF5008EEF36 /* ControllerServiceManager.h in CopyFiles */,
+				87443D4F195C5AF5008EEF36 /* LampGroupManager.h in CopyFiles */,
+				87443D50195C5AF5008EEF36 /* LampManager.h in CopyFiles */,
+				87443D51195C5AF5008EEF36 /* LampResponseCodes.h in CopyFiles */,
+				87443D52195C5AF5008EEF36 /* LampValues.h in CopyFiles */,
+				87443D53195C5AF5008EEF36 /* Manager.h in CopyFiles */,
+				87443D54195C5AF5008EEF36 /* MasterSceneManager.h in CopyFiles */,
+				87443D55195C5AF5008EEF36 /* Mutex.h in CopyFiles */,
+				87443D56195C5AF5008EEF36 /* PresetManager.h in CopyFiles */,
+				87443D57195C5AF5008EEF36 /* SceneManager.h in CopyFiles */,
+				87443D58195C5AF5008EEF36 /* LSFResponseCodes.h in CopyFiles */,
+				87443D59195C5AF5008EEF36 /* LSFTypes.h in CopyFiles */,
+				87D813A018CA483C00903D59 /* LSFControllerClient.h in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		8707A000193F7BB40007490F /* LampResponseCodes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LampResponseCodes.h; path = ../../../../../../service_framework/common/inc/LampResponseCodes.h; sourceTree = "<group>"; };
+		8707A001193F7BB40007490F /* LampValues.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LampValues.h; path = ../../../../../../service_framework/common/inc/LampValues.h; sourceTree = "<group>"; };
+		8707A004193F7BCF0007490F /* LSFResponseCodes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LSFResponseCodes.h; path = ../../../../../../service_framework/standard_core_library/common/inc/LSFResponseCodes.h; sourceTree = "<group>"; };
+		8707A005193F7BCF0007490F /* LSFTypes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LSFTypes.h; path = ../../../../../../service_framework/standard_core_library/common/inc/LSFTypes.h; sourceTree = "<group>"; };
+		8707A006193F7BEA0007490F /* ControllerClient.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ControllerClient.h; path = ../../../../../../service_framework/standard_core_library/lighting_controller_client/inc/ControllerClient.h; sourceTree = "<group>"; };
+		8707A007193F7BEA0007490F /* ControllerClientDefs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ControllerClientDefs.h; path = ../../../../../../service_framework/standard_core_library/lighting_controller_client/inc/ControllerClientDefs.h; sourceTree = "<group>"; };
+		8707A008193F7BEA0007490F /* ControllerServiceManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ControllerServiceManager.h; path = ../../../../../../service_framework/standard_core_library/lighting_controller_client/inc/ControllerServiceManager.h; sourceTree = "<group>"; };
+		8707A009193F7BEA0007490F /* LampGroupManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LampGroupManager.h; path = ../../../../../../service_framework/standard_core_library/lighting_controller_client/inc/LampGroupManager.h; sourceTree = "<group>"; };
+		8707A00A193F7BEA0007490F /* LampManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LampManager.h; path = ../../../../../../service_framework/standard_core_library/lighting_controller_client/inc/LampManager.h; sourceTree = "<group>"; };
+		8707A00B193F7BEA0007490F /* Manager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Manager.h; path = ../../../../../../service_framework/standard_core_library/lighting_controller_client/inc/Manager.h; sourceTree = "<group>"; };
+		8707A00C193F7BEA0007490F /* MasterSceneManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MasterSceneManager.h; path = ../../../../../../service_framework/standard_core_library/lighting_controller_client/inc/MasterSceneManager.h; sourceTree = "<group>"; };
+		8707A00D193F7BEA0007490F /* PresetManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PresetManager.h; path = ../../../../../../service_framework/standard_core_library/lighting_controller_client/inc/PresetManager.h; sourceTree = "<group>"; };
+		8707A00E193F7BEA0007490F /* SceneManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SceneManager.h; path = ../../../../../../service_framework/standard_core_library/lighting_controller_client/inc/SceneManager.h; sourceTree = "<group>"; };
+		8707A00F193F7C260007490F /* LSFResponseCodes.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = LSFResponseCodes.cc; path = ../../../../../../service_framework/standard_core_library/common/src/LSFResponseCodes.cc; sourceTree = "<group>"; };
+		8707A010193F7C260007490F /* LSFTypes.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = LSFTypes.cc; path = ../../../../../../service_framework/standard_core_library/common/src/LSFTypes.cc; sourceTree = "<group>"; };
+		8707A013193F7C550007490F /* ControllerClient.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ControllerClient.cc; path = ../../../../../../service_framework/standard_core_library/lighting_controller_client/src/ControllerClient.cc; sourceTree = "<group>"; };
+		8707A014193F7C550007490F /* ControllerClientDefs.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ControllerClientDefs.cc; path = ../../../../../../service_framework/standard_core_library/lighting_controller_client/src/ControllerClientDefs.cc; sourceTree = "<group>"; };
+		8707A015193F7C550007490F /* ControllerServiceManager.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ControllerServiceManager.cc; path = ../../../../../../service_framework/standard_core_library/lighting_controller_client/src/ControllerServiceManager.cc; sourceTree = "<group>"; };
+		8707A016193F7C550007490F /* LampGroupManager.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = LampGroupManager.cc; path = ../../../../../../service_framework/standard_core_library/lighting_controller_client/src/LampGroupManager.cc; sourceTree = "<group>"; };
+		8707A017193F7C550007490F /* LampManager.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = LampManager.cc; path = ../../../../../../service_framework/standard_core_library/lighting_controller_client/src/LampManager.cc; sourceTree = "<group>"; };
+		8707A018193F7C550007490F /* Manager.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Manager.cc; path = ../../../../../../service_framework/standard_core_library/lighting_controller_client/src/Manager.cc; sourceTree = "<group>"; };
+		8707A019193F7C550007490F /* MasterSceneManager.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = MasterSceneManager.cc; path = ../../../../../../service_framework/standard_core_library/lighting_controller_client/src/MasterSceneManager.cc; sourceTree = "<group>"; };
+		8707A01A193F7C550007490F /* PresetManager.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = PresetManager.cc; path = ../../../../../../service_framework/standard_core_library/lighting_controller_client/src/PresetManager.cc; sourceTree = "<group>"; };
+		8707A01B193F7C550007490F /* SceneManager.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = SceneManager.cc; path = ../../../../../../service_framework/standard_core_library/lighting_controller_client/src/SceneManager.cc; sourceTree = "<group>"; };
+		870C0B15196A2928009E1408 /* LSFPresetManagerCallback.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LSFPresetManagerCallback.h; sourceTree = "<group>"; };
+		870C0B16196A2928009E1408 /* LSFPresetManagerCallback.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = LSFPresetManagerCallback.mm; sourceTree = "<group>"; };
+		870C0B18196A2F7C009E1408 /* LSFPresetManagerCallbackDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LSFPresetManagerCallbackDelegate.h; sourceTree = "<group>"; };
+		870C0B19196A3586009E1408 /* LSFPresetManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LSFPresetManager.h; sourceTree = "<group>"; };
+		870C0B1A196A3586009E1408 /* LSFPresetManager.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = LSFPresetManager.mm; sourceTree = "<group>"; };
+		870C0B1C196A3D9A009E1408 /* MockPresetManagerCallbackDelegateHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MockPresetManagerCallbackDelegateHandler.h; sourceTree = "<group>"; };
+		870C0B1D196A3D9A009E1408 /* MockPresetManagerCallbackDelegateHandler.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = MockPresetManagerCallbackDelegateHandler.mm; sourceTree = "<group>"; };
+		870C0B1F196A3F05009E1408 /* LSFPresetManagerCallbackTests.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LSFPresetManagerCallbackTests.h; sourceTree = "<group>"; };
+		870C0B20196A3F05009E1408 /* LSFPresetManagerCallbackTests.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = LSFPresetManagerCallbackTests.mm; sourceTree = "<group>"; };
+		8719C90A18D8C3740011CD45 /* LSFLampState.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LSFLampState.h; sourceTree = "<group>"; };
+		8719C90B18D8C3740011CD45 /* LSFLampState.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = LSFLampState.mm; sourceTree = "<group>"; };
+		8719C92418D910630011CD45 /* LSFLampStateTests.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LSFLampStateTests.h; sourceTree = "<group>"; };
+		8719C92518D910630011CD45 /* LSFLampStateTests.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = LSFLampStateTests.mm; sourceTree = "<group>"; };
+		8719C94D18DA28610011CD45 /* libc++.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = "libc++.dylib"; path = "usr/lib/libc++.dylib"; sourceTree = SDKROOT; };
+		8719C95018DA28A70011CD45 /* libstdc++.6.0.9.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = "libstdc++.6.0.9.dylib"; path = "usr/lib/libstdc++.6.0.9.dylib"; sourceTree = SDKROOT; };
+		8719C95A18DCB0640011CD45 /* LSFHandle.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LSFHandle.h; sourceTree = "<group>"; };
+		8719C95B18DCB1F00011CD45 /* LSFObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LSFObject.h; sourceTree = "<group>"; };
+		8719C95C18DCB1F00011CD45 /* LSFObject.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LSFObject.m; sourceTree = "<group>"; };
+		871F207D18D2168400784E84 /* LSFControllerClientCallback.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LSFControllerClientCallback.h; sourceTree = "<group>"; };
+		871F207E18D2168400784E84 /* LSFControllerClientCallback.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = LSFControllerClientCallback.mm; sourceTree = "<group>"; };
+		871F208118D21C1800784E84 /* LSFControllerClientCallbackDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LSFControllerClientCallbackDelegate.h; sourceTree = "<group>"; };
+		871F208418D2274300784E84 /* LSFLampGroupManagerCallback.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LSFLampGroupManagerCallback.h; sourceTree = "<group>"; };
+		871F208518D2274300784E84 /* LSFLampGroupManagerCallback.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = LSFLampGroupManagerCallback.mm; sourceTree = "<group>"; };
+		871F208718D22BD600784E84 /* LSFLampGroupManagerCallbackDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LSFLampGroupManagerCallbackDelegate.h; sourceTree = "<group>"; };
+		871F208B18D259E500784E84 /* LSFLampManagerCallback.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LSFLampManagerCallback.h; sourceTree = "<group>"; };
+		871F208C18D259E500784E84 /* LSFLampManagerCallback.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = LSFLampManagerCallback.mm; sourceTree = "<group>"; };
+		871F208E18D2630E00784E84 /* LSFLampManagerCallbackDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LSFLampManagerCallbackDelegate.h; sourceTree = "<group>"; };
+		873A5E981940DEB300D5B736 /* Mutex.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Mutex.h; path = ../../../../../../service_framework/standard_core_library/common/inc/Mutex.h; sourceTree = "<group>"; };
+		873A5E9B1940DEC500D5B736 /* Mutex.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Mutex.cc; path = ../../../../../../service_framework/standard_core_library/common/src/Mutex.cc; sourceTree = "<group>"; };
+		874024E51943861E0081E21A /* libc++.1.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = "libc++.1.dylib"; path = "usr/lib/libc++.1.dylib"; sourceTree = SDKROOT; };
+		874024E61943861E0081E21A /* libc++abi.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = "libc++abi.dylib"; path = "usr/lib/libc++abi.dylib"; sourceTree = SDKROOT; };
+		874024E71943861E0081E21A /* libstdc++.6.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = "libstdc++.6.dylib"; path = "usr/lib/libstdc++.6.dylib"; sourceTree = SDKROOT; };
+		87443CC2195B826F008EEF36 /* liballjoyn_about_cpp.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = liballjoyn_about_cpp.a; path = ../../../../../alljoyn/build/darwin/arm/iphoneos/release/dist/about/lib/liballjoyn_about_cpp.a; sourceTree = "<group>"; };
+		87443CC3195B826F008EEF36 /* libAllJoynFramework_iOS.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libAllJoynFramework_iOS.a; path = ../../../../../alljoyn/build/darwin/arm/iphoneos/release/dist/about/lib/libAllJoynFramework_iOS.a; sourceTree = "<group>"; };
+		87443CCA195B8444008EEF36 /* liballjoyn_about_cpp.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = liballjoyn_about_cpp.a; path = ../../../../../alljoyn/build/darwin/arm/iphoneos/debug/dist/about/lib/liballjoyn_about_cpp.a; sourceTree = "<group>"; };
+		87443CCB195B8444008EEF36 /* libAllJoynFramework_iOS.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libAllJoynFramework_iOS.a; path = ../../../../../alljoyn/build/darwin/arm/iphoneos/debug/dist/about/lib/libAllJoynFramework_iOS.a; sourceTree = "<group>"; };
+		8747E73D18E5C5BD00900199 /* LSFLampParametersTests.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LSFLampParametersTests.h; sourceTree = "<group>"; };
+		8747E73E18E5C5BD00900199 /* LSFLampParametersTests.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = LSFLampParametersTests.mm; sourceTree = "<group>"; };
+		874B22EE18F855D300C486CC /* MockControllerServiceManagerCallbackDelegateHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MockControllerServiceManagerCallbackDelegateHandler.h; sourceTree = "<group>"; };
+		874B22EF18F855D300C486CC /* MockControllerServiceManagerCallbackDelegateHandler.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = MockControllerServiceManagerCallbackDelegateHandler.mm; sourceTree = "<group>"; };
+		874B22F318F857FB00C486CC /* LSFControllerServiceManagerCallbackTests.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LSFControllerServiceManagerCallbackTests.h; sourceTree = "<group>"; };
+		874B22F418F857FB00C486CC /* LSFControllerServiceManagerCallbackTests.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = LSFControllerServiceManagerCallbackTests.mm; sourceTree = "<group>"; };
+		874B22F818F8651600C486CC /* MockLampGroupManageCallbackDelegateHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MockLampGroupManageCallbackDelegateHandler.h; sourceTree = "<group>"; };
+		874B22F918F8651600C486CC /* MockLampGroupManageCallbackDelegateHandler.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = MockLampGroupManageCallbackDelegateHandler.mm; sourceTree = "<group>"; };
+		874B22FB18F8682300C486CC /* LSFLampGroupManagerCallbackTests.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LSFLampGroupManagerCallbackTests.h; sourceTree = "<group>"; };
+		874B22FC18F8682300C486CC /* LSFLampGroupManagerCallbackTests.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = LSFLampGroupManagerCallbackTests.mm; sourceTree = "<group>"; };
+		874CFEC21971AD6000E30A48 /* LSFMasterScene.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LSFMasterScene.h; sourceTree = "<group>"; };
+		874CFEC31971AD6000E30A48 /* LSFMasterScene.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = LSFMasterScene.mm; sourceTree = "<group>"; };
+		874CFEC51971B14700E30A48 /* LSFMasterSceneTests.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LSFMasterSceneTests.h; sourceTree = "<group>"; };
+		874CFEC61971B14700E30A48 /* LSFMasterSceneTests.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = LSFMasterSceneTests.mm; sourceTree = "<group>"; };
+		874CFEC81971BD6100E30A48 /* LSFSceneManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LSFSceneManager.h; sourceTree = "<group>"; };
+		874CFEC91971BD6100E30A48 /* LSFSceneManager.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = LSFSceneManager.mm; sourceTree = "<group>"; };
+		874CFECB1971BDC900E30A48 /* LSFSceneManagerCallback.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LSFSceneManagerCallback.h; sourceTree = "<group>"; };
+		874CFECC1971BDC900E30A48 /* LSFSceneManagerCallback.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = LSFSceneManagerCallback.mm; sourceTree = "<group>"; };
+		874CFECE1971BE5000E30A48 /* LSFSceneManagerCallbackDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LSFSceneManagerCallbackDelegate.h; sourceTree = "<group>"; };
+		874CFECF1971D0AA00E30A48 /* LSFMasterSceneManagerCallbackDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LSFMasterSceneManagerCallbackDelegate.h; sourceTree = "<group>"; };
+		874CFED01971D44600E30A48 /* LSFMasterSceneManagerCallback.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LSFMasterSceneManagerCallback.h; sourceTree = "<group>"; };
+		874CFED11971D44600E30A48 /* LSFMasterSceneManagerCallback.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = LSFMasterSceneManagerCallback.mm; sourceTree = "<group>"; };
+		874CFED31971D97C00E30A48 /* LSFMasterSceneManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LSFMasterSceneManager.h; sourceTree = "<group>"; };
+		874CFED41971D97C00E30A48 /* LSFMasterSceneManager.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = LSFMasterSceneManager.mm; sourceTree = "<group>"; };
+		874CFED61972224100E30A48 /* MockSceneManagerCallbackDelegateHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MockSceneManagerCallbackDelegateHandler.h; sourceTree = "<group>"; };
+		874CFED71972224100E30A48 /* MockSceneManagerCallbackDelegateHandler.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = MockSceneManagerCallbackDelegateHandler.mm; sourceTree = "<group>"; };
+		874CFEDB1972247900E30A48 /* LSFSceneManagerCallbackTests.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LSFSceneManagerCallbackTests.h; sourceTree = "<group>"; };
+		874CFEDC1972247900E30A48 /* LSFSceneManagerCallbackTests.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = LSFSceneManagerCallbackTests.mm; sourceTree = "<group>"; };
+		874CFEDE19723B0700E30A48 /* LSFMasterSceneManagerCallbackTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LSFMasterSceneManagerCallbackTest.h; sourceTree = "<group>"; };
+		874CFEDF19723B0700E30A48 /* LSFMasterSceneManagerCallbackTest.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = LSFMasterSceneManagerCallbackTest.mm; sourceTree = "<group>"; };
+		874CFEE119723C8F00E30A48 /* MockMasterSceneManagerCallbackDelegateHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MockMasterSceneManagerCallbackDelegateHandler.h; sourceTree = "<group>"; };
+		874CFEE219723C8F00E30A48 /* MockMasterSceneManagerCallbackDelegateHandler.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = MockMasterSceneManagerCallbackDelegateHandler.mm; sourceTree = "<group>"; };
+		8755907818F43C9100CA8715 /* LSFControllerClientCallbackTests.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LSFControllerClientCallbackTests.h; sourceTree = "<group>"; };
+		8755907918F43C9100CA8715 /* LSFControllerClientCallbackTests.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = LSFControllerClientCallbackTests.mm; sourceTree = "<group>"; };
+		8755907C18F4426B00CA8715 /* MockControllerClientCallbackDelegateHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MockControllerClientCallbackDelegateHandler.h; sourceTree = "<group>"; };
+		8755907D18F4426B00CA8715 /* MockControllerClientCallbackDelegateHandler.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MockControllerClientCallbackDelegateHandler.m; sourceTree = "<group>"; };
+		877184F418E3359A0085D153 /* LSFLampDetails.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LSFLampDetails.h; sourceTree = "<group>"; };
+		877184F518E3359A0085D153 /* LSFLampDetails.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = LSFLampDetails.mm; sourceTree = "<group>"; };
+		877184F918E342980085D153 /* LSFLampParameters.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LSFLampParameters.h; sourceTree = "<group>"; };
+		877184FA18E342980085D153 /* LSFLampParameters.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = LSFLampParameters.mm; sourceTree = "<group>"; };
+		877184FE18E4B3400085D153 /* LSFLampDetailsTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LSFLampDetailsTest.h; sourceTree = "<group>"; };
+		877184FF18E4B3400085D153 /* LSFLampDetailsTest.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = LSFLampDetailsTest.mm; sourceTree = "<group>"; };
+		8771850418E4BC7A0085D153 /* LSFUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LSFUtils.h; sourceTree = "<group>"; };
+		8771850518E4BC7A0085D153 /* LSFUtils.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = LSFUtils.mm; sourceTree = "<group>"; };
+		878EC56F18E88A0F0023C1B7 /* LSFLampManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LSFLampManager.h; sourceTree = "<group>"; };
+		878EC57018E88A0F0023C1B7 /* LSFLampManager.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = LSFLampManager.mm; sourceTree = "<group>"; };
+		878EC57218E8912D0023C1B7 /* LSFLampGroupManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LSFLampGroupManager.h; sourceTree = "<group>"; };
+		878EC57318E8912D0023C1B7 /* LSFLampGroupManager.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = LSFLampGroupManager.mm; sourceTree = "<group>"; };
+		879694F319711C5700C4C81D /* LSFSceneTests.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LSFSceneTests.h; sourceTree = "<group>"; };
+		879694F419711C5700C4C81D /* LSFSceneTests.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = LSFSceneTests.mm; sourceTree = "<group>"; };
+		879A3FD5197085E60082B204 /* LSFStateTransitionEffect.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LSFStateTransitionEffect.h; sourceTree = "<group>"; };
+		879A3FD6197085E60082B204 /* LSFStateTransitionEffect.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = LSFStateTransitionEffect.mm; sourceTree = "<group>"; };
+		879A3FD8197094600082B204 /* LSFStateTransitionEffectTests.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LSFStateTransitionEffectTests.h; sourceTree = "<group>"; };
+		879A3FD9197094600082B204 /* LSFStateTransitionEffectTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LSFStateTransitionEffectTests.m; sourceTree = "<group>"; };
+		879A3FDB1970A3DA0082B204 /* LSFPresetTransitionEffect.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LSFPresetTransitionEffect.h; sourceTree = "<group>"; };
+		879A3FDC1970A3DA0082B204 /* LSFPresetTransitionEffect.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = LSFPresetTransitionEffect.mm; sourceTree = "<group>"; };
+		879A3FDE1970A68E0082B204 /* LSFPresetTransitionEffectTests.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LSFPresetTransitionEffectTests.h; sourceTree = "<group>"; };
+		879A3FDF1970A68E0082B204 /* LSFPresetTransitionEffectTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LSFPresetTransitionEffectTests.m; sourceTree = "<group>"; };
+		879A3FE11970AB9A0082B204 /* LSFPulseEffect.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LSFPulseEffect.h; sourceTree = "<group>"; };
+		879A3FE21970ACAD0082B204 /* LSFStatePulseEffect.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LSFStatePulseEffect.h; sourceTree = "<group>"; };
+		879A3FE31970ACAD0082B204 /* LSFStatePulseEffect.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = LSFStatePulseEffect.mm; sourceTree = "<group>"; };
+		879A3FE51970B3B80082B204 /* LSFStatePulseEffectTests.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LSFStatePulseEffectTests.h; sourceTree = "<group>"; };
+		879A3FE61970B3B80082B204 /* LSFStatePulseEffectTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LSFStatePulseEffectTests.m; sourceTree = "<group>"; };
+		879A3FE81970BDE70082B204 /* LSFPresetPulseEffect.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LSFPresetPulseEffect.h; sourceTree = "<group>"; };
+		879A3FE91970BDE70082B204 /* LSFPresetPulseEffect.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = LSFPresetPulseEffect.mm; sourceTree = "<group>"; };
+		879A3FEB1970CF1B0082B204 /* LSFPresetPulseEffectTests.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LSFPresetPulseEffectTests.h; sourceTree = "<group>"; };
+		879A3FEC1970CF1B0082B204 /* LSFPresetPulseEffectTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LSFPresetPulseEffectTests.m; sourceTree = "<group>"; };
+		879A3FEE1970DBA80082B204 /* LSFScene.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LSFScene.h; sourceTree = "<group>"; };
+		879A3FEF1970DBA80082B204 /* LSFScene.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = LSFScene.mm; sourceTree = "<group>"; };
+		87AAF0AA18E2228C00742828 /* LSFLampGroup.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LSFLampGroup.h; sourceTree = "<group>"; };
+		87AAF0AB18E2228C00742828 /* LSFLampGroup.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = LSFLampGroup.mm; sourceTree = "<group>"; };
+		87AAF0AD18E22F4100742828 /* LSFLampGroupTests.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LSFLampGroupTests.h; sourceTree = "<group>"; };
+		87AAF0AE18E22F4100742828 /* LSFLampGroupTests.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = LSFLampGroupTests.mm; sourceTree = "<group>"; };
+		87AAF0B218E2304500742828 /* libc.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libc.dylib; path = usr/lib/libc.dylib; sourceTree = SDKROOT; };
+		87AD9F2118F48DFA000D0608 /* LSFLampManagerCallbackTests.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LSFLampManagerCallbackTests.h; sourceTree = "<group>"; };
+		87AD9F2218F48DFA000D0608 /* LSFLampManagerCallbackTests.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = LSFLampManagerCallbackTests.mm; sourceTree = "<group>"; };
+		87AD9F2618F48EF6000D0608 /* MockLampManagerCallbackDelegateHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MockLampManagerCallbackDelegateHandler.h; sourceTree = "<group>"; };
+		87AD9F2718F48EF6000D0608 /* MockLampManagerCallbackDelegateHandler.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = MockLampManagerCallbackDelegateHandler.mm; sourceTree = "<group>"; };
+		87C2D21318EB513600E3D895 /* LSFControllerServiceManagerCallbackDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LSFControllerServiceManagerCallbackDelegate.h; sourceTree = "<group>"; };
+		87C2D21418EB547E00E3D895 /* LSFControllerServiceManagerCallback.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LSFControllerServiceManagerCallback.h; sourceTree = "<group>"; };
+		87C2D21518EB547E00E3D895 /* LSFControllerServiceManagerCallback.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = LSFControllerServiceManagerCallback.mm; sourceTree = "<group>"; };
+		87C2D21718EB5B8900E3D895 /* LSFControllerServiceManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LSFControllerServiceManager.h; sourceTree = "<group>"; };
+		87C2D21818EB5B8900E3D895 /* LSFControllerServiceManager.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = LSFControllerServiceManager.mm; sourceTree = "<group>"; };
+		87D5E4B3197083190038B494 /* LSFLampMemberList.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LSFLampMemberList.h; sourceTree = "<group>"; };
+		87D5E4B4197084A90038B494 /* LSFTransitionEffect.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LSFTransitionEffect.h; sourceTree = "<group>"; };
+		87D8139718CA483C00903D59 /* libLSFObjC.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libLSFObjC.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		87D8139A18CA483C00903D59 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
+		87D8139E18CA483C00903D59 /* LSFObjC-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "LSFObjC-Prefix.pch"; sourceTree = "<group>"; };
+		87D8139F18CA483C00903D59 /* LSFControllerClient.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LSFControllerClient.h; sourceTree = "<group>"; };
+		87D813A118CA483C00903D59 /* LSFControllerClient.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = LSFControllerClient.mm; sourceTree = "<group>"; };
+		87D813A718CA483C00903D59 /* LSFObjCTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = LSFObjCTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		87D813A818CA483C00903D59 /* XCTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XCTest.framework; path = Library/Frameworks/XCTest.framework; sourceTree = DEVELOPER_DIR; };
+		87D813AB18CA483C00903D59 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = Library/Frameworks/UIKit.framework; sourceTree = DEVELOPER_DIR; };
+		87D813B218CA483D00903D59 /* LSFObjCTests-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "LSFObjCTests-Info.plist"; sourceTree = "<group>"; };
+		87D813B418CA483D00903D59 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		87D813B618CA483D00903D59 /* LSFObjCTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = LSFObjCTests.m; sourceTree = "<group>"; };
+		87D813D218CA4B8300903D59 /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
+		87D813D418CA4B8B00903D59 /* libstdc++.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = "libstdc++.dylib"; path = "usr/lib/libstdc++.dylib"; sourceTree = SDKROOT; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		87D8139418CA483C00903D59 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				877725BE198820D500390287 /* liballjoyn_about_cpp.a in Frameworks */,
+				877725BF198820D500390287 /* libAllJoynFramework_iOS.a in Frameworks */,
+				87D813D318CA4B8300903D59 /* SystemConfiguration.framework in Frameworks */,
+				87D8139B18CA483C00903D59 /* Foundation.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		87D813A418CA483C00903D59 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				8719C92118D90DF60011CD45 /* SystemConfiguration.framework in Frameworks */,
+				87D813AF18CA483D00903D59 /* libLSFObjC.a in Frameworks */,
+				87D813AC18CA483C00903D59 /* UIKit.framework in Frameworks */,
+				8719C95118DA28A70011CD45 /* libstdc++.6.0.9.dylib in Frameworks */,
+				87D813A918CA483C00903D59 /* XCTest.framework in Frameworks */,
+				87D813AA18CA483C00903D59 /* Foundation.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		8719C90718D8C3460011CD45 /* DataClasses */ = {
+			isa = PBXGroup;
+			children = (
+				877184F418E3359A0085D153 /* LSFLampDetails.h */,
+				877184F518E3359A0085D153 /* LSFLampDetails.mm */,
+				87AAF0AA18E2228C00742828 /* LSFLampGroup.h */,
+				87AAF0AB18E2228C00742828 /* LSFLampGroup.mm */,
+				877184F918E342980085D153 /* LSFLampParameters.h */,
+				877184FA18E342980085D153 /* LSFLampParameters.mm */,
+				8719C90A18D8C3740011CD45 /* LSFLampState.h */,
+				8719C90B18D8C3740011CD45 /* LSFLampState.mm */,
+				874CFEC21971AD6000E30A48 /* LSFMasterScene.h */,
+				874CFEC31971AD6000E30A48 /* LSFMasterScene.mm */,
+				879A3FE81970BDE70082B204 /* LSFPresetPulseEffect.h */,
+				879A3FE91970BDE70082B204 /* LSFPresetPulseEffect.mm */,
+				879A3FDB1970A3DA0082B204 /* LSFPresetTransitionEffect.h */,
+				879A3FDC1970A3DA0082B204 /* LSFPresetTransitionEffect.mm */,
+				879A3FEE1970DBA80082B204 /* LSFScene.h */,
+				879A3FEF1970DBA80082B204 /* LSFScene.mm */,
+				879A3FE21970ACAD0082B204 /* LSFStatePulseEffect.h */,
+				879A3FE31970ACAD0082B204 /* LSFStatePulseEffect.mm */,
+				879A3FD5197085E60082B204 /* LSFStateTransitionEffect.h */,
+				879A3FD6197085E60082B204 /* LSFStateTransitionEffect.mm */,
+			);
+			name = DataClasses;
+			sourceTree = "<group>";
+		};
+		871F207C18D2150400784E84 /* CallbackClasses */ = {
+			isa = PBXGroup;
+			children = (
+				871F207D18D2168400784E84 /* LSFControllerClientCallback.h */,
+				871F207E18D2168400784E84 /* LSFControllerClientCallback.mm */,
+				87C2D21418EB547E00E3D895 /* LSFControllerServiceManagerCallback.h */,
+				87C2D21518EB547E00E3D895 /* LSFControllerServiceManagerCallback.mm */,
+				871F208418D2274300784E84 /* LSFLampGroupManagerCallback.h */,
+				871F208518D2274300784E84 /* LSFLampGroupManagerCallback.mm */,
+				871F208B18D259E500784E84 /* LSFLampManagerCallback.h */,
+				871F208C18D259E500784E84 /* LSFLampManagerCallback.mm */,
+				874CFED01971D44600E30A48 /* LSFMasterSceneManagerCallback.h */,
+				874CFED11971D44600E30A48 /* LSFMasterSceneManagerCallback.mm */,
+				870C0B15196A2928009E1408 /* LSFPresetManagerCallback.h */,
+				870C0B16196A2928009E1408 /* LSFPresetManagerCallback.mm */,
+				874CFECB1971BDC900E30A48 /* LSFSceneManagerCallback.h */,
+				874CFECC1971BDC900E30A48 /* LSFSceneManagerCallback.mm */,
+			);
+			name = CallbackClasses;
+			sourceTree = "<group>";
+		};
+		871F208018D21BFD00784E84 /* Delegates */ = {
+			isa = PBXGroup;
+			children = (
+				871F208118D21C1800784E84 /* LSFControllerClientCallbackDelegate.h */,
+				87C2D21318EB513600E3D895 /* LSFControllerServiceManagerCallbackDelegate.h */,
+				871F208718D22BD600784E84 /* LSFLampGroupManagerCallbackDelegate.h */,
+				871F208E18D2630E00784E84 /* LSFLampManagerCallbackDelegate.h */,
+				874CFECF1971D0AA00E30A48 /* LSFMasterSceneManagerCallbackDelegate.h */,
+				870C0B18196A2F7C009E1408 /* LSFPresetManagerCallbackDelegate.h */,
+				874CFECE1971BE5000E30A48 /* LSFSceneManagerCallbackDelegate.h */,
+			);
+			name = Delegates;
+			sourceTree = "<group>";
+		};
+		8747E74218E5E25800900199 /* UtilityClasses */ = {
+			isa = PBXGroup;
+			children = (
+				8719C95A18DCB0640011CD45 /* LSFHandle.h */,
+				87D5E4B3197083190038B494 /* LSFLampMemberList.h */,
+				8719C95B18DCB1F00011CD45 /* LSFObject.h */,
+				8719C95C18DCB1F00011CD45 /* LSFObject.m */,
+				879A3FE11970AB9A0082B204 /* LSFPulseEffect.h */,
+				87D5E4B4197084A90038B494 /* LSFTransitionEffect.h */,
+				8771850418E4BC7A0085D153 /* LSFUtils.h */,
+				8771850518E4BC7A0085D153 /* LSFUtils.mm */,
+			);
+			name = UtilityClasses;
+			sourceTree = "<group>";
+		};
+		8755907518F43C5100CA8715 /* CallbackClassesUnitTests */ = {
+			isa = PBXGroup;
+			children = (
+				8755907818F43C9100CA8715 /* LSFControllerClientCallbackTests.h */,
+				8755907918F43C9100CA8715 /* LSFControllerClientCallbackTests.mm */,
+				874B22F318F857FB00C486CC /* LSFControllerServiceManagerCallbackTests.h */,
+				874B22F418F857FB00C486CC /* LSFControllerServiceManagerCallbackTests.mm */,
+				874B22FB18F8682300C486CC /* LSFLampGroupManagerCallbackTests.h */,
+				874B22FC18F8682300C486CC /* LSFLampGroupManagerCallbackTests.mm */,
+				87AD9F2118F48DFA000D0608 /* LSFLampManagerCallbackTests.h */,
+				87AD9F2218F48DFA000D0608 /* LSFLampManagerCallbackTests.mm */,
+				874CFEDE19723B0700E30A48 /* LSFMasterSceneManagerCallbackTest.h */,
+				874CFEDF19723B0700E30A48 /* LSFMasterSceneManagerCallbackTest.mm */,
+				870C0B1F196A3F05009E1408 /* LSFPresetManagerCallbackTests.h */,
+				870C0B20196A3F05009E1408 /* LSFPresetManagerCallbackTests.mm */,
+				874CFEDB1972247900E30A48 /* LSFSceneManagerCallbackTests.h */,
+				874CFEDC1972247900E30A48 /* LSFSceneManagerCallbackTests.mm */,
+			);
+			name = CallbackClassesUnitTests;
+			sourceTree = "<group>";
+		};
+		8755907B18F4423300CA8715 /* TestDelegateClasses */ = {
+			isa = PBXGroup;
+			children = (
+				8755907C18F4426B00CA8715 /* MockControllerClientCallbackDelegateHandler.h */,
+				8755907D18F4426B00CA8715 /* MockControllerClientCallbackDelegateHandler.m */,
+				874B22EE18F855D300C486CC /* MockControllerServiceManagerCallbackDelegateHandler.h */,
+				874B22EF18F855D300C486CC /* MockControllerServiceManagerCallbackDelegateHandler.mm */,
+				874B22F818F8651600C486CC /* MockLampGroupManageCallbackDelegateHandler.h */,
+				874B22F918F8651600C486CC /* MockLampGroupManageCallbackDelegateHandler.mm */,
+				87AD9F2618F48EF6000D0608 /* MockLampManagerCallbackDelegateHandler.h */,
+				87AD9F2718F48EF6000D0608 /* MockLampManagerCallbackDelegateHandler.mm */,
+				874CFEE119723C8F00E30A48 /* MockMasterSceneManagerCallbackDelegateHandler.h */,
+				874CFEE219723C8F00E30A48 /* MockMasterSceneManagerCallbackDelegateHandler.mm */,
+				870C0B1C196A3D9A009E1408 /* MockPresetManagerCallbackDelegateHandler.h */,
+				870C0B1D196A3D9A009E1408 /* MockPresetManagerCallbackDelegateHandler.mm */,
+				874CFED61972224100E30A48 /* MockSceneManagerCallbackDelegateHandler.h */,
+				874CFED71972224100E30A48 /* MockSceneManagerCallbackDelegateHandler.mm */,
+			);
+			name = TestDelegateClasses;
+			sourceTree = "<group>";
+		};
+		878EC56C18E883860023C1B7 /* ManagerClasses */ = {
+			isa = PBXGroup;
+			children = (
+				87C2D21718EB5B8900E3D895 /* LSFControllerServiceManager.h */,
+				87C2D21818EB5B8900E3D895 /* LSFControllerServiceManager.mm */,
+				878EC57218E8912D0023C1B7 /* LSFLampGroupManager.h */,
+				878EC57318E8912D0023C1B7 /* LSFLampGroupManager.mm */,
+				878EC56F18E88A0F0023C1B7 /* LSFLampManager.h */,
+				878EC57018E88A0F0023C1B7 /* LSFLampManager.mm */,
+				874CFED31971D97C00E30A48 /* LSFMasterSceneManager.h */,
+				874CFED41971D97C00E30A48 /* LSFMasterSceneManager.mm */,
+				870C0B19196A3586009E1408 /* LSFPresetManager.h */,
+				870C0B1A196A3586009E1408 /* LSFPresetManager.mm */,
+				874CFEC81971BD6100E30A48 /* LSFSceneManager.h */,
+				874CFEC91971BD6100E30A48 /* LSFSceneManager.mm */,
+			);
+			name = ManagerClasses;
+			sourceTree = "<group>";
+		};
+		87B329E518CE84AE00D494AD /* LightingServiceFramework */ = {
+			isa = PBXGroup;
+			children = (
+				8707A006193F7BEA0007490F /* ControllerClient.h */,
+				8707A013193F7C550007490F /* ControllerClient.cc */,
+				8707A007193F7BEA0007490F /* ControllerClientDefs.h */,
+				8707A014193F7C550007490F /* ControllerClientDefs.cc */,
+				8707A008193F7BEA0007490F /* ControllerServiceManager.h */,
+				8707A015193F7C550007490F /* ControllerServiceManager.cc */,
+				8707A009193F7BEA0007490F /* LampGroupManager.h */,
+				8707A016193F7C550007490F /* LampGroupManager.cc */,
+				8707A00A193F7BEA0007490F /* LampManager.h */,
+				8707A017193F7C550007490F /* LampManager.cc */,
+				8707A000193F7BB40007490F /* LampResponseCodes.h */,
+				8707A001193F7BB40007490F /* LampValues.h */,
+				8707A00B193F7BEA0007490F /* Manager.h */,
+				8707A018193F7C550007490F /* Manager.cc */,
+				8707A00C193F7BEA0007490F /* MasterSceneManager.h */,
+				8707A019193F7C550007490F /* MasterSceneManager.cc */,
+				873A5E981940DEB300D5B736 /* Mutex.h */,
+				873A5E9B1940DEC500D5B736 /* Mutex.cc */,
+				8707A00D193F7BEA0007490F /* PresetManager.h */,
+				8707A01A193F7C550007490F /* PresetManager.cc */,
+				8707A00E193F7BEA0007490F /* SceneManager.h */,
+				8707A01B193F7C550007490F /* SceneManager.cc */,
+				8707A004193F7BCF0007490F /* LSFResponseCodes.h */,
+				8707A00F193F7C260007490F /* LSFResponseCodes.cc */,
+				8707A005193F7BCF0007490F /* LSFTypes.h */,
+				8707A010193F7C260007490F /* LSFTypes.cc */,
+			);
+			name = LightingServiceFramework;
+			sourceTree = "<group>";
+		};
+		87D8138E18CA483C00903D59 = {
+			isa = PBXGroup;
+			children = (
+				87D8139C18CA483C00903D59 /* LSFObjC */,
+				87D813B018CA483D00903D59 /* LSFObjCTests */,
+				87D8139918CA483C00903D59 /* Frameworks */,
+				87D8139818CA483C00903D59 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		87D8139818CA483C00903D59 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				87D8139718CA483C00903D59 /* libLSFObjC.a */,
+				87D813A718CA483C00903D59 /* LSFObjCTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		87D8139918CA483C00903D59 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				87443CCA195B8444008EEF36 /* liballjoyn_about_cpp.a */,
+				87443CCB195B8444008EEF36 /* libAllJoynFramework_iOS.a */,
+				87443CC2195B826F008EEF36 /* liballjoyn_about_cpp.a */,
+				87443CC3195B826F008EEF36 /* libAllJoynFramework_iOS.a */,
+				874024E51943861E0081E21A /* libc++.1.dylib */,
+				874024E61943861E0081E21A /* libc++abi.dylib */,
+				874024E71943861E0081E21A /* libstdc++.6.dylib */,
+				87AAF0B218E2304500742828 /* libc.dylib */,
+				8719C95018DA28A70011CD45 /* libstdc++.6.0.9.dylib */,
+				8719C94D18DA28610011CD45 /* libc++.dylib */,
+				87D813D418CA4B8B00903D59 /* libstdc++.dylib */,
+				87D813D218CA4B8300903D59 /* SystemConfiguration.framework */,
+				87D8139A18CA483C00903D59 /* Foundation.framework */,
+				87D813A818CA483C00903D59 /* XCTest.framework */,
+				87D813AB18CA483C00903D59 /* UIKit.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		87D8139C18CA483C00903D59 /* LSFObjC */ = {
+			isa = PBXGroup;
+			children = (
+				871F207C18D2150400784E84 /* CallbackClasses */,
+				871F208018D21BFD00784E84 /* Delegates */,
+				8719C90718D8C3460011CD45 /* DataClasses */,
+				878EC56C18E883860023C1B7 /* ManagerClasses */,
+				8747E74218E5E25800900199 /* UtilityClasses */,
+				87B329E518CE84AE00D494AD /* LightingServiceFramework */,
+				87D8139F18CA483C00903D59 /* LSFControllerClient.h */,
+				87D813A118CA483C00903D59 /* LSFControllerClient.mm */,
+				87D8139D18CA483C00903D59 /* Supporting Files */,
+			);
+			path = LSFObjC;
+			sourceTree = "<group>";
+		};
+		87D8139D18CA483C00903D59 /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				87D8139E18CA483C00903D59 /* LSFObjC-Prefix.pch */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		87D813B018CA483D00903D59 /* LSFObjCTests */ = {
+			isa = PBXGroup;
+			children = (
+				8755907B18F4423300CA8715 /* TestDelegateClasses */,
+				8755907518F43C5100CA8715 /* CallbackClassesUnitTests */,
+				87E7622118EDF639007B773B /* DataClassesUnitTests */,
+				87D813B618CA483D00903D59 /* LSFObjCTests.m */,
+				87D813B118CA483D00903D59 /* Supporting Files */,
+			);
+			path = LSFObjCTests;
+			sourceTree = "<group>";
+		};
+		87D813B118CA483D00903D59 /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				87D813B218CA483D00903D59 /* LSFObjCTests-Info.plist */,
+				87D813B318CA483D00903D59 /* InfoPlist.strings */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		87E7622118EDF639007B773B /* DataClassesUnitTests */ = {
+			isa = PBXGroup;
+			children = (
+				877184FE18E4B3400085D153 /* LSFLampDetailsTest.h */,
+				877184FF18E4B3400085D153 /* LSFLampDetailsTest.mm */,
+				87AAF0AD18E22F4100742828 /* LSFLampGroupTests.h */,
+				87AAF0AE18E22F4100742828 /* LSFLampGroupTests.mm */,
+				8747E73D18E5C5BD00900199 /* LSFLampParametersTests.h */,
+				8747E73E18E5C5BD00900199 /* LSFLampParametersTests.mm */,
+				8719C92418D910630011CD45 /* LSFLampStateTests.h */,
+				8719C92518D910630011CD45 /* LSFLampStateTests.mm */,
+				874CFEC51971B14700E30A48 /* LSFMasterSceneTests.h */,
+				874CFEC61971B14700E30A48 /* LSFMasterSceneTests.mm */,
+				879A3FEB1970CF1B0082B204 /* LSFPresetPulseEffectTests.h */,
+				879A3FEC1970CF1B0082B204 /* LSFPresetPulseEffectTests.m */,
+				879A3FDE1970A68E0082B204 /* LSFPresetTransitionEffectTests.h */,
+				879A3FDF1970A68E0082B204 /* LSFPresetTransitionEffectTests.m */,
+				879694F319711C5700C4C81D /* LSFSceneTests.h */,
+				879694F419711C5700C4C81D /* LSFSceneTests.mm */,
+				879A3FE51970B3B80082B204 /* LSFStatePulseEffectTests.h */,
+				879A3FE61970B3B80082B204 /* LSFStatePulseEffectTests.m */,
+				879A3FD8197094600082B204 /* LSFStateTransitionEffectTests.h */,
+				879A3FD9197094600082B204 /* LSFStateTransitionEffectTests.m */,
+			);
+			name = DataClassesUnitTests;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		87D8139618CA483C00903D59 /* LSFObjC */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 87D813BA18CA483D00903D59 /* Build configuration list for PBXNativeTarget "LSFObjC" */;
+			buildPhases = (
+				87D8139318CA483C00903D59 /* Sources */,
+				87D8139418CA483C00903D59 /* Frameworks */,
+				87D8139518CA483C00903D59 /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = LSFObjC;
+			productName = LSFObjC;
+			productReference = 87D8139718CA483C00903D59 /* libLSFObjC.a */;
+			productType = "com.apple.product-type.library.static";
+		};
+		87D813A618CA483C00903D59 /* LSFObjCTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 87D813BD18CA483D00903D59 /* Build configuration list for PBXNativeTarget "LSFObjCTests" */;
+			buildPhases = (
+				87D813A318CA483C00903D59 /* Sources */,
+				87D813A418CA483C00903D59 /* Frameworks */,
+				87D813A518CA483C00903D59 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				87D813AE18CA483D00903D59 /* PBXTargetDependency */,
+			);
+			name = LSFObjCTests;
+			productName = LSFObjCTests;
+			productReference = 87D813A718CA483C00903D59 /* LSFObjCTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		87D8138F18CA483C00903D59 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0510;
+				ORGANIZATIONNAME = "Allseen Alliance";
+			};
+			buildConfigurationList = 87D8139218CA483C00903D59 /* Build configuration list for PBXProject "LSFObjC" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = 87D8138E18CA483C00903D59;
+			productRefGroup = 87D8139818CA483C00903D59 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				87D8139618CA483C00903D59 /* LSFObjC */,
+				87D813A618CA483C00903D59 /* LSFObjCTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		87D813A518CA483C00903D59 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				87D813B518CA483D00903D59 /* InfoPlist.strings in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		87D8139318CA483C00903D59 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				87C2D21618EB547E00E3D895 /* LSFControllerServiceManagerCallback.mm in Sources */,
+				8707A023193F7C550007490F /* PresetManager.cc in Sources */,
+				87C2D21918EB5B8900E3D895 /* LSFControllerServiceManager.mm in Sources */,
+				8707A01D193F7C550007490F /* ControllerClientDefs.cc in Sources */,
+				873A5E9C1940DEC500D5B736 /* Mutex.cc in Sources */,
+				8707A01E193F7C550007490F /* ControllerServiceManager.cc in Sources */,
+				8719C90C18D8C3740011CD45 /* LSFLampState.mm in Sources */,
+				8707A021193F7C550007490F /* Manager.cc in Sources */,
+				879A3FD7197085E60082B204 /* LSFStateTransitionEffect.mm in Sources */,
+				879A3FF01970DBA80082B204 /* LSFScene.mm in Sources */,
+				874CFED51971D97C00E30A48 /* LSFMasterSceneManager.mm in Sources */,
+				8707A012193F7C260007490F /* LSFTypes.cc in Sources */,
+				874CFED21971D44600E30A48 /* LSFMasterSceneManagerCallback.mm in Sources */,
+				877184F618E3359A0085D153 /* LSFLampDetails.mm in Sources */,
+				877184FB18E342980085D153 /* LSFLampParameters.mm in Sources */,
+				8707A022193F7C550007490F /* MasterSceneManager.cc in Sources */,
+				874CFEC41971AD6000E30A48 /* LSFMasterScene.mm in Sources */,
+				874CFECA1971BD6100E30A48 /* LSFSceneManager.mm in Sources */,
+				871F208D18D259E500784E84 /* LSFLampManagerCallback.mm in Sources */,
+				8707A011193F7C260007490F /* LSFResponseCodes.cc in Sources */,
+				8707A020193F7C550007490F /* LampManager.cc in Sources */,
+				8719C95D18DCB1F00011CD45 /* LSFObject.m in Sources */,
+				871F208618D2274300784E84 /* LSFLampGroupManagerCallback.mm in Sources */,
+				879A3FE41970ACAD0082B204 /* LSFStatePulseEffect.mm in Sources */,
+				878EC57418E8912D0023C1B7 /* LSFLampGroupManager.mm in Sources */,
+				8771850618E4BC7A0085D153 /* LSFUtils.mm in Sources */,
+				879A3FDD1970A3DA0082B204 /* LSFPresetTransitionEffect.mm in Sources */,
+				871F207F18D2168400784E84 /* LSFControllerClientCallback.mm in Sources */,
+				878EC57118E88A0F0023C1B7 /* LSFLampManager.mm in Sources */,
+				87D813A218CA483C00903D59 /* LSFControllerClient.mm in Sources */,
+				8707A01F193F7C550007490F /* LampGroupManager.cc in Sources */,
+				87AAF0AC18E2228C00742828 /* LSFLampGroup.mm in Sources */,
+				8707A024193F7C550007490F /* SceneManager.cc in Sources */,
+				874CFECD1971BDC900E30A48 /* LSFSceneManagerCallback.mm in Sources */,
+				870C0B17196A2928009E1408 /* LSFPresetManagerCallback.mm in Sources */,
+				870C0B1B196A3586009E1408 /* LSFPresetManager.mm in Sources */,
+				8707A01C193F7C550007490F /* ControllerClient.cc in Sources */,
+				879A3FEA1970BDE70082B204 /* LSFPresetPulseEffect.mm in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		87D813A318CA483C00903D59 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				879A3FED1970CF1B0082B204 /* LSFPresetPulseEffectTests.m in Sources */,
+				874B22F018F855D300C486CC /* MockControllerServiceManagerCallbackDelegateHandler.mm in Sources */,
+				879A3FE01970A68E0082B204 /* LSFPresetTransitionEffectTests.m in Sources */,
+				874CFEE319723C8F00E30A48 /* MockMasterSceneManagerCallbackDelegateHandler.mm in Sources */,
+				8771850018E4B3400085D153 /* LSFLampDetailsTest.mm in Sources */,
+				874B22FD18F8682300C486CC /* LSFLampGroupManagerCallbackTests.mm in Sources */,
+				874B22F518F857FB00C486CC /* LSFControllerServiceManagerCallbackTests.mm in Sources */,
+				870C0B1E196A3D9A009E1408 /* MockPresetManagerCallbackDelegateHandler.mm in Sources */,
+				874B22FA18F8651600C486CC /* MockLampGroupManageCallbackDelegateHandler.mm in Sources */,
+				8755907E18F4426B00CA8715 /* MockControllerClientCallbackDelegateHandler.m in Sources */,
+				874CFED81972224100E30A48 /* MockSceneManagerCallbackDelegateHandler.mm in Sources */,
+				870C0B21196A3F05009E1408 /* LSFPresetManagerCallbackTests.mm in Sources */,
+				874CFEE019723B0700E30A48 /* LSFMasterSceneManagerCallbackTest.mm in Sources */,
+				8719C92318D90ECD0011CD45 /* LSFObjCTests.m in Sources */,
+				879A3FE71970B3B80082B204 /* LSFStatePulseEffectTests.m in Sources */,
+				87AD9F2318F48DFA000D0608 /* LSFLampManagerCallbackTests.mm in Sources */,
+				87AAF0AF18E22F4100742828 /* LSFLampGroupTests.mm in Sources */,
+				879A3FDA197094600082B204 /* LSFStateTransitionEffectTests.m in Sources */,
+				87AD9F2818F48EF6000D0608 /* MockLampManagerCallbackDelegateHandler.mm in Sources */,
+				879694F519711C5700C4C81D /* LSFSceneTests.mm in Sources */,
+				874CFEDD1972247900E30A48 /* LSFSceneManagerCallbackTests.mm in Sources */,
+				8719C92618D910630011CD45 /* LSFLampStateTests.mm in Sources */,
+				874CFEC71971B14700E30A48 /* LSFMasterSceneTests.mm in Sources */,
+				8747E73F18E5C5BD00900199 /* LSFLampParametersTests.mm in Sources */,
+				8755907A18F43C9100CA8715 /* LSFControllerClientCallbackTests.mm in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		87D813AE18CA483D00903D59 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 87D8139618CA483C00903D59 /* LSFObjC */;
+			targetProxy = 87D813AD18CA483D00903D59 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin PBXVariantGroup section */
+		87D813B318CA483D00903D59 /* InfoPlist.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				87D813B418CA483D00903D59 /* en */,
+			);
+			name = InfoPlist.strings;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		87D813B818CA483D00903D59 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_CPP_EXCEPTIONS = NO;
+				GCC_ENABLE_CPP_RTTI = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
+					"\"$(ALLJOYN_HOME)/build/darwin/$(CURRENT_ARCH)/$(PLATFORM_NAME)/$(CONFIGURATION)/dist/cpp/inc\"",
+					"\"$(ALLJOYN_HOME)/build/darwin/$(CURRENT_ARCH)/$(PLATFORM_NAME)/$(CONFIGURATION)/dist/cpp/inc/alljoyn\"",
+					"\"$(ALLJOYN_HOME)/build/darwin/$(CURRENT_ARCH)/$(PLATFORM_NAME)/$(CONFIGURATION)/dist/about/inc\"",
+					"\"$(ALLJOYN_HOME)/alljoyn_objc/AllJoynFramework\"",
+					"\"$(OPENSSL_SRC)/include\"",
+					"\"$(LSF_HOME)/standard_core_library/lighting_controller_client/inc\"",
+					"\"$(LSF_HOME)/standard_core_library/common/inc\"",
+					"\"$(LSF_HOME)/common/inc\"",
+				);
+				IPHONEOS_DEPLOYMENT_TARGET = 7.1;
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(ALLJOYN_HOME)/build/darwin/$(CURRENT_ARCH)/$(PLATFORM_NAME)/$(CONFIGURATION)/dist/cpp/lib\"",
+				);
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				USE_HEADERMAP = No;
+			};
+			name = Debug;
+		};
+		87D813B918CA483D00903D59 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = YES;
+				ENABLE_NS_ASSERTIONS = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_ENABLE_CPP_EXCEPTIONS = NO;
+				GCC_ENABLE_CPP_RTTI = NO;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
+					"\"$(ALLJOYN_HOME)/build/darwin/$(CURRENT_ARCH)/$(PLATFORM_NAME)/$(CONFIGURATION)/dist/cpp/inc\"",
+					"\"$(ALLJOYN_HOME)/build/darwin/$(CURRENT_ARCH)/$(PLATFORM_NAME)/$(CONFIGURATION)/dist/cpp/inc/alljoyn\"",
+					"\"$(ALLJOYN_HOME)/build/darwin/$(CURRENT_ARCH)/$(PLATFORM_NAME)/$(CONFIGURATION)/dist/about/inc\"",
+					"\"$(ALLJOYN_HOME)/alljoyn_objc/AllJoynFramework\"",
+					"\"$(OPENSSL_SRC)/include\"",
+					"\"$(LSF_HOME)/standard_core_library/lighting_controller_client/inc\"",
+					"\"$(LSF_HOME)/standard_core_library/common/inc\"",
+					"\"$(LSF_HOME)/common/inc\"",
+				);
+				IPHONEOS_DEPLOYMENT_TARGET = 7.1;
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(ALLJOYN_HOME)/build/darwin/$(CURRENT_ARCH)/$(PLATFORM_NAME)/$(CONFIGURATION)/dist/cpp/lib\"",
+				);
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				USE_HEADERMAP = No;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		87D813BB18CA483D00903D59 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "compiler-default";
+				CLANG_CXX_LIBRARY = "compiler-default";
+				DSTROOT = /tmp/LSFObjC.dst;
+				GCC_C_LANGUAGE_STANDARD = "compiler-default";
+				GCC_INPUT_FILETYPE = sourcecode.cpp.objcpp;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "LSFObjC/LSFObjC-Prefix.pch";
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
+					"\"$(ALLJOYN_HOME)/build/darwin/arm/$(PLATFORM_NAME)/$(CONFIGURATION)/dist/cpp/inc\"",
+					"\"$(ALLJOYN_HOME)/build/darwin/arm/$(PLATFORM_NAME)/$(CONFIGURATION)/dist/cpp/inc/alljoyn\"",
+					"\"$(ALLJOYN_HOME)/services/about/cpp/inc\"",
+					"\"$(ALLJOYN_HOME)/alljoyn_objc/AllJoynFramework/AllJoynFramework\"",
+					"\"$(LSF_HOME)/standard_core_library/lighting_controller_client/inc\"",
+					"\"$(LSF_HOME)/standard_core_library/common/inc\"",
+					"\"$(LSF_HOME)/common/inc\"",
+				);
+				IPHONEOS_DEPLOYMENT_TARGET = 7.1;
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(ALLJOYN_HOME)/build/darwin/$(CURRENT_ARCH)/$(PLATFORM_NAME)/$(CONFIGURATION)/dist/cpp/lib\"",
+					"\"$(ALLJOYN_HOME)/build/darwin/arm/$(PLATFORM_NAME)/$(CONFIGURATION)/dist/about/lib\"",
+					"\"$(OPENSSL_ROOT)/build/$(CONFIGURATION)-$(PLATFORM_NAME)\"",
+				);
+				ONLY_ACTIVE_ARCH = NO;
+				OTHER_CFLAGS = (
+					"-DQCC_OS_GROUP_POSIX",
+					"-DQCC_OS_DARWIN",
+				);
+				OTHER_LDFLAGS = "-ObjC";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				USE_HEADERMAP = No;
+				VALID_ARCHS = "armv7 armv7s";
+			};
+			name = Debug;
+		};
+		87D813BC18CA483D00903D59 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "compiler-default";
+				CLANG_CXX_LIBRARY = "compiler-default";
+				DSTROOT = /tmp/LSFObjC.dst;
+				GCC_C_LANGUAGE_STANDARD = "compiler-default";
+				GCC_INPUT_FILETYPE = sourcecode.cpp.objcpp;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "LSFObjC/LSFObjC-Prefix.pch";
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
+					"\"$(ALLJOYN_HOME)/build/darwin/arm/$(PLATFORM_NAME)/$(CONFIGURATION)/dist/cpp/inc\"",
+					"\"$(ALLJOYN_HOME)/build/darwin/arm/$(PLATFORM_NAME)/$(CONFIGURATION)/dist/cpp/inc/alljoyn\"",
+					"\"$(ALLJOYN_HOME)/services/about/cpp/inc\"",
+					"\"$(ALLJOYN_HOME)/alljoyn_objc/AllJoynFramework/AllJoynFramework\"",
+					"\"$(LSF_HOME)/standard_core_library/lighting_controller_client/inc\"",
+					"\"$(LSF_HOME)/standard_core_library/common/inc\"",
+					"\"$(LSF_HOME)/common/inc\"",
+				);
+				IPHONEOS_DEPLOYMENT_TARGET = 7.1;
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(ALLJOYN_HOME)/build/darwin/$(CURRENT_ARCH)/$(PLATFORM_NAME)/$(CONFIGURATION)/dist/cpp/lib\"",
+					"\"$(ALLJOYN_HOME)/build/darwin/arm/$(PLATFORM_NAME)/$(CONFIGURATION)/dist/about/lib\"",
+					"\"$(OPENSSL_ROOT)/build/$(CONFIGURATION)-$(PLATFORM_NAME)\"",
+				);
+				ONLY_ACTIVE_ARCH = NO;
+				OTHER_CFLAGS = (
+					"-DQCC_OS_GROUP_POSIX",
+					"-DQCC_OS_DARWIN",
+					"-DNS_BLOCK_ASSERTIONS=1",
+				);
+				OTHER_LDFLAGS = "-ObjC";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				USE_HEADERMAP = No;
+				VALID_ARCHS = "armv7 armv7s";
+			};
+			name = Release;
+		};
+		87D813BE18CA483D00903D59 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "compiler-default";
+				CLANG_CXX_LIBRARY = "compiler-default";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(SDKROOT)/Developer/Library/Frameworks",
+					"$(inherited)",
+					"$(DEVELOPER_FRAMEWORKS_DIR)",
+				);
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "LSFObjC/LSFObjC-Prefix.pch";
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
+					"\"$(ALLJOYN_HOME)/build/darwin/$(CURRENT_ARCH)/$(PLATFORM_NAME)/$(CONFIGURATION)/dist/cpp/inc\"",
+					"\"$(ALLJOYN_HOME)/build/darwin/$(CURRENT_ARCH)/$(PLATFORM_NAME)/$(CONFIGURATION)/dist/cpp/inc/alljoyn\"",
+					"\"(ALLJOYN_HOME)/build/darwin/$(CURRENT_ARCH)/$(PLATFORM_NAME)/$(CONFIGURATION)/dist/about/inc\"",
+					"\"$(ALLJOYN_HOME)/build/darwin/arm/iphonesimulator/$(CONFIGURATION)/dist/cpp/inc\"",
+					"\"$(ALLJOYN_HOME)/build/darwin/arm/iphonesimulator/$(CONFIGURATION)/dist/cpp/inc/alljoyn\"",
+					"\"$(ALLJOYN_HOME)/build/darwin/arm/iphonesimulator/$(CONFIGURATION)/dist/about/inc\"",
+					"\"$(ALLJOYN_HOME)/alljoyn_objc/AllJoynFramework\"",
+					"\"$(OPENSSL_SRC)/include\"",
+					"\"$(LSF_HOME)/standard_core_library/lighting_controller_client/inc\"",
+					"\"$(LSF_HOME)/standard_core_library/common/inc\"",
+					"\"$(LSF_HOME)/common/inc\"",
+					"\"$(APPS_HOME)/apps/bindings/objc/LSFObjC\"",
+				);
+				INFOPLIST_FILE = "LSFObjCTests/LSFObjCTests-Info.plist";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(ALLJOYN_HOME)/build/darwin/$(CURRENT_ARCH)/$(PLATFORM_NAME)/$(CONFIGURATION)/dist/cpp/lib\"",
+					"\"$(ALLJOYN_HOME)/build/darwin/$(CURRENT_ARCH)/$(PLATFORM_NAME)/$(CONFIGURATION)/dist/about/lib\"",
+					"\"$(ALLJOYN_HOME)/build/darwin/arm/iphonesimulator/$(CONFIGURATION)/dist/cpp/lib\"",
+					"\"$(ALLJOYN_HOME)/build/darwin/arm/iphonesimulator/$(CONFIGURATION)/dist/about/lib\"",
+					"\"$(OPENSSL_ROOT)/build/$(CONFIGURATION)-$(PLATFORM_NAME)\"",
+				);
+				OTHER_CFLAGS = (
+					"-DQCC_OS_GROUP_POSIX",
+					"-DQCC_OS_DARWIN",
+				);
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-framework",
+					XCTest,
+					"-lalljoyn",
+					"-lajrouter",
+					"-lBundledRouter.o",
+					"-lssl",
+					"-lcrypto",
+				);
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				USE_HEADERMAP = No;
+				WRAPPER_EXTENSION = xctest;
+			};
+			name = Debug;
+		};
+		87D813BF18CA483D00903D59 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "compiler-default";
+				CLANG_CXX_LIBRARY = "compiler-default";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(SDKROOT)/Developer/Library/Frameworks",
+					"$(inherited)",
+					"$(DEVELOPER_FRAMEWORKS_DIR)",
+				);
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "LSFObjC/LSFObjC-Prefix.pch";
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
+					"\"$(ALLJOYN_HOME)/build/darwin/$(CURRENT_ARCH)/$(PLATFORM_NAME)/$(CONFIGURATION)/dist/cpp/inc\"",
+					"\"$(ALLJOYN_HOME)/build/darwin/$(CURRENT_ARCH)/$(PLATFORM_NAME)/$(CONFIGURATION)/dist/cpp/inc/alljoyn\"",
+					"\"(ALLJOYN_HOME)/build/darwin/$(CURRENT_ARCH)/$(PLATFORM_NAME)/$(CONFIGURATION)/dist/about/inc\"",
+					"\"$(ALLJOYN_HOME)/build/darwin/arm/iphonesimulator/$(CONFIGURATION)/dist/cpp/inc\"",
+					"\"$(ALLJOYN_HOME)/build/darwin/arm/iphonesimulator/$(CONFIGURATION)/dist/cpp/inc/alljoyn\"",
+					"\"$(ALLJOYN_HOME)/build/darwin/arm/iphonesimulator/$(CONFIGURATION)/dist/about/inc\"",
+					"\"$(ALLJOYN_HOME)/alljoyn_objc/AllJoynFramework\"",
+					"\"$(OPENSSL_SRC)/include\"",
+					"\"$(LSF_HOME)/standard_core_library/lighting_controller_client/inc\"",
+					"\"$(LSF_HOME)/standard_core_library/common/inc\"",
+					"\"$(LSF_HOME)/common/inc\"",
+					"\"$(APPS_HOME)/apps/bindings/objc/LSFObjC\"",
+				);
+				INFOPLIST_FILE = "LSFObjCTests/LSFObjCTests-Info.plist";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(ALLJOYN_HOME)/build/darwin/$(CURRENT_ARCH)/$(PLATFORM_NAME)/$(CONFIGURATION)/dist/cpp/lib\"",
+					"\"$(ALLJOYN_HOME)/build/darwin/$(CURRENT_ARCH)/$(PLATFORM_NAME)/$(CONFIGURATION)/dist/about/lib\"",
+					"\"$(ALLJOYN_HOME)/build/darwin/arm/iphonesimulator/$(CONFIGURATION)/dist/cpp/lib\"",
+					"\"$(ALLJOYN_HOME)/build/darwin/arm/iphonesimulator/$(CONFIGURATION)/dist/about/lib\"",
+					"\"$(OPENSSL_ROOT)/build/$(CONFIGURATION)-$(PLATFORM_NAME)\"",
+				);
+				OTHER_CFLAGS = (
+					"-DNS_BLOCK_ASSERTIONS=1",
+					"-DQCC_OS_GROUP_POSIX",
+					"-DQCC_OS_DARWIN",
+				);
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-framework",
+					XCTest,
+					"-lalljoyn",
+					"-lajrouter",
+					"-lBundledRouter.o",
+					"-lssl",
+					"-lcrypto",
+				);
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				USE_HEADERMAP = No;
+				WRAPPER_EXTENSION = xctest;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		87D8139218CA483C00903D59 /* Build configuration list for PBXProject "LSFObjC" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				87D813B818CA483D00903D59 /* Debug */,
+				87D813B918CA483D00903D59 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		87D813BA18CA483D00903D59 /* Build configuration list for PBXNativeTarget "LSFObjC" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				87D813BB18CA483D00903D59 /* Debug */,
+				87D813BC18CA483D00903D59 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		87D813BD18CA483D00903D59 /* Build configuration list for PBXNativeTarget "LSFObjCTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				87D813BE18CA483D00903D59 /* Debug */,
+				87D813BF18CA483D00903D59 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 87D8138F18CA483C00903D59 /* Project object */;
+}
