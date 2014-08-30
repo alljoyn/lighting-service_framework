@@ -314,6 +314,19 @@
     return self.lampManager->GetLampSupportedLanguages(lid);
 }
 
+-(ControllerClientStatus)getLampDataSetForID: (NSString *)lampID
+{
+    std::string lid([lampID UTF8String]);
+    return self.lampManager->GetLampDataSet(lid);
+}
+
+-(ControllerClientStatus)getLampDataSetForID: (NSString *)lampID andLanguage: (NSString *)language
+{
+    std::string lid([lampID UTF8String]);
+    std::string lang([language UTF8String]);
+    return self.lampManager->GetLampDataSet(lid, lang);
+}
+
 /*
  * Accessor for the internal C++ API object this objective-c class encapsulates
  */

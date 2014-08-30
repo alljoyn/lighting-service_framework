@@ -175,7 +175,7 @@ jobject XCppDelegator::Call_ControllerClientStatus_String_Boolean(JNIEnv *env, j
 }
 
 template <typename T>
-jobject XCppDelegator::Call_ControllerClientStatus_String_UInt32_UInt32(JNIEnv *env, jobject thiz, jstring jString, jlong jLong, jint jInteger, ControllerClientStatus (T::*cMethod)(const std::string&, const uint32_t&, const uint32_t&))
+jobject XCppDelegator::Call_ControllerClientStatus_String_UInt32_UInt32(JNIEnv *env, jobject thiz, jstring jString, jlong jLong1, jlong jLong2, ControllerClientStatus (T::*cMethod)(const std::string&, const uint32_t&, const uint32_t&))
 {
     T *xDelegate = GetHandle<T*>(thiz);
     if (env->ExceptionCheck() || !xDelegate) {
@@ -196,11 +196,11 @@ jobject XCppDelegator::Call_ControllerClientStatus_String_UInt32_UInt32(JNIEnv *
 
     std::string cString = xString.c_str();
 
-    return JEnum::jControllerClientStatusEnum->getObject((int)((xDelegate->*cMethod)(cString, (uint32_t)jLong, (uint32_t)jInteger)));
+    return JEnum::jControllerClientStatusEnum->getObject((int)((xDelegate->*cMethod)(cString, (uint32_t)jLong1, (uint32_t)jLong2)));
 }
 
 template <typename T>
-jobject XCppDelegator::Call_ControllerClientStatus_String_String_UInt32(JNIEnv *env, jobject thiz, jstring jString1, jstring jString2, jint jInteger, ControllerClientStatus (T::*cMethod)(const std::string&, const std::string&, const uint32_t&))
+jobject XCppDelegator::Call_ControllerClientStatus_String_String_UInt32(JNIEnv *env, jobject thiz, jstring jString1, jstring jString2, jlong jLong, ControllerClientStatus (T::*cMethod)(const std::string&, const std::string&, const uint32_t&))
 {
     T *xDelegate = GetHandle<T*>(thiz);
     if (env->ExceptionCheck() || !xDelegate) {
@@ -233,11 +233,11 @@ jobject XCppDelegator::Call_ControllerClientStatus_String_String_UInt32(JNIEnv *
     std::string cString1 = xString1.c_str();
     std::string cString2 = xString2.c_str();
 
-    return JEnum::jControllerClientStatusEnum->getObject((int)((xDelegate->*cMethod)(cString1, cString2, (uint32_t)jInteger)));
+    return JEnum::jControllerClientStatusEnum->getObject((int)((xDelegate->*cMethod)(cString1, cString2, (uint32_t)jLong)));
 }
 
 template <typename T>
-jobject XCppDelegator::Call_ControllerClientStatus_String_String_UInt32_UInt32_UInt32_String(JNIEnv *env, jobject thiz, jstring jString1, jstring jString2, jint jInteger1, jint jInteger2, jint jInteger3, jstring jString3, ControllerClientStatus (T::*cMethod)(const std::string&, const std::string&, const uint32_t&, const uint32_t&, const uint32_t&, const std::string&))
+jobject XCppDelegator::Call_ControllerClientStatus_String_String_UInt32_UInt32_UInt32_String(JNIEnv *env, jobject thiz, jstring jString1, jstring jString2, jlong jLong1, jlong jLong2, jlong jLong3, jstring jString3, ControllerClientStatus (T::*cMethod)(const std::string&, const std::string&, const uint32_t&, const uint32_t&, const uint32_t&, const std::string&))
 {
     T *xDelegate = GetHandle<T*>(thiz);
     if (env->ExceptionCheck() || !xDelegate) {
@@ -282,7 +282,7 @@ jobject XCppDelegator::Call_ControllerClientStatus_String_String_UInt32_UInt32_U
     std::string cString2 = xString2.c_str();
     std::string cString3 = xString3.c_str();
 
-    return JEnum::jControllerClientStatusEnum->getObject((int)((xDelegate->*cMethod)(cString1, cString2, (uint32_t)jInteger1, (uint32_t)jInteger2, (uint32_t)jInteger3, cString3)));
+    return JEnum::jControllerClientStatusEnum->getObject((int)((xDelegate->*cMethod)(cString1, cString2, (uint32_t)jLong1, (uint32_t)jLong2, (uint32_t)jLong3, cString3)));
 }
 
 template <typename T1, typename T2, typename T3>
@@ -318,7 +318,7 @@ jobject XCppDelegator::Call_ControllerClientStatus_String_Object(JNIEnv *env, jo
 }
 
 template <typename T1, typename T2, typename T3>
-jobject XCppDelegator::Call_ControllerClientStatus_String_Object_UInt32(JNIEnv *env, jobject thiz, jstring jString, jobject jObject, jint jInteger, ControllerClientStatus (T1::*cMethod)(const std::string&, const T3&, const uint32_t&))
+jobject XCppDelegator::Call_ControllerClientStatus_String_Object_UInt32(JNIEnv *env, jobject thiz, jstring jString, jobject jObject, jlong jLong, ControllerClientStatus (T1::*cMethod)(const std::string&, const T3&, const uint32_t&))
 {
     T1 *xDelegate = GetHandle<T1*>(thiz);
     if (env->ExceptionCheck() || !xDelegate) {
@@ -346,11 +346,11 @@ jobject XCppDelegator::Call_ControllerClientStatus_String_Object_UInt32(JNIEnv *
     T3 cObject = (T3&)(*xObject);
     std::string cString = xString.c_str();
 
-    return JEnum::jControllerClientStatusEnum->getObject((int)((xDelegate->*cMethod)(cString, cObject, (uint32_t)jInteger)));
+    return JEnum::jControllerClientStatusEnum->getObject((int)((xDelegate->*cMethod)(cString, cObject, (uint32_t)jLong)));
 }
 
 template <typename T1, typename T2, typename T3>
-jobject XCppDelegator::Call_ControllerClientStatus_String_Object_UInt32_UInt32_UInt32_Object(JNIEnv *env, jobject thiz, jstring jString, jobject jObject1, jint jInteger1, jint jInteger2, jint jInteger3, jobject jObject2, ControllerClientStatus (T1::*cMethod)(const std::string&, const T3&, const uint32_t&, const uint32_t&, const uint32_t&, const T3&))
+jobject XCppDelegator::Call_ControllerClientStatus_String_Object_UInt32_UInt32_UInt32_Object(JNIEnv *env, jobject thiz, jstring jString, jobject jObject1, jlong jLong1, jlong jLong2, jlong jLong3, jobject jObject2, ControllerClientStatus (T1::*cMethod)(const std::string&, const T3&, const uint32_t&, const uint32_t&, const uint32_t&, const T3&))
 {
     T1 *xDelegate = GetHandle<T1*>(thiz);
     if (env->ExceptionCheck() || !xDelegate) {
@@ -385,7 +385,7 @@ jobject XCppDelegator::Call_ControllerClientStatus_String_Object_UInt32_UInt32_U
     T3 cObject1 = (T3&)(*xObject1);
     T3 cObject2 = (T3&)(*xObject2);
 
-    return JEnum::jControllerClientStatusEnum->getObject((int)((xDelegate->*cMethod)(cString, cObject1, (uint32_t)jInteger1, (uint32_t)jInteger2, (uint32_t)jInteger3, cObject2)));
+    return JEnum::jControllerClientStatusEnum->getObject((int)((xDelegate->*cMethod)(cString, cObject1, (uint32_t)jLong1, (uint32_t)jLong2, (uint32_t)jLong3, cObject2)));
 }
 
 template <typename T1, typename T2, typename T3>

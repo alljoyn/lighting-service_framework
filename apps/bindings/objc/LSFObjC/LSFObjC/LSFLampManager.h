@@ -69,5 +69,7 @@ using namespace lsf;
 -(ControllerClientStatus)getLampServiceVersionForID: (NSString *)lampID;
 -(ControllerClientStatus)clearLampFaultForID: (NSString *) lampID andFaultCode: (LampFaultCode)faultCode;
 -(ControllerClientStatus)getLampSupportedLanguagesForID: (NSString *) lampID;
+-(ControllerClientStatus)getLampDataSetForID: (NSString *)lampID;
+-(ControllerClientStatus)getLampDataSetForID: (NSString *)lampID andLanguage: (NSString *)language;
 
 @end

@@ -27,14 +27,14 @@ private:
     XPulseEffect();
 
 public:
-    template <typename T> static void SetPulsePeriod(JNIEnv *env, jobject thiz, jint jPulsePeriod);
-    template <typename T> static jint GetPulsePeriod(JNIEnv *env, jobject thiz);
+    template <typename T> static void SetPulsePeriod(JNIEnv *env, jobject thiz, jlong jPulsePeriod);
+    template <typename T> static jlong GetPulsePeriod(JNIEnv *env, jobject thiz);
 
-    template <typename T> static void SetPulseDuration(JNIEnv *env, jobject thiz, jint jPulseDuration);
-    template <typename T> static jint GetPulseDuration(JNIEnv *env, jobject thiz);
+    template <typename T> static void SetPulseDuration(JNIEnv *env, jobject thiz, jlong jPulseDuration);
+    template <typename T> static jlong GetPulseDuration(JNIEnv *env, jobject thiz);
 
-    template <typename T> static void SetPulseCount(JNIEnv *env, jobject thiz, jint jPulseCount);
-    template <typename T> static jint GetPulseCount(JNIEnv *env, jobject thiz);
+    template <typename T> static void SetPulseCount(JNIEnv *env, jobject thiz, jlong jPulseCount);
+    template <typename T> static jlong GetPulseCount(JNIEnv *env, jobject thiz);
 };
 
 } /* namespace lsf */

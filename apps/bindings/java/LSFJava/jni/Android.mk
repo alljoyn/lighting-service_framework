@@ -122,31 +122,32 @@ LOCAL_SRC_FILES  := $(MY_LSF_STD_CLIENT_SRC)/ControllerClient.cc \
 					JPrimitiveArray.cpp \
 					JStringArray.cpp \
 					NUtil.cpp \
-					org_alljoyn_lsf_ControllerClient.cpp \
-					org_alljoyn_lsf_ControllerClientCallback.cpp \
-					org_alljoyn_lsf_LampDetails.cpp \
-					org_alljoyn_lsf_LampGroup.cpp \
-					org_alljoyn_lsf_LampGroupManager.cpp \
-					org_alljoyn_lsf_LampGroupManagerCallback.cpp \
-					org_alljoyn_lsf_LampManager.cpp \
-					org_alljoyn_lsf_LampManagerCallback.cpp \
-					org_alljoyn_lsf_LampParameters.cpp \
-					org_alljoyn_lsf_LampState.cpp \
-					org_alljoyn_lsf_MasterScene.cpp \
-					org_alljoyn_lsf_MasterSceneManager.cpp \
-					org_alljoyn_lsf_MasterSceneManagerCallback.cpp \
-					org_alljoyn_lsf_PresetManager.cpp \
-					org_alljoyn_lsf_PresetManagerCallback.cpp \
-					org_alljoyn_lsf_PresetPulseEffect.cpp \
-					org_alljoyn_lsf_PresetTransitionEffect.cpp \
-					org_alljoyn_lsf_Scene.cpp \
-					org_alljoyn_lsf_SceneManager.cpp \
-					org_alljoyn_lsf_SceneManagerCallback.cpp \
-					org_alljoyn_lsf_StatePulseEffect.cpp \
-					org_alljoyn_lsf_StateTransitionEffect.cpp \
+					org_allseen_lsf_ControllerClient.cpp \
+					org_allseen_lsf_ControllerClientCallback.cpp \
+					org_allseen_lsf_LampDetails.cpp \
+					org_allseen_lsf_LampGroup.cpp \
+					org_allseen_lsf_LampGroupManager.cpp \
+					org_allseen_lsf_LampGroupManagerCallback.cpp \
+					org_allseen_lsf_LampManager.cpp \
+					org_allseen_lsf_LampManagerCallback.cpp \
+					org_allseen_lsf_LampParameters.cpp \
+					org_allseen_lsf_LampState.cpp \
+					org_allseen_lsf_MasterScene.cpp \
+					org_allseen_lsf_MasterSceneManager.cpp \
+					org_allseen_lsf_MasterSceneManagerCallback.cpp \
+					org_allseen_lsf_PresetManager.cpp \
+					org_allseen_lsf_PresetManagerCallback.cpp \
+					org_allseen_lsf_PresetPulseEffect.cpp \
+					org_allseen_lsf_PresetTransitionEffect.cpp \
+					org_allseen_lsf_Scene.cpp \
+					org_allseen_lsf_SceneManager.cpp \
+					org_allseen_lsf_SceneManagerCallback.cpp \
+					org_allseen_lsf_StatePulseEffect.cpp \
+					org_allseen_lsf_StateTransitionEffect.cpp \
 					XCppDelegator.cpp \
 					XJavaDelegator.cpp \
 					XLampMemberList.cpp \
+					XLongArray.cpp \
 					XObject.cpp \
 					XMasterScene.cpp \
 					XMasterSceneManager.cpp \

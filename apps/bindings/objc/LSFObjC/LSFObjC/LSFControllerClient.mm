@@ -50,7 +50,14 @@
 
 -(void)dealloc
 {
-    delete self.controllerClientCallback;
+    lsf::ControllerClient *ptr = [self controllerClient];
+
+    if (ptr)
+    {
+        delete ptr;
+    }
+
+    self.handle = NULL;
 }
 
 -(unsigned int)getVersion

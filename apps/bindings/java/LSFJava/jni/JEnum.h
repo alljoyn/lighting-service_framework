@@ -26,7 +26,6 @@ class JEnum {
   public:
     static JEnum * jControllerClientStatusEnum;
     static JEnum * jErrorCodeEnum;
-    static JEnum * jFaultCodeEnum;
     static JEnum * jResponseCodeEnum;
     static JEnum * jStatusCodeEnum;
 

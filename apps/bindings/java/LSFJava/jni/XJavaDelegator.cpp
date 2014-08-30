@@ -20,6 +20,7 @@
 
 #include "JEnum.h"
 #include "JStringArray.h"
+#include "XLongArray.h"
 #include "XJavaDelegator.h"
 
 #define QCC_MODULE "AJN-LSF-JNI"
@@ -75,7 +76,7 @@ void XJavaDelegator::Call_Void_ResponseCode_String(const jweak jdelegate, char c
         return;
     }
 
-    Call_Void_Variadic(env, jdelegate, func, "(Lorg/alljoyn/lsf/ResponseCode;Ljava/lang/String;)V", jresponseCode, jstrValue);
+    Call_Void_Variadic(env, jdelegate, func, "(Lorg/allseen/lsf/ResponseCode;Ljava/lang/String;)V", jresponseCode, jstrValue);
 }
 
 void XJavaDelegator::Call_Void_ResponseCode_StringList(const jweak jdelegate, char const *func, const LSFResponseCode &responseCode, const LSFStringList &strList)
@@ -95,7 +96,7 @@ void XJavaDelegator::Call_Void_ResponseCode_StringList(const jweak jdelegate, ch
         return;
     }
 
-    Call_Void_Variadic(env, jdelegate, func, "(Lorg/alljoyn/lsf/ResponseCode;[Ljava/lang/String;)V", jresponseCode, jstrList);
+    Call_Void_Variadic(env, jdelegate, func, "(Lorg/allseen/lsf/ResponseCode;[Ljava/lang/String;)V", jresponseCode, jstrList);
 }
 
 void XJavaDelegator::Call_Void_String_String(const jweak jdelegate, char const *func, const LSFString &strValue1, const LSFString &strValue2)
@@ -137,7 +138,7 @@ void XJavaDelegator::Call_Void_ResponseCode_String_Boolean(const jweak jdelegate
 
     jboolean jboolValue = (jboolean)boolValue;
 
-    Call_Void_Variadic(env, jdelegate, func, "(Lorg/alljoyn/lsf/ResponseCode;Ljava/lang/String;Z)V", jresponseCode, jstrValue, jboolValue);
+    Call_Void_Variadic(env, jdelegate, func, "(Lorg/allseen/lsf/ResponseCode;Ljava/lang/String;Z)V", jresponseCode, jstrValue, jboolValue);
 }
 
 void XJavaDelegator::Call_Void_ResponseCode_String_SInt32(const jweak jdelegate, char const *func, const LSFResponseCode &responseCode, const LSFString &strValue, const uint32_t &uint32Value)
@@ -159,7 +160,7 @@ void XJavaDelegator::Call_Void_ResponseCode_String_SInt32(const jweak jdelegate,
 
     jint jintValue = (jint)uint32Value;
 
-    Call_Void_Variadic(env, jdelegate, func, "(Lorg/alljoyn/lsf/ResponseCode;Ljava/lang/String;I)V", jresponseCode, jstrValue, jintValue);
+    Call_Void_Variadic(env, jdelegate, func, "(Lorg/allseen/lsf/ResponseCode;Ljava/lang/String;I)V", jresponseCode, jstrValue, jintValue);
 }
 
 void XJavaDelegator::Call_Void_ResponseCode_String_UInt32(const jweak jdelegate, char const *func, const LSFResponseCode &responseCode, const LSFString &strValue, const uint32_t &uint32Value)
@@ -181,7 +182,7 @@ void XJavaDelegator::Call_Void_ResponseCode_String_UInt32(const jweak jdelegate,
 
     jlong jlongValue = (jlong)uint32Value;
 
-    Call_Void_Variadic(env, jdelegate, func, "(Lorg/alljoyn/lsf/ResponseCode;Ljava/lang/String;J)V", jresponseCode, jstrValue, jlongValue);
+    Call_Void_Variadic(env, jdelegate, func, "(Lorg/allseen/lsf/ResponseCode;Ljava/lang/String;J)V", jresponseCode, jstrValue, jlongValue);
 }
 
 void XJavaDelegator::Call_Void_ResponseCode_String_Enum(const jweak jdelegate, char const *func, const LSFResponseCode &responseCode, const LSFString &strValue, JEnum *enumObject, const int &enumValue, char const *enumClass)
@@ -208,7 +209,7 @@ void XJavaDelegator::Call_Void_ResponseCode_String_Enum(const jweak jdelegate, c
     }
 
     char sig[512];
-    snprintf(sig, sizeof(sig), "(Lorg/alljoyn/lsf/ResponseCode;Ljava/lang/String;L%s;)V", enumClass);
+    snprintf(sig, sizeof(sig), "(Lorg/allseen/lsf/ResponseCode;Ljava/lang/String;L%s;)V", enumClass);
 
     Call_Void_Variadic(env, jdelegate, func, sig, jresponseCode, jstrValue, jenumValue);
 }
@@ -236,7 +237,7 @@ void XJavaDelegator::Call_Void_ResponseCode_String_String(const jweak jdelegate,
         return;
     }
 
-    Call_Void_Variadic(env, jdelegate, func, "(Lorg/alljoyn/lsf/ResponseCode;Ljava/lang/String;Ljava/lang/String;)V", jresponseCode, jstrValue1, jstrValue2);
+    Call_Void_Variadic(env, jdelegate, func, "(Lorg/allseen/lsf/ResponseCode;Ljava/lang/String;Ljava/lang/String;)V", jresponseCode, jstrValue1, jstrValue2);
 }
 #endif //LSF_JNI_XJAVADELEGATOR_H_INCLUDE_TEMPLATE_METHODS
 
@@ -286,7 +287,7 @@ void XJavaDelegator::Call_Void_ResponseCode_String_Object(const jweak jdelegate,
 //    __android_log_print(ANDROID_LOG_DEBUG, QCC_MODULE, "xObj = %s", xobjValue->c_str());
 
     char sig[512];
-    snprintf(sig, sizeof(sig), "(Lorg/alljoyn/lsf/ResponseCode;Ljava/lang/String;L%s;)V", xClass->className);
+    snprintf(sig, sizeof(sig), "(Lorg/allseen/lsf/ResponseCode;Ljava/lang/String;L%s;)V", xClass->className);
 
     Call_Void_Variadic(env, jdelegate, func, sig, jresponseCode, jstrValue, jobjValue);
 }
@@ -297,7 +298,7 @@ void XJavaDelegator::Call_Void_ResponseCode_String_Object(const jweak jdelegate,
 // methods must be defined there. The following #ifndef prevents the
 // non-templated code from being visible there.
 #ifndef LSF_JNI_XJAVADELEGATOR_H_INCLUDE_TEMPLATE_METHODS
-void XJavaDelegator::Call_Void_ResponseCode_String_EnumList(const jweak jdelegate, char const *func, const LSFResponseCode &responseCode, const LSFString &strValue, const jobjectArray &jEnumList, char const *enumClass)
+void XJavaDelegator::Call_Void_ResponseCode_String_UInt32List(const jweak jdelegate, char const *func, const LSFResponseCode &responseCode, const LSFString &strValue, const UInt32List& uint32List)
 {
     // Get the JNIEnv for the current native thread
     JScopedEnv env;
@@ -314,10 +315,7 @@ void XJavaDelegator::Call_Void_ResponseCode_String_EnumList(const jweak jdelegat
         return;
     }
 
-    char sig[512];
-    snprintf(sig, sizeof(sig), "(Lorg/alljoyn/lsf/ResponseCode;Ljava/lang/String;[L%s;)V", enumClass);
-
-    Call_Void_Variadic(env, jdelegate, func, sig, jresponseCode, jstrValue, jEnumList);
+    Call_Void_Variadic(env, jdelegate, func, "(Lorg/allseen/lsf/ResponseCode;Ljava/lang/String;[J;)V", jresponseCode, jstrValue, XLongArray::NewLongArray(uint32List));
 }
 
 void XJavaDelegator::Call_Void_ResponseCode_String_StringList(const jweak jdelegate, char const *func, const LSFResponseCode &responseCode, const LSFString &strValue, const LSFStringList &strList)
@@ -343,7 +341,7 @@ void XJavaDelegator::Call_Void_ResponseCode_String_StringList(const jweak jdeleg
         return;
     }
 
-    Call_Void_Variadic(env, jdelegate, func, "(Lorg/alljoyn/lsf/ResponseCode;Ljava/lang/String;[Ljava/lang/String;)V", jresponseCode, jstrValue, jstrList);
+    Call_Void_Variadic(env, jdelegate, func, "(Lorg/allseen/lsf/ResponseCode;Ljava/lang/String;[Ljava/lang/String;)V", jresponseCode, jstrValue, jstrList);
 }
 
 void XJavaDelegator::Call_Void_ResponseCode_String_String_String(const jweak jdelegate, char const *func, const LSFResponseCode &responseCode, const LSFString &strValue1, const LSFString &strValue2, const LSFString &strValue3)
@@ -375,7 +373,7 @@ void XJavaDelegator::Call_Void_ResponseCode_String_String_String(const jweak jde
         return;
     }
 
-    Call_Void_Variadic(env, jdelegate, func, "(Lorg/alljoyn/lsf/ResponseCode;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V", jresponseCode, jstrValue1, jstrValue2, jstrValue3);
+    Call_Void_Variadic(env, jdelegate, func, "(Lorg/allseen/lsf/ResponseCode;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V", jresponseCode, jstrValue1, jstrValue2, jstrValue3);
 }
 
 void XJavaDelegator::Call_Void_Variadic(JScopedEnv& env, const jweak jdelegate, const char *func, char const * const sig, ...)

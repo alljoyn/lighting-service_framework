@@ -50,16 +50,16 @@ static jmethodID MID_Integer_intValue = NULL;
 static jmethodID MID_Object_equals = NULL;
 static jmethodID MID_BusException_log = NULL;
 
-XClass *XClass::xLampState = new XClass("org/alljoyn/lsf/LampState");
-XClass *XClass::xLampDetails = new XClass("org/alljoyn/lsf/LampDetails");
-XClass *XClass::xLampParameters = new XClass("org/alljoyn/lsf/LampParameters");
-XClass *XClass::xLampGroup = new XClass("org/alljoyn/lsf/LampGroup");
-XClass *XClass::xScene = new XClass("org/alljoyn/lsf/Scene");
-XClass *XClass::xMasterScene = new XClass("org/alljoyn/lsf/MasterScene");
-XClass *XClass::xStateTransitionEffect = new XClass("org/alljoyn/lsf/StateTransitionEffect");
-XClass *XClass::xPresetTransitionEffect = new XClass("org/alljoyn/lsf/PresetTransitionEffect");
-XClass *XClass::xStatePulseEffect = new XClass("org/alljoyn/lsf/StatePulseEffect");
-XClass *XClass::xPresetPulseEffect = new XClass("org/alljoyn/lsf/PresetPulseEffect");
+XClass *XClass::xLampState = new XClass("org/allseen/lsf/LampState");
+XClass *XClass::xLampDetails = new XClass("org/allseen/lsf/LampDetails");
+XClass *XClass::xLampParameters = new XClass("org/allseen/lsf/LampParameters");
+XClass *XClass::xLampGroup = new XClass("org/allseen/lsf/LampGroup");
+XClass *XClass::xScene = new XClass("org/allseen/lsf/Scene");
+XClass *XClass::xMasterScene = new XClass("org/allseen/lsf/MasterScene");
+XClass *XClass::xStateTransitionEffect = new XClass("org/allseen/lsf/StateTransitionEffect");
+XClass *XClass::xPresetTransitionEffect = new XClass("org/allseen/lsf/PresetTransitionEffect");
+XClass *XClass::xStatePulseEffect = new XClass("org/allseen/lsf/StatePulseEffect");
+XClass *XClass::xPresetPulseEffect = new XClass("org/allseen/lsf/PresetPulseEffect");
 
 /**
  * Implement the load hook for the alljoyn_java native library.
@@ -213,7 +213,6 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm,
         //      here with this class loader.
         lsf::JEnum::jControllerClientStatusEnum->getObject(0);
         lsf::JEnum::jErrorCodeEnum->getObject(0);
-        lsf::JEnum::jFaultCodeEnum->getObject(0);
         lsf::JEnum::jResponseCodeEnum->getObject(0);
         lsf::JEnum::jStatusCodeEnum->getObject(0);
 

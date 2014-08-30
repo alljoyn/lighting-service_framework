@@ -26,17 +26,16 @@
 
 namespace lsf {
 
-JEnum* JEnum::jControllerClientStatusEnum = new JEnum("org/alljoyn/lsf/ControllerClientStatus");
-JEnum* JEnum::jErrorCodeEnum = new JEnum("org/alljoyn/lsf/ErrorCode");
-JEnum* JEnum::jFaultCodeEnum = new JEnum("org/alljoyn/lsf/LampFaultCode");
-JEnum* JEnum::jResponseCodeEnum = new JEnum("org/alljoyn/lsf/ResponseCode");
+JEnum* JEnum::jControllerClientStatusEnum = new JEnum("org/allseen/lsf/ControllerClientStatus");
+JEnum* JEnum::jErrorCodeEnum = new JEnum("org/allseen/lsf/ErrorCode");
+JEnum* JEnum::jResponseCodeEnum = new JEnum("org/allseen/lsf/ResponseCode");
 JEnum* JEnum::jStatusCodeEnum = new JEnum("org/alljoyn/bus/Status", "create", "getErrorCode");
 
-JEnum* JEnum::jLampMakeEnum = new JEnum("org/alljoyn/lsf/LampMake");
-JEnum* JEnum::jLampModelEnum = new JEnum("org/alljoyn/lsf/LampModel");
-JEnum* JEnum::jDeviceTypeEnum = new JEnum("org/alljoyn/lsf/DeviceType");
-JEnum* JEnum::jLampTypeEnum = new JEnum("org/alljoyn/lsf/LampType");
-JEnum* JEnum::jBaseTypeEnum = new JEnum("org/alljoyn/lsf/BaseType");
+JEnum* JEnum::jLampMakeEnum = new JEnum("org/allseen/lsf/LampMake");
+JEnum* JEnum::jLampModelEnum = new JEnum("org/allseen/lsf/LampModel");
+JEnum* JEnum::jDeviceTypeEnum = new JEnum("org/allseen/lsf/DeviceType");
+JEnum* JEnum::jLampTypeEnum = new JEnum("org/allseen/lsf/LampType");
+JEnum* JEnum::jBaseTypeEnum = new JEnum("org/allseen/lsf/BaseType");
 
 JEnum::JEnum(char const *className)
 {

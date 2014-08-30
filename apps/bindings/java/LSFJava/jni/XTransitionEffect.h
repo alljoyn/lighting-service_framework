@@ -27,8 +27,8 @@ private:
     XTransitionEffect();
 
 public:
-    template <typename T> static void SetTransitionPeriod(JNIEnv *env, jobject thiz, jint jTransitionPeriod);
-    template <typename T> static jint GetTransitionPeriod(JNIEnv *env, jobject thiz);
+    template <typename T> static void SetTransitionPeriod(JNIEnv *env, jobject thiz, jlong jTransitionPeriod);
+    template <typename T> static jlong GetTransitionPeriod(JNIEnv *env, jobject thiz);
 };
 
 } /* namespace lsf */

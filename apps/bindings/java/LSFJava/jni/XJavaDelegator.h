@@ -50,8 +50,8 @@ class XJavaDelegator {
     template <typename CTYPE, typename XTYPE>
     static void Call_Void_ResponseCode_String_Object(const jweak jdelegate, char const *func, XClass *xClass, const LSFResponseCode &responseCode, const LSFString &strValue, const CTYPE &objValue);
 
-    static void Call_Void_ResponseCode_String_EnumList(const jweak jdelegate, char const *func, const LSFResponseCode &responseCode, const LSFString &strValue, const jobjectArray &enumList, char const *enumClass);
-    static void Call_Void_ResponseCode_String_StringList(const jweak jdelegate, char const *func, const LSFResponseCode &responseCode, const LSFString &strValue, const LSFStringList &strList);
+    static void Call_Void_ResponseCode_String_UInt32List(const jweak jdelegate, char const *func, const LSFResponseCode &responseCode, const LSFString &strValue, const UInt32List& uint32List);
+    static void Call_Void_ResponseCode_String_StringList(const jweak jdelegate, char const *func, const LSFResponseCode &responseCode, const LSFString &strValue, const LSFStringList& strList);
 
     // 4 Args
     static void Call_Void_ResponseCode_String_String_String(const jweak jdelegate, char const *func, const LSFResponseCode &responseCode, const LSFString &strValue1, const LSFString &strValue2, const LSFString &strValue3);

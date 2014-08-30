@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+ * Copyright (c) 2014, AllSeen Alliance. All rights reserved.
+ *
+ *    Permission to use, copy, modify, and/or distribute this software for any
+ *    purpose with or without fee is hereby granted, provided that the above
+ *    copyright notice and this permission notice appear in all copies.
+ *
+ *    THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ *    WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ *    MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ *    ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ *    WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ *    ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+ *    OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ -->
+<project name="apps-custom-rules" default="help">
+    <property environment="env" />
+
+    <condition property="apps.path.alljoyn" value="${env.ALLJOYN_HOME}" else="${target.path.apps}/../../alljoyn/build/android/arm/debug/dist">
+        <isset property="env.ALLJOYN_HOME" />
+    </condition>
+
+    <echo>AllJoyn    : ${apps.path.alljoyn}</echo>
+
+    <path id="apps.classpath">
+        <pathelement location="${apps.path.alljoyn}/java/jar/alljoyn.jar"/>
+        <pathelement location="${apps.path.alljoyn}/about/jar/alljoyn_about.jar"/>
+        <pathelement location="${sdk.dir}/extras/android/support/v4/android-support-v4.jar"/>
+        <pathelement location="${sdk.dir}/extras/android/support/v13/android-support-v13.jar"/>
+    </path>
+
+    <property name="java.compiler.classpath" value="${ant.refid:apps.classpath}" />
+
+    <echo>Classpath  : ${java.compiler.classpath}</echo>
+</project>

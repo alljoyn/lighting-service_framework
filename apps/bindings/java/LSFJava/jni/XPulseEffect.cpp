@@ -30,7 +30,7 @@
 namespace lsf {
 
 template <typename T>
-void XPulseEffect::SetPulsePeriod(JNIEnv *env, jobject thiz, jint jPulsePeriod)
+void XPulseEffect::SetPulsePeriod(JNIEnv *env, jobject thiz, jlong jPulsePeriod)
 {
     T *xDelegate = GetHandle<T*>(thiz);
     if (env->ExceptionCheck() || !xDelegate) {
@@ -38,47 +38,23 @@ void XPulseEffect::SetPulsePeriod(JNIEnv *env, jobject thiz, jint jPulsePeriod)
         return;
     }
 
-    xDelegate->pulsePeriod = (int)jPulsePeriod;
+    xDelegate->pulsePeriod = (uint32_t)jPulsePeriod;
 }
 
 template <typename T>
-jint XPulseEffect::GetPulsePeriod(JNIEnv *env, jobject thiz)
+jlong XPulseEffect::GetPulsePeriod(JNIEnv *env, jobject thiz)
 {
     T *xDelegate = GetHandle<T*>(thiz);
     if (env->ExceptionCheck() || !xDelegate) {
         QCC_LogError(ER_FAIL, ("GetHandle() failed"));
-        return (jint)0;
+        return (jlong)0;
     }
 
-    return (jint)xDelegate->pulsePeriod;
+    return (jlong)xDelegate->pulsePeriod;
 }
 
 template <typename T>
-void XPulseEffect::SetPulseDuration(JNIEnv *env, jobject thiz, jint jPulseDuration)
-{
-    T *xDelegate = GetHandle<T*>(thiz);
-    if (env->ExceptionCheck() || !xDelegate) {
-        QCC_LogError(ER_FAIL, ("GetHandle() failed"));
-        return;
-    }
-
-    xDelegate->pulseDuration = (int)jPulseDuration;
-}
-
-template <typename T>
-jint XPulseEffect::GetPulseDuration(JNIEnv *env, jobject thiz)
-{
-    T *xDelegate = GetHandle<T*>(thiz);
-    if (env->ExceptionCheck() || !xDelegate) {
-        QCC_LogError(ER_FAIL, ("GetHandle() failed"));
-        return (jint)0;
-    }
-
-    return (jint)xDelegate->pulseDuration;
-}
-
-template <typename T>
-void XPulseEffect::SetPulseCount(JNIEnv *env, jobject thiz, jint jPulseCount)
+void XPulseEffect::SetPulseDuration(JNIEnv *env, jobject thiz, jlong jPulseDuration)
 {
     T *xDelegate = GetHandle<T*>(thiz);
     if (env->ExceptionCheck() || !xDelegate) {
@@ -86,19 +62,43 @@ void XPulseEffect::SetPulseCount(JNIEnv *env, jobject thiz, jint jPulseCount)
         return;
     }
 
-    xDelegate->numPulses = (int)jPulseCount;
+    xDelegate->pulseDuration = (uint32_t)jPulseDuration;
 }
 
 template <typename T>
-jint XPulseEffect::GetPulseCount(JNIEnv *env, jobject thiz)
+jlong XPulseEffect::GetPulseDuration(JNIEnv *env, jobject thiz)
 {
     T *xDelegate = GetHandle<T*>(thiz);
     if (env->ExceptionCheck() || !xDelegate) {
         QCC_LogError(ER_FAIL, ("GetHandle() failed"));
-        return (jint)0;
+        return (jlong)0;
     }
 
-    return (jint)xDelegate->numPulses;
+    return (jlong)xDelegate->pulseDuration;
+}
+
+template <typename T>
+void XPulseEffect::SetPulseCount(JNIEnv *env, jobject thiz, jlong jPulseCount)
+{
+    T *xDelegate = GetHandle<T*>(thiz);
+    if (env->ExceptionCheck() || !xDelegate) {
+        QCC_LogError(ER_FAIL, ("GetHandle() failed"));
+        return;
+    }
+
+    xDelegate->numPulses = (uint32_t)jPulseCount;
+}
+
+template <typename T>
+jlong XPulseEffect::GetPulseCount(JNIEnv *env, jobject thiz)
+{
+    T *xDelegate = GetHandle<T*>(thiz);
+    if (env->ExceptionCheck() || !xDelegate) {
+        QCC_LogError(ER_FAIL, ("GetHandle() failed"));
+        return (jlong)0;
+    }
+
+    return (jlong)xDelegate->numPulses;
 }
 
 } /* namespace lsf */

@@ -187,7 +187,7 @@ void JLampManagerCallback::TransitionLampStateColorTempFieldReplyCB(const LSFRes
 
 void JLampManagerCallback::GetLampFaultsReplyCB(const LSFResponseCode& responseCode, const LSFString& lampID, const LampFaultCodeList& faultCodes)
 {
-    XJavaDelegator::Call_Void_ResponseCode_String_EnumList(jdelegate, __func__, responseCode, lampID, JEnumArray::NewEnumArray(*JEnum::jFaultCodeEnum, faultCodes), "org/alljoyn/lsf/LampFaultCode");
+    XJavaDelegator::Call_Void_ResponseCode_String_UInt32List(jdelegate, __func__, responseCode, lampID, faultCodes);
 }
 
 void JLampManagerCallback::GetLampServiceVersionReplyCB(const LSFResponseCode& responseCode, const LSFString& lampID, const uint32_t& lampServiceVersion)
@@ -197,7 +197,7 @@ void JLampManagerCallback::GetLampServiceVersionReplyCB(const LSFResponseCode& r
 
 void JLampManagerCallback::ClearLampFaultReplyCB(const LSFResponseCode& responseCode, const LSFString& lampID, const LampFaultCode& faultCode)
 {
-    XJavaDelegator::Call_Void_ResponseCode_String_Enum(jdelegate, __func__, responseCode, lampID, JEnum::jFaultCodeEnum, faultCode, "org/alljoyn/lsf/LampFaultCode");
+    XJavaDelegator::Call_Void_ResponseCode_String_UInt32(jdelegate, __func__, responseCode, lampID, faultCode);
 }
 
 void JLampManagerCallback::ResetLampStateOnOffFieldReplyCB(const LSFResponseCode& responseCode, const LSFString& lampID)

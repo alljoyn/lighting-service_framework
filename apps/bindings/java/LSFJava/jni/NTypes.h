@@ -40,7 +40,7 @@ typedef LSFString LampGroupName;
 //typedef LSFString ServiceName;
 //typedef LSFString LanguageCode;
 
-typedef std::list<LampFaultCode> LampFaultCodeList;
+typedef std::list<uint32_t> UInt32List;
 typedef std::list<uint32_t> EnumList;
 }
 

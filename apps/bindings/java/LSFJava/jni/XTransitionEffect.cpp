@@ -30,7 +30,7 @@
 namespace lsf {
 
 template <typename T>
-void XTransitionEffect::SetTransitionPeriod(JNIEnv *env, jobject thiz, jint jTransitionPeriod)
+void XTransitionEffect::SetTransitionPeriod(JNIEnv *env, jobject thiz, jlong jTransitionPeriod)
 {
     T *xDelegate = GetHandle<T*>(thiz);
     if (env->ExceptionCheck() || !xDelegate) {
@@ -38,11 +38,11 @@ void XTransitionEffect::SetTransitionPeriod(JNIEnv *env, jobject thiz, jint jTra
         return;
     }
 
-    xDelegate->transitionPeriod = (int)jTransitionPeriod;
+    xDelegate->transitionPeriod = (uint32_t)jTransitionPeriod;
 }
 
 template <typename T>
-jint XTransitionEffect::GetTransitionPeriod(JNIEnv *env, jobject thiz)
+jlong XTransitionEffect::GetTransitionPeriod(JNIEnv *env, jobject thiz)
 {
     T *xDelegate = GetHandle<T*>(thiz);
     if (env->ExceptionCheck() || !xDelegate) {
@@ -50,7 +50,7 @@ jint XTransitionEffect::GetTransitionPeriod(JNIEnv *env, jobject thiz)
         return (jint)0;
     }
 
-    return (jint)xDelegate->transitionPeriod;
+    return (jlong)xDelegate->transitionPeriod;
 }
 
 } /* namespace lsf */

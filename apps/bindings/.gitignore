@@ -6,6 +6,8 @@ doc
 libs
 .metadata
 lint.xml
+!.project
+!.cproject
 
 # https://github.com/github/gitignore/blob/master/Objective-C.gitignore
 .DS_Store
