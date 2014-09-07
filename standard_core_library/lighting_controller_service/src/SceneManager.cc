@@ -821,6 +821,7 @@ LSFResponseCode SceneManager::ApplySceneInternal(ajn::Message message, LSFString
         }
 
         if (invokeChangeState) {
+            QCC_DbgTrace(("SceneManager::ApplySceneInternal: Calling LampGroupManager::ChangeLampGroupStateAndField()"));
             LSFResponseCode tempResponseCode = lampGroupManager.ChangeLampGroupStateAndField(message, transitionToStateComponent, transitionToPresetComponent, pulseWithStateComponent, pulseWithPresetComponent, false, sceneOrMasterSceneId);
             if (tempResponseCode != LSF_OK) {
                 responseCode = LSF_ERR_FAILURE;

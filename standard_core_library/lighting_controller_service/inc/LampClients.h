@@ -404,17 +404,21 @@ class LampClients : public Manager, public ajn::BusAttachment::JoinSessionAsyncC
 
     struct QueuedMethodCallContext {
         QueuedMethodCallContext(LSFString lampId, QueuedMethodCall* qCallPtr) :
-            lampID(lampId), queuedCallPtr(qCallPtr) { }
+            lampID(lampId), queuedCallPtr(qCallPtr), timeSent(0) { }
 
         LSFString lampID;
         QueuedMethodCall* queuedCallPtr;
+        std::string method;
+        uint64_t timeSent;
     };
 
     void SendMethodReply(LSFResponseCode responseCode, ajn::Message msg, std::list<ajn::MsgArg>& stdArgs, std::list<ajn::MsgArg>& custArgs);
 
-    LSFResponseCode DoMethodCallAsync(QueuedMethodCall* call);
+    LSFResponseCode DoMethodCallAsync(QueuedMethodCall* call, bool recordInPendingCallList = false);
 
-    void QueueLampMethod(QueuedMethodCall* queuedCall);
+    void QueueGetLampMethod(QueuedMethodCall* queuedCall);
+
+    void QueueSetLampMethod(QueuedMethodCall* queuedCall);
 
     void HandleReplyWithLampResponseCode(ajn::Message& msg, void* context);
     void HandleGetReply(ajn::Message& msg, void* context);
@@ -438,8 +442,7 @@ class LampClients : public Manager, public ajn::BusAttachment::JoinSessionAsyncC
         LSFString name;
         uint16_t port;
         ajn::SessionId sessionID;
-        uint8_t methodCallPendingCount;
-        bool reportAvailableForGetAllLampIDs;
+        bool methodCallPending;
     };
 
     typedef std::map<LSFString, LampConnection*> LampMap;
@@ -459,8 +462,27 @@ class LampClients : public Manager, public ajn::BusAttachment::JoinSessionAsyncC
 
     LSFKeyListener keyListener;
 
-    Mutex queueLock;
-    std::list<QueuedMethodCall*> methodQueue;
+    Mutex getQueueLock;
+    std::list<QueuedMethodCall*> getMethodQueue;
+
+    Mutex setQueueLock;
+    std::list<QueuedMethodCall*> setMethodQueue;
+
+    typedef struct _MethodCallDetail {
+        LSFString interface;
+        LSFString method;
+        uint8_t numArgs;
+        LSFString arg1;
+        LSFString arg2;
+    } MethodCallDetail;
+
+    typedef std::map<LSFString, std::pair<MethodCallDetail, std::list<ajn::Message> > > PendingCallMap;
+
+    Mutex pendingCallListLock;
+    PendingCallMap pendingCallList;
+
+    bool CheckAndAddToPendingCallList(LSFString lampID, MethodCallDetail detail, ajn::Message& inMsg);
+
     volatile sig_atomic_t isRunning;
 
     bool lampStateChangedSignalHandlerRegistered;
@@ -476,8 +498,10 @@ class LampClients : public Manager, public ajn::BusAttachment::JoinSessionAsyncC
     LSFStringList lostLamps;
     Mutex lostLampsLock;
 
-    typedef std::map<LSFString, uint8_t> MethodRepliesCountMap;
-    MethodRepliesCountMap methodRepliesReceived;
+    LSFStringList methodCallsFailed;
+    Mutex methodCallsFailedLock;
+
+    LSFStringList methodRepliesReceived;
     Mutex methodRepliesReceivedLock;
 
     Mutex sentNGNSPingsLock;

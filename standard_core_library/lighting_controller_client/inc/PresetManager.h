@@ -56,6 +56,7 @@ class PresetManagerCallback {
      *
      * @param responseCode    The return code
      * @param presetID    The id of the Preset
+     * @param language
      * @param presetName  The name of the Preset
      */
     virtual void GetPresetNameReplyCB(const LSFResponseCode& responseCode, const LSFString& presetID, const LSFString& language, const LSFString& presetName) { }
@@ -124,7 +125,7 @@ class PresetManagerCallback {
      *  Indicates that a reply has been received for the GetDefaultLampState method call
      *
      *  @param responseCode    The response code
-     *  @param state           The default LampState
+     *  @param defaultLampState   The default LampState
      */
     virtual void GetDefaultLampStateReplyCB(const LSFResponseCode& responseCode, const LampState& defaultLampState) { }
 
@@ -149,7 +150,9 @@ class PresetManager : public Manager {
     friend class ControllerClient;
 
   public:
-
+    /**
+     * class constructor
+     */
     PresetManager(ControllerClient& controller, PresetManagerCallback& callback);
 
     /**
@@ -188,6 +191,8 @@ class PresetManager : public Manager {
      * Response in PresetManagerCallback::CreatePresetReplyCB
      *
      * @param preset The new state information
+     * @param presetName
+     * @param language
      */
     ControllerClientStatus CreatePreset(const LampState& preset, const LSFString& presetName, const LSFString& language = LSFString("en"));
 

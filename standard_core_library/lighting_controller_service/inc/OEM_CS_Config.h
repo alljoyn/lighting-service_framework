@@ -33,7 +33,7 @@ namespace lsf {
 /*
  * Maximum number of outstanding requests
  */
-#define MAX_LAMP_CLIENTS_METHOD_QUEUE_SIZE 200
+#define MAX_LAMP_CLIENTS_METHOD_QUEUE_SIZE 100
 
 /*
  * Timeout for NGNS Pings

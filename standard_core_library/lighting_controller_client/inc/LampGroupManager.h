@@ -566,64 +566,47 @@ class LampGroupManager : public Manager {
     /**
      * Handler for the signal LampGroupsNameChanged
      */
-    void LampGroupsNameChanged(LSFStringList& idList) {
-        callback.LampGroupsNameChangedCB(idList);
-    }
+    void LampGroupsNameChanged(LSFStringList& idList);
 
     /**
      * Handler for the signal LampGroupsCreated
      */
-    void LampGroupsCreated(LSFStringList& idList) {
-        callback.LampGroupsCreatedCB(idList);
-    }
+    void LampGroupsCreated(LSFStringList& idList);
 
     /**
      * Handler for the signal LampGroupsDeleted
      */
-    void LampGroupsDeleted(LSFStringList& idList) {
-        callback.LampGroupsDeletedCB(idList);
-    }
+    void LampGroupsDeleted(LSFStringList& idList);
 
     /**
      * Handler for the signal LampGroupsUpdated
      */
-    void LampGroupsUpdated(LSFStringList& idList) {
-        callback.LampGroupsUpdatedCB(idList);
-    }
+    void LampGroupsUpdated(LSFStringList& idList);
+
     /**
      * Method Reply Handler for the signal GetAllLampGroupIDs
      */
-    void GetAllLampGroupIDsReply(LSFResponseCode& responseCode, LSFStringList& idList) {
-        callback.GetAllLampGroupIDsReplyCB(responseCode, idList);
-    }
+    void GetAllLampGroupIDsReply(LSFResponseCode& responseCode, LSFStringList& idList);
 
     /**
      * Method Reply Handler for the signal GetLampGroupName
      */
-    void GetLampGroupNameReply(LSFResponseCode& responseCode, LSFString& lsfId, LSFString& language, LSFString& lsfName) {
-        callback.GetLampGroupNameReplyCB(responseCode, lsfId, language, lsfName);
-    }
+    void GetLampGroupNameReply(LSFResponseCode& responseCode, LSFString& lsfId, LSFString& language, LSFString& lsfName);
 
     /**
      * Method Reply Handler for the signal SetLampGroupName
      */
-    void SetLampGroupNameReply(LSFResponseCode& responseCode, LSFString& lsfId, LSFString& language) {
-        callback.SetLampGroupNameReplyCB(responseCode, lsfId, language);
-    }
+    void SetLampGroupNameReply(LSFResponseCode& responseCode, LSFString& lsfId, LSFString& language);
 
     /**
      * Method Reply Handler for the signal CreateLampGroup
      */
-    void CreateLampGroupReply(LSFResponseCode& responseCode, LSFString& lsfId) {
-        callback.CreateLampGroupReplyCB(responseCode, lsfId);
-    }
+    void CreateLampGroupReply(LSFResponseCode& responseCode, LSFString& lsfId);
 
     /**
      * Method Reply Handler for the signal UpdateLampGroup
      */
-    void UpdateLampGroupReply(LSFResponseCode& responseCode, LSFString& lsfId) {
-        callback.UpdateLampGroupReplyCB(responseCode, lsfId);
-    }
+    void UpdateLampGroupReply(LSFResponseCode& responseCode, LSFString& lsfId);
 
     /**
      * Method Reply Handler for the signal GetLampGroup
@@ -633,9 +616,7 @@ class LampGroupManager : public Manager {
     /**
      * Method Reply Handler for the signal DeleteLampGroup
      */
-    void DeleteLampGroupReply(LSFResponseCode& responseCode, LSFString& lsfId) {
-        callback.DeleteLampGroupReplyCB(responseCode, lsfId);
-    }
+    void DeleteLampGroupReply(LSFResponseCode& responseCode, LSFString& lsfId);
 
     /**
      * Method Reply Handler for the signal ResetLampGroupStateField
@@ -645,24 +626,16 @@ class LampGroupManager : public Manager {
     /**
      * Method Reply Handler for the signal ResetLampGroupState
      */
-    void ResetLampGroupStateReply(LSFResponseCode& responseCode, LSFString& lsfId) {
-        callback.ResetLampGroupStateReplyCB(responseCode, lsfId);
-    }
+    void ResetLampGroupStateReply(LSFResponseCode& responseCode, LSFString& lsfId);
 
     /**
      * Method Reply Handler for the signal TransitionLampGroupState
      */
-    void TransitionLampGroupStateReply(LSFResponseCode& responseCode, LSFString& lsfId) {
-        callback.TransitionLampGroupStateReplyCB(responseCode, lsfId);
-    }
+    void TransitionLampGroupStateReply(LSFResponseCode& responseCode, LSFString& lsfId);
 
-    void PulseLampGroupWithStateReply(LSFResponseCode& responseCode, LSFString& lsfId) {
-        callback.PulseLampGroupWithStateReplyCB(responseCode, lsfId);
-    }
+    void PulseLampGroupWithStateReply(LSFResponseCode& responseCode, LSFString& lsfId);
 
-    void PulseLampGroupWithPresetReply(LSFResponseCode& responseCode, LSFString& lsfId) {
-        callback.PulseLampGroupWithPresetReplyCB(responseCode, lsfId);
-    }
+    void PulseLampGroupWithPresetReply(LSFResponseCode& responseCode, LSFString& lsfId);
 
     /**
      * Method Reply Handler for the signal TransitionLampGroupStateField
@@ -672,9 +645,7 @@ class LampGroupManager : public Manager {
     /**
      * Method Reply Handler for the signal TransitionLampGroupStateToPreset
      */
-    void TransitionLampGroupStateToPresetReply(LSFResponseCode& responseCode, LSFString& lsfId) {
-        callback.TransitionLampGroupStateToPresetReplyCB(responseCode, lsfId);
-    }
+    void TransitionLampGroupStateToPresetReply(LSFResponseCode& responseCode, LSFString& lsfId);
 
     /**
      * Callback used to send Lamp Group specific signals and method replies

@@ -37,7 +37,8 @@ typedef uint32_t LampFaultCode;
 typedef enum {
     MAKE_INVALID,
     MAKE_LIFX,
-    MAKE_OEM1
+    MAKE_OEM1,
+    MAKE_LASTVALUE
 } LampMake;
 
 /**
@@ -45,7 +46,8 @@ typedef enum {
  */
 typedef enum {
     MODEL_INVALID,
-    MODEL_LED
+    MODEL_LED,
+    MODEL_LASTVALUE
 } LampModel;
 
 /**
@@ -56,7 +58,8 @@ typedef enum {
     TYPE_LAMP,
     TYPE_OUTLET,
     TYPE_LUMINAIRE,
-    TYPE_SWITCH
+    TYPE_SWITCH,
+    TYPE_LASTVALUE
 } DeviceType;
 
 /**
@@ -155,6 +158,7 @@ typedef enum {
     LAMPTYPE_S11,
     LAMPTYPE_S14,
     LAMPTYPE_ST18,
+    LAMPTYPE_LASTVALUE
 } LampType;
 
 /**
@@ -171,7 +175,8 @@ typedef enum {
     BASETYPE_E26,
     BASETYPE_E27,
     BASETYPE_E29,
-    BASETYPE_E39
+    BASETYPE_E39,
+    BASETYPE_LASTVALUE
 } BaseType;
 
 /**
