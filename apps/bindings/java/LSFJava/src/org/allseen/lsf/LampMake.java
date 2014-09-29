@@ -17,7 +17,10 @@
 package org.allseen.lsf;
 
 public enum LampMake {
-    LIFX;
+    INVALID,
+    LIFX,
+    OEM1,
+    LASTVALUE;
 
     /** Static lookup, used by the native code */
     @SuppressWarnings("unused")

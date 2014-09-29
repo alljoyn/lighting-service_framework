@@ -65,6 +65,35 @@ void LSFLampManagerCallback::LampsNameChangedCB(const LSFStringList& lampIDs)
     [_lmDelegate lampsNameChanged: lampIDsArray];
 }
 
+void LSFLampManagerCallback::LampsFoundCB(const LSFStringList& lampIDs)
+{
+    NSMutableArray *lampIDsArray = [[NSMutableArray alloc] init];
+
+    for (std::list<LSFString>::const_iterator iter = lampIDs.begin(); iter != lampIDs.end(); ++iter)
+    {
+        [lampIDsArray addObject: [NSString stringWithUTF8String: (*iter).c_str()]];
+    }
+
+    [_lmDelegate lampsFound: lampIDsArray];
+}
+
+void LSFLampManagerCallback::LampsLostCB(const LSFStringList& lampIDs)
+{
+    NSMutableArray *lampIDsArray = [[NSMutableArray alloc] init];
+
+    for (std::list<LSFString>::const_iterator iter = lampIDs.begin(); iter != lampIDs.end(); ++iter)
+    {
+        [lampIDsArray addObject: [NSString stringWithUTF8String: (*iter).c_str()]];
+    }
+
+    [_lmDelegate lampsLost: lampIDsArray];
+}
+
+//void LSFLampManagerCallback::PingLampReplyCB(const LSFResponseCode& responseCode, const LSFString& lampID)
+//{
+//    [_lmDelegate pingLampReplyWithCode: responseCode andLampID: [NSString stringWithUTF8String: lampID.c_str()]];
+//}
+
 void LSFLampManagerCallback::GetLampDetailsReplyCB(const LSFResponseCode& responseCode, const LSFString& lampID, const LampDetails& lampDetails)
 {
     LSFLampDetails *details = [[LSFLampDetails alloc] init];

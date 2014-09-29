@@ -223,7 +223,7 @@ public class SampleMasterSceneManagerCallback extends MasterSceneManagerCallback
                 MasterSceneDataModel masterSceneModel = activity.masterSceneModels.get(masterSceneID);
 
                 if (masterSceneModel != null) {
-                    masterSceneModel.name = masterSceneName;
+                    masterSceneModel.setName(masterSceneName);
                 }
             }
         });
@@ -239,12 +239,18 @@ public class SampleMasterSceneManagerCallback extends MasterSceneManagerCallback
                 Fragment pageFragment = fragmentManager.findFragmentByTag(ScenesPageFragment.TAG);
                 FragmentManager childManager = pageFragment != null ? pageFragment.getChildFragmentManager() : null;
                 ScenesTableFragment tableFragment = childManager != null ? (ScenesTableFragment)childManager.findFragmentByTag(PageFrameParentFragment.CHILD_TAG_TABLE) : null;
+                MasterSceneInfoFragment infoFragment = childManager != null ? (MasterSceneInfoFragment)childManager.findFragmentByTag(PageFrameParentFragment.CHILD_TAG_INFO) : null;
 
                 for (String masterSceneID : masterSceneIDs) {
+                    String name = activity.masterSceneModels.get(masterSceneID).getName();
                     activity.masterSceneModels.remove(masterSceneID);
 
                     if (tableFragment != null) {
                         tableFragment.removeElement(masterSceneID);
+                    }
+
+                    if ((infoFragment != null) && (infoFragment.key.equals(masterSceneID))) {
+                        activity.createLostConnectionErrorDialog(name);
                     }
                 }
             }

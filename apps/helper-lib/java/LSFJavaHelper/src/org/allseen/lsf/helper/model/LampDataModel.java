@@ -19,6 +19,8 @@ import org.allseen.lsf.LampDetails;
 import org.allseen.lsf.LampParameters;
 
 public class LampDataModel extends ColorItemDataModel {
+    public static final char TAG_PREFIX_LAMP = 'L';
+
     public static String defaultName = "<Loading lamp info...>";
 
     private LampDetails details;
@@ -30,7 +32,7 @@ public class LampDataModel extends ColorItemDataModel {
     }
 
     public LampDataModel(String lampID, String lampName) {
-        super(lampID, lampName != null ? lampName : defaultName);
+        super(lampID, TAG_PREFIX_LAMP, lampName != null ? lampName : defaultName);
 
         details = new LampDetails();
         parameters = new LampParameters();

@@ -53,9 +53,11 @@ public abstract class EnterNameFragment extends PageFrameChildFragment {
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        ((SampleAppActivity)getActivity()).updateActionBar(getTitleID(), false, false, true, false);
+        ((SampleAppActivity)getActivity()).updateActionBar(getTitleID(), false, false, true, false, true);
 
-        nameWatcher.doValidation();
+        if (nameWatcher != null) {
+            nameWatcher.doValidation();
+        }
     }
 
     public void updateEnterNameFields() {

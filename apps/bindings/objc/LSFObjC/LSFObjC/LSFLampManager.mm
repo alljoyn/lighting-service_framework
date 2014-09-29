@@ -93,6 +93,12 @@
     return self.lampManager->GetLampDetails(lid);
 }
 
+//-(ControllerClientStatus)pingLampWithID: (NSString *)lampID
+//{
+//    std::string lid([lampID UTF8String]);
+//    return self.lampManager->PingLamp(lid);
+//}
+
 -(ControllerClientStatus)getLampParametersForID: (NSString *)lampID
 {
     std::string lid([lampID UTF8String]);

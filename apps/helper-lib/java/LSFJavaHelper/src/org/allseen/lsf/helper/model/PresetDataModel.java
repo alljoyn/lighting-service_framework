@@ -16,6 +16,8 @@
 package org.allseen.lsf.helper.model;
 
 public class PresetDataModel extends ColorItemDataModel {
+    public static final char TAG_PREFIX_PRESET = 'P';
+
     public static String defaultName = "<Loading preset info...>";
 
     public PresetDataModel() {
@@ -27,6 +29,6 @@ public class PresetDataModel extends ColorItemDataModel {
     }
 
     public PresetDataModel(String presetID, String presetName) {
-        super(presetID, presetName != null ? presetName : defaultName);
+        super(presetID, TAG_PREFIX_PRESET, presetName != null ? presetName : defaultName);
     }
 }

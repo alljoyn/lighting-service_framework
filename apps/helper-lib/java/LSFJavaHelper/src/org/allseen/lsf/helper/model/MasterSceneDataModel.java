@@ -18,6 +18,8 @@ package org.allseen.lsf.helper.model;
 import org.allseen.lsf.MasterScene;
 
 public class MasterSceneDataModel extends LightingItemDataModel {
+    public static final char TAG_PREFIX_MASTER_SCENE = 'M';
+
     public static String defaultName = "<Loading master scene info...>";
 
     public MasterScene masterScene;
@@ -31,7 +33,7 @@ public class MasterSceneDataModel extends LightingItemDataModel {
     }
 
     public MasterSceneDataModel(String masterSceneID, String masterSceneName) {
-        super(masterSceneID, masterSceneName != null ? masterSceneName : defaultName);
+        super(masterSceneID, TAG_PREFIX_MASTER_SCENE, masterSceneName != null ? masterSceneName : defaultName);
 
         masterScene = new MasterScene();
     }

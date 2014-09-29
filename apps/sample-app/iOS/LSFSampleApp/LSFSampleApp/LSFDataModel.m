@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--  
+/******************************************************************************
  * Copyright (c) 2014, AllSeen Alliance. All rights reserved.
  *
  *    Permission to use, copy, modify, and/or distribute this software for any
@@ -13,11 +12,26 @@
  *    WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
  *    ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  *    OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
- -->
-<selector xmlns:android="http://schemas.android.com/apk/res/android">
+ ******************************************************************************/
 
-    <item android:drawable="@drawable/power_slider_disabled_icon" android:state_enabled="false"/>
-    <item android:drawable="@drawable/power_slider_pressed_icon" android:state_pressed="true"/>
-    <item android:drawable="@drawable/power_slider_normal_icon"/>
+#import "LSFDataModel.h"
 
-</selector>
+@implementation LSFDataModel
+
+@synthesize state = _state;
+@synthesize capability = _capability;
+
+-(id)initWithID: (NSString *)theID andName: (NSString *)name
+{
+    self = [super initWithID: theID andName: name];
+
+    if (self)
+    {
+        self.state = [[LSFLampState alloc] initWithOnOff: NO brightness: 0 hue: 0 saturation: 0 colorTemp: 2700];
+        self.capability = [[LSFCapabilityData alloc] init];
+    }
+
+    return self;
+}
+
+@end

@@ -21,12 +21,12 @@ namespace lsf {
 
 JLampGroup::JLampGroup(jobject jobj)
 {
-    // TODO Auto-generated constructor stub
+    // Currently nothing to do
 }
 
 JLampGroup::~JLampGroup()
 {
-    // TODO Auto-generated destructor stub
+    // Currently nothing to do
 }
 
 JLampGroup& JLampGroup::operator=(const LampGroup& other)

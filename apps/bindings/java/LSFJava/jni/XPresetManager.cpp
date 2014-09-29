@@ -19,12 +19,14 @@
 
 namespace lsf {
 
-XPresetManager::XPresetManager(jobject jobj, JControllerClient &xControllerClient, XPresetManagerCallback &xPresetManagerCallback) : PresetManager(xControllerClient, xPresetManagerCallback) {
-    // TODO Auto-generated constructor stub
+XPresetManager::XPresetManager(jobject jobj, JControllerClient &xControllerClient, XPresetManagerCallback &xPresetManagerCallback) : PresetManager(xControllerClient, xPresetManagerCallback)
+{
+    // Currently nothing to do
 }
 
-XPresetManager::~XPresetManager() {
-    // TODO Auto-generated destructor stub
+XPresetManager::~XPresetManager()
+{
+    // Currently nothing to do
 }
 
 } /* namespace lsf */

@@ -29,10 +29,15 @@ import android.widget.TableRow;
 import android.widget.TextView;
 
 public class BasicSceneInfoFragment extends PageFrameChildFragment implements View.OnClickListener {
+
+    protected BasicSceneDataModel getBasicSceneDataModel() {
+        return ((SampleAppActivity) getActivity()).pendingBasicSceneModel;
+    }
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         SampleAppActivity activity = (SampleAppActivity) getActivity();
-        BasicSceneDataModel basicSceneModel = activity.basicSceneModels.get(key);
+        BasicSceneDataModel basicSceneModel = getBasicSceneDataModel();
 
         view = inflater.inflate(R.layout.fragment_basic_scene_info, container, false);
         View statusView = view.findViewById(R.id.infoStatusRow);
@@ -56,17 +61,32 @@ public class BasicSceneInfoFragment extends PageFrameChildFragment implements Vi
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        ((SampleAppActivity)getActivity()).updateActionBar(R.string.title_basic_scene_info, false, true, false, false);
+        ((SampleAppActivity)getActivity()).updateActionBar(R.string.title_basic_scene_info, false, true, false, true, true);
     }
 
     @Override
     public void onActionAdd() {
         SampleAppActivity activity = (SampleAppActivity)getActivity();
-        activity.pendingBasicSceneModel = activity.basicSceneModels.get(key);
         activity.pendingBasicSceneElementMembers = new LampGroup();
         activity.pendingBasicSceneElementCapability = new CapabilityData(true, true, true);
+        activity.pendingNoEffectModel = null;
+        activity.pendingTransitionEffectModel = null;
+        activity.pendingPulseEffectModel = null;
 
         ((PageMainContainerFragment)parent).showSelectMembersChildFragment();
+    }
+
+    @Override
+    public void onActionDone() {
+        SampleAppActivity activity = (SampleAppActivity)getActivity();
+
+        if (activity.pendingBasicSceneModel.id != null && !activity.pendingBasicSceneModel.id.isEmpty()) {
+            AllJoynManager.sceneManager.updateScene(activity.pendingBasicSceneModel.id, activity.pendingBasicSceneModel.toScene());
+        } else {
+            AllJoynManager.sceneManager.createScene(activity.pendingBasicSceneModel.toScene(), activity.pendingBasicSceneModel.getName(), SampleAppActivity.LANGUAGE);
+        }
+
+        parent.clearBackStack();
     }
 
     @Override
@@ -84,16 +104,14 @@ public class BasicSceneInfoFragment extends PageFrameChildFragment implements Vi
 
     protected void onHeaderClick() {
         SampleAppActivity activity = (SampleAppActivity)getActivity();
-        BasicSceneDataModel sceneModel = activity.basicSceneModels.get(key);
+        BasicSceneDataModel sceneModel = getBasicSceneDataModel();
 
         activity.showItemNameDialog(R.string.title_basic_scene_rename, new UpdateBasicSceneNameAdapter(sceneModel, (SampleAppActivity) getActivity()));
     }
 
     protected void onElementTextClick(String elementID) {
         SampleAppActivity activity = (SampleAppActivity)getActivity();
-        BasicSceneDataModel basicSceneModel = activity.basicSceneModels.get(key);
-
-        activity.pendingBasicSceneModel = new BasicSceneDataModel(basicSceneModel);
+        BasicSceneDataModel basicSceneModel = activity.pendingBasicSceneModel;
 
         if (basicSceneModel.noEffects != null) {
             for (NoEffectDataModel elementModel : basicSceneModel.noEffects) {
@@ -147,12 +165,12 @@ public class BasicSceneInfoFragment extends PageFrameChildFragment implements Vi
 
     public void updateInfoFields() {
         SampleAppActivity activity = (SampleAppActivity)getActivity();
-        updateInfoFields(activity, activity.basicSceneModels.get(key));
+        updateInfoFields(activity, getBasicSceneDataModel());
     }
 
     public void updateInfoFields(SampleAppActivity activity, BasicSceneDataModel basicSceneModel) {
         // Update name and members
-        setTextViewValue(view, R.id.statusTextName, basicSceneModel.name, 0);
+        setTextViewValue(view, R.id.statusTextName, basicSceneModel.getName(), 0);
 
         // Displays list of effects in this scene
         TableLayout elementsTable = (TableLayout) view.findViewById(R.id.sceneInfoElementTable);

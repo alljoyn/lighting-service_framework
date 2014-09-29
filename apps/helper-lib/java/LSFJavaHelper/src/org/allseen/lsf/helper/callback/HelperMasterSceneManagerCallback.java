@@ -193,7 +193,7 @@ public class HelperMasterSceneManagerCallback extends MasterSceneManagerCallback
                 MasterSceneDataModel masterSceneModel = director.getMasterSceneCollectionManager().getModel(masterSceneID);
 
                 if (masterSceneModel != null) {
-                    masterSceneModel.name = masterSceneName;
+                    masterSceneModel.setName(masterSceneName);
                 }
             }
         });

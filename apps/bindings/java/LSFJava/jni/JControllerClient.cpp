@@ -20,12 +20,14 @@
 namespace lsf {
 
 JControllerClient::JControllerClient(jobject jobj, ajn::BusAttachment& bus, ControllerClientCallback& controllerCB) :
-    ControllerClient(bus, controllerCB) {
-    // TODO Auto-generated constructor stub
+    ControllerClient(bus, controllerCB)
+{
+    // Currently nothing to do
 }
 
-JControllerClient::~JControllerClient() {
-    // TODO Auto-generated destructor stub
+JControllerClient::~JControllerClient()
+{
+    // Currently nothing to do
 }
 
 } /* namespace lsf */

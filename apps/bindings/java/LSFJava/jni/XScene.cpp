@@ -19,12 +19,14 @@
 
 namespace lsf {
 
-XScene::XScene(jobject jobj) {
-    // TODO Auto-generated constructor stub
+XScene::XScene(jobject jobj)
+{
+    // Currently nothing to do
 }
 
-XScene::~XScene() {
-    // TODO Auto-generated destructor stub
+XScene::~XScene()
+{
+    // Currently nothing to do
 }
 
 XScene& XScene::operator=(const Scene& other)

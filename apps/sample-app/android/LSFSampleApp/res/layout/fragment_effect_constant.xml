@@ -27,7 +27,12 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:paddingBottom="@dimen/margin_v"
-        android:stretchColumns="0" >
+        android:stretchColumns="0"
+        android:shrinkColumns="0" >
+
+        <include
+            android:id="@+id/infoHelpRow"
+            layout="@layout/view_help_row" />
 
         <include
             android:id="@+id/infoStatusRow"

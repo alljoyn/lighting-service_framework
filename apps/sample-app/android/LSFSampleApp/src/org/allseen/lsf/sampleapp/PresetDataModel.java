@@ -16,6 +16,8 @@
 package org.allseen.lsf.sampleapp;
 
 public class PresetDataModel extends DimmableItemDataModel {
+    public static final char TAG_PREFIX_PRESET = 'P';
+
     public static String defaultName = "";
 
     public PresetDataModel() {
@@ -23,6 +25,6 @@ public class PresetDataModel extends DimmableItemDataModel {
     }
 
     public PresetDataModel(String presetID) {
-        super(presetID, defaultName);
+        super(presetID, TAG_PREFIX_PRESET, defaultName);
     }
 }

@@ -20,14 +20,12 @@ import java.util.List;
 
 import android.content.Context;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.CompoundButton;
 import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.ImageButton;
@@ -58,39 +56,31 @@ public abstract class SelectableItemTableFragment extends ScrollableTableFragmen
         return view;
     }
 
-    @Override
-    public void onStart() {
-        super.onStart();
-        // hide soft keyboard
-        InputMethodManager inputManager = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
-        inputManager.hideSoftInputFromWindow(table.getWindowToken(), 0);
-    }
-
-    protected void updateSelectableItemRow(Context context, String itemID, String sortableName, int imageID, String displayName, boolean checked) {
+    protected <T> void updateSelectableItemRow(Context context, String itemID, Comparable<T> tag, int imageID, String name, boolean checked) {
         updateSelectableItemRow(
             context,
             (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE),
             (TableLayout)getView().findViewById(R.id.scrollableTable),
             itemID,
-            sortableName,
+            tag,
             imageID,
-            displayName,
+            name,
             checked);
     }
 
-    protected void updateSelectableItemRow(LayoutInflater inflater, View root, String itemID, String sortableName, int imageID, String displayName, boolean checked) {
+    protected <T> void updateSelectableItemRow(LayoutInflater inflater, View root, String itemID, Comparable<T> tag, int imageID, String name, boolean checked) {
         updateSelectableItemRow(
             root.getContext(),
             inflater,
             (TableLayout)root.findViewById(R.id.scrollableTable),
             itemID,
-            sortableName,
+            tag,
             imageID,
-            displayName,
+            name,
             checked);
     }
 
-    protected void updateSelectableItemRow(Context context, LayoutInflater inflater, TableLayout table, String itemID, String sortableName, int imageID, String displayName, boolean checked) {
+    protected <T> void updateSelectableItemRow(Context context, LayoutInflater inflater, TableLayout table, String itemID, Comparable<T> tag, int imageID, String name, boolean checked) {
         TableRow tableRow = new TableRow(context);
 
         inflater.inflate(getTableRowLayout(), tableRow);
@@ -103,7 +93,7 @@ public abstract class SelectableItemTableFragment extends ScrollableTableFragmen
         imageButton.setClickable(true);
         imageButton.setOnClickListener(this);
 
-        ((TextView)tableRow.findViewById(R.id.selectableItemRowText)).setText(displayName);
+        ((TextView)tableRow.findViewById(R.id.selectableItemRowText)).setText(name);
 
         CompoundButton selectButton = getCompoundButton(tableRow);
         selectButton.setTag(itemID);
@@ -113,7 +103,7 @@ public abstract class SelectableItemTableFragment extends ScrollableTableFragmen
         selectButton.setButtonDrawable(getSelectButtonDrawableID());
         selectButton.setChecked(checked);
 
-        TableSorter.insertSortedTableRow(table, tableRow, sortableName);
+        TableSorter.insertSortedTableRow(table, tableRow, tag);
     }
 
     protected int getTableRowLayout() {

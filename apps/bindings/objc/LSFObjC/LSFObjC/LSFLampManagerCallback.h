@@ -31,6 +31,9 @@ class LSFLampManagerCallback : public LampManagerCallback {
     void GetLampManufacturerReplyCB(const LSFResponseCode& responseCode, const LSFString& lampID, const LSFString& language, const LSFString& manufacturer);
     void SetLampNameReplyCB(const LSFResponseCode& responseCode, const LSFString& lampID, const LSFString& language);
     void LampsNameChangedCB(const LSFStringList& lampIDs);
+    void LampsFoundCB(const LSFStringList& lampIDs);
+    void LampsLostCB(const LSFStringList& lampIDs);
+    //void PingLampReplyCB(const LSFResponseCode& responseCode, const LSFString& lampID);
     void GetLampDetailsReplyCB(const LSFResponseCode& responseCode, const LSFString& lampID, const LampDetails& lampDetails);
     void GetLampParametersReplyCB(const LSFResponseCode& responseCode, const LSFString& lampID, const LampParameters& lampParameters);
     void GetLampParametersEnergyUsageMilliwattsFieldReplyCB(const LSFResponseCode& responseCode, const LSFString& lampID, const uint32_t& energyUsageMilliwatts);

@@ -15,43 +15,46 @@
  */
 package org.allseen.lsf.helper.model;
 
-import java.util.Locale;
-
-public class LightingItemDataModel implements Comparable<LightingItemDataModel> {
-    public static final String defaultID = "";
+public class LightingItemDataModel {
+    public static final String defaultID = "!!default_ID!!";
 
     public String id;
-    public String name;
-    public String sort;
+    private final char prefix;
+    private String name;
+    public LightingItemSortableTag tag;
     public long timestamp;
 
-    public LightingItemDataModel(String itemID, String itemName) {
+    public LightingItemDataModel(String itemID, char itemPrefix, String itemName) {
         super();
 
-        id = itemID != null ? itemID : defaultID;
-        name = itemName;
-        sort = itemName.toLowerCase(Locale.getDefault());
+        this.id = itemID != null ? itemID : defaultID;
+        this.prefix = itemPrefix;
+        this.name = itemName;
+        this.tag = new LightingItemSortableTag(this.id, this.prefix, this.name);
 
         updateTime();
     }
 
     public LightingItemDataModel(LightingItemDataModel other) {
         this.id = other.id;
+        this.prefix = other.prefix;
         this.name = other.name;
-        this.sort = other.sort;
         this.timestamp = other.timestamp;
+        this.tag = new LightingItemSortableTag(other.tag);
     }
 
     public void updateTime() {
         timestamp = System.currentTimeMillis();
     }
 
-    @Override
-	public int compareTo(LightingItemDataModel other) {
-        int comparison = sort.compareTo(other.sort);
+    public String getName() {
+        return name;
+    }
 
-        return comparison == 0 ? id.compareTo(other.id) : comparison;
-	}
+    public void setName(String name) {
+        this.name = name;
+        this.tag = new LightingItemSortableTag(this.id, this.prefix, this.name);
+    }
 
     @Override
     public int hashCode() {

@@ -50,7 +50,7 @@ public class MasterSceneSelectMembersFragment extends SelectMembersFragment {
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
 
-        ((SampleAppActivity)getActivity()).updateActionBar(R.string.title_master_scene_add, false, false, false, true);
+        ((SampleAppActivity)getActivity()).updateActionBar(R.string.title_master_scene_add, false, false, false, true, true);
     }
 
     @Override
@@ -58,7 +58,7 @@ public class MasterSceneSelectMembersFragment extends SelectMembersFragment {
         activity.pendingMasterSceneModel.masterScene.setScenes(sceneIDs.toArray(new String[sceneIDs.size()]));
 
         if (activity.pendingMasterSceneModel.id.isEmpty()) {
-            AllJoynManager.masterSceneManager.createMasterScene(activity.pendingMasterSceneModel.masterScene, activity.pendingMasterSceneModel.name, SampleAppActivity.LANGUAGE);
+            AllJoynManager.masterSceneManager.createMasterScene(activity.pendingMasterSceneModel.masterScene, activity.pendingMasterSceneModel.getName(), SampleAppActivity.LANGUAGE);
         } else {
             AllJoynManager.masterSceneManager.updateMasterScene(activity.pendingMasterSceneModel.id, activity.pendingMasterSceneModel.masterScene);
         }

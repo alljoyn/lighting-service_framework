@@ -60,7 +60,7 @@ public class MasterSceneInfoFragment extends PageFrameChildFragment implements V
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        ((SampleAppActivity)getActivity()).updateActionBar(R.string.title_master_scene_info, false, false, false, false);
+        ((SampleAppActivity)getActivity()).updateActionBar(R.string.title_master_scene_info, false, false, false, false, true);
     }
 
     @Override
@@ -96,7 +96,7 @@ public class MasterSceneInfoFragment extends PageFrameChildFragment implements V
 
     public void updateInfoFields(SampleAppActivity activity, MasterSceneDataModel masterSceneModel) {
         // Update name and members
-        setTextViewValue(view, R.id.statusTextName, masterSceneModel.name, 0);
+        setTextViewValue(view, R.id.statusTextName, masterSceneModel.getName(), 0);
         setTextViewValue(view.findViewById(R.id.sceneInfoRowMembers), R.id.sceneMembersRowText, Util.createSceneNamesString(activity, masterSceneModel.masterScene), 0);
     }
 }

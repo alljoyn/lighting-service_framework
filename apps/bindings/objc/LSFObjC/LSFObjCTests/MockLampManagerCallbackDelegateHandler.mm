@@ -94,6 +94,29 @@
     [self.dataArray addObject: lampIDs];
 }
 
+-(void)lampsFound: (NSArray *)lampIDs
+{
+    [self.dataArray removeAllObjects];
+    [self.dataArray addObject: @"lampsFound"];
+    [self.dataArray addObject: lampIDs];
+}
+
+-(void)lampsLost: (NSArray *)lampIDs
+{
+    [self.dataArray removeAllObjects];
+    [self.dataArray addObject: @"lampsLost"];
+    [self.dataArray addObject: lampIDs];
+}
+
+-(void)pingLampReplyWithCode: (LSFResponseCode)rc andLampID: (NSString *)lampID
+{
+    [self.dataArray removeAllObjects];
+    NSNumber *responseCode = [[NSNumber alloc] initWithInt: rc];
+    [self.dataArray addObject: @"pingLamp"];
+    [self.dataArray addObject: responseCode];
+    [self.dataArray addObject: lampID];
+}
+
 -(void)getLampDetailsReplyWithCode: (LSFResponseCode)rc lampID: (NSString *)lampID andLampDetails: (LSFLampDetails *)details
 {
     [self.dataArray removeAllObjects];

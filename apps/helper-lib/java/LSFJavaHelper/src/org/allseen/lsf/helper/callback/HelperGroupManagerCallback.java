@@ -240,7 +240,7 @@ public class HelperGroupManagerCallback extends LampGroupManagerCallback {
                 GroupDataModel groupModel = director.getGroupCollectionManager().getModel(groupID);
 
                 if (groupModel != null) {
-                    groupModel.name = groupName;
+                    groupModel.setName(groupName);
                 }
             }
         });

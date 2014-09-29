@@ -38,14 +38,6 @@ public class ControllerClient extends BaseNativeClassWrapper
     {
     }
 
-    // TODO-TST: remove this
-    public String getTestString() {
-        return stringFromJNI();
-    }
-
-    // TODO-TST: remove this
-    public native String stringFromJNI();
-
     protected native void createNativeObject(BusAttachment bus, ControllerClientCallback callback);
 
     @Override

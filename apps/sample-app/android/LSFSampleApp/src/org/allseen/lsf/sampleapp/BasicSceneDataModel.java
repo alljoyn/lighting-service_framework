@@ -22,8 +22,9 @@ import org.allseen.lsf.Scene;
 import org.allseen.lsf.StatePulseEffect;
 import org.allseen.lsf.StateTransitionEffect;
 
-
 public class BasicSceneDataModel extends ItemDataModel {
+    public static final char TAG_PREFIX_SCENE = 'S';
+
     public static String defaultName = "";
 
     public List<NoEffectDataModel> noEffects;
@@ -31,7 +32,7 @@ public class BasicSceneDataModel extends ItemDataModel {
     public List<PulseEffectDataModel> pulseEffects;
 
     public BasicSceneDataModel() {
-        this("", "");
+        this("");
     }
 
     public BasicSceneDataModel(String sceneID) {
@@ -39,7 +40,7 @@ public class BasicSceneDataModel extends ItemDataModel {
     }
 
     public BasicSceneDataModel(String sceneID, String sceneName) {
-        super(sceneID, sceneName);
+        super(sceneID, TAG_PREFIX_SCENE, sceneName);
 
         noEffects = new ArrayList<NoEffectDataModel>();
         transitionEffects = new ArrayList<TransitionEffectDataModel>();

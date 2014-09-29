@@ -28,10 +28,12 @@ public class LampManagerCallback extends DefaultNativeClassWrapper {
     public void getLampManufacturerReplyCB(ResponseCode responseCode, String lampID, String language, String manufacturer)                  { }
     public void setLampNameReplyCB(ResponseCode responseCode, String lampID, String language)                                               { }
     public void lampsNameChangedCB(String[] lampIDs)                                                                                        { }
+    public void lampsFoundCB(String[] lampIDs)                                                                                              { }
+    public void lampsLostCB(String[] lampIDs)                                                                                               { }
     public void getLampDetailsReplyCB(ResponseCode responseCode, String lampID, LampDetails lampDetails)                                    { }
     public void getLampParametersReplyCB(ResponseCode responseCode, String lampID, LampParameters lampParameters)                           { }
     public void getLampParametersEnergyUsageMilliwattsFieldReplyCB(ResponseCode responseCode, String lampID, int energyUsageMilliwatts)     { }
-    public void getLampParametersBrightnessLumensFieldReplyCB(ResponseCode responseCode, String lampID, int brightnessLumens)               { }
+    public void getLampParametersLumensFieldReplyCB(ResponseCode responseCode, String lampID, int brightnessLumens)                         { }
     public void getLampStateReplyCB(ResponseCode responseCode, String lampID, LampState lampState)                                          { }
     public void getLampStateOnOffFieldReplyCB(ResponseCode responseCode, String lampID, boolean onOff)                                      { }
     public void getLampStateHueFieldReplyCB(ResponseCode responseCode, String lampID, long hue)                                             { }
@@ -42,18 +44,13 @@ public class LampManagerCallback extends DefaultNativeClassWrapper {
     public void lampsStateChangedCB(String[] lampIDs)                                                                                       { }
     public void transitionLampStateReplyCB(ResponseCode responseCode, String lampID)                                                        { }
     public void pulseLampWithStateReplyCB(ResponseCode responseCode, String lampID)                                                         { }
-    public void strobeLampWithStateReplyCB(ResponseCode responseCode, String lampID)                                                        { }
-    public void cycleLampWithStateReplyCB(ResponseCode responseCode, String lampID)                                                         { }
     public void pulseLampWithPresetReplyCB(ResponseCode responseCode, String lampID)                                                        { }
-    public void strobeLampWithPresetReplyCB(ResponseCode responseCode, String lampID)                                                       { }
-    public void cycleLampWithPresetReplyCB(ResponseCode responseCode, String lampID)                                                        { }
     public void transitionLampStateOnOffFieldReplyCB(ResponseCode responseCode, String lampID)                                              { }
     public void transitionLampStateHueFieldReplyCB(ResponseCode responseCode, String lampID)                                                { }
     public void transitionLampStateSaturationFieldReplyCB(ResponseCode responseCode, String lampID)                                         { }
     public void transitionLampStateBrightnessFieldReplyCB(ResponseCode responseCode, String lampID)                                         { }
     public void transitionLampStateColorTempFieldReplyCB(ResponseCode responseCode, String lampID)                                          { }
     public void getLampFaultsReplyCB(ResponseCode responseCode, String lampID, long[] faultCodes)                                           { }
-    public void getLampRemainingLifeReplyCB(ResponseCode responseCode, String lampID, int remainingLife)                                    { }
     public void getLampServiceVersionReplyCB(ResponseCode responseCode, String lampID, int lampServiceVersion)                              { }
     public void clearLampFaultReplyCB(ResponseCode responseCode, String lampID, long faultCode)                                             { }
     public void resetLampStateOnOffFieldReplyCB(ResponseCode responseCode, String lampID)                                                   { }

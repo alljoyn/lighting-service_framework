@@ -20,29 +20,15 @@ import android.widget.TableLayout;
 import android.widget.TableRow;
 
 public class TableSorter {
-    // Ensure groups are listed first, then lamps, then scenes
-    public final static String SORTING_PREFIX_GROUP = "G:";
-    public final static String SORTING_PREFIX_LAMP = "L:";
-    public final static String SORTING_PREFIX_SCENE = "S:";
-
-    protected static void insertSortedTableRow(TableLayout table, TableRow tableRow, String sortableName) {
-        insertSortedTableRow("", table, tableRow, sortableName);
-    }
-
-    protected static void insertSortedTableRow(String sortPrefix, TableLayout table, TableRow tableRow, String sortableName) {
+    public static <T> void insertSortedTableRow(TableLayout table, TableRow tableRow, Comparable<T> tag) {
         int searchLow = 0;
         int searchHigh = table.getChildCount() - 1;
 
-        if (sortableName.contains(SampleGroupManager.ALL_LAMPS_GROUP_ID)) {
-            sortableName = SampleGroupManager.ALL_LAMPS_GROUP_ID;
-        }
-
         while (searchLow <= searchHigh) {
             int searchNext = searchLow + ((searchHigh - searchLow) / 2);
-            String nextName = table.getChildAt(searchNext).getTag(R.id.TAG_KEY_SORTABLE_NAME).toString();
-            int comparison = sortableName.compareToIgnoreCase(nextName);
+            int comparison = compareTags(tag, (TableRow)table.getChildAt(searchNext));
 
-            Log.v(SampleAppActivity.TAG, "insertSortedTableRow(): checking [" + searchLow + ", " + searchNext + ", " + searchHigh + "]: " + sortableName + " <=> " + nextName);
+            Log.v(SampleAppActivity.TAG, "insertSortedTableRow(): checking [" + searchLow + ", " + searchNext + ", " + searchHigh + "]");
 
             if (comparison < 0) {
                 searchHigh = searchNext - 1;
@@ -53,8 +39,29 @@ public class TableSorter {
             }
         }
 
-        tableRow.setTag(R.id.TAG_KEY_SORTABLE_NAME, sortableName);
+        setTag(tableRow, tag);
 
         table.addView(tableRow, searchLow);
+    }
+
+    public static <T> void updateSortedTableRow(TableLayout table, TableRow tableRow, Comparable<T> tag) {
+        if (!equalTags(tag, tableRow)) {
+            table.removeView(tableRow);
+
+            TableSorter.insertSortedTableRow(table, tableRow, tag);
+        }
+    }
+
+    protected static <T> boolean equalTags(Comparable<T> tag, TableRow tableRow) {
+        return compareTags(tag, tableRow) == 0;
+    }
+
+    @SuppressWarnings("unchecked")
+    protected static <T> int compareTags(Comparable<T> tag, TableRow tableRow) {
+        return tag.compareTo((T)tableRow.getTag(R.id.TAG_KEY_SORTABLE_NAME));
+    }
+
+    protected static <T> void setTag(TableRow tableRow, T tag) {
+        tableRow.setTag(R.id.TAG_KEY_SORTABLE_NAME, tag);
     }
 }

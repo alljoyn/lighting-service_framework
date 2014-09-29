@@ -182,6 +182,7 @@ public class AllJoynManager {
             bus.disconnect();
             bus.release();
 
+            AllJoynManager.controllerConnected = false;
             AllJoynManager.masterSceneManager = null;
             AllJoynManager.sceneManager = null;
             AllJoynManager.presetManager = null;
@@ -207,8 +208,8 @@ public class AllJoynManager {
             Log.d(AllJoynManager.TAG, "Creating BusAttachment");
             alljoynManagerFragment.bus = new BusAttachment(params[0], BusAttachment.RemoteMessage.Receive);
             alljoynManagerFragment.bus.connect();
-//TODO-TMP            alljoynManagerFragment.bus.setDebugLevel("ALL", 7);
-//TODO-TMP            alljoynManagerFragment.bus.setDaemonDebug("ALL", 7);
+            alljoynManagerFragment.bus.setDebugLevel("CONTROLLER_CLIENT", 7);
+//            alljoynManagerFragment.bus.setDaemonDebug("ALL", 7);
 
             alljoynManagerFragment.controllerClient = new ControllerClient(alljoynManagerFragment.bus, alljoynManagerFragment.controllerClientCallback);
             alljoynManagerFragment.lampManager = new LampManager(alljoynManagerFragment.controllerClient, alljoynManagerFragment.lampManagerCallback);

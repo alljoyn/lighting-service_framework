@@ -16,6 +16,7 @@
 package org.allseen.lsf.sampleapp;
 
 import org.allseen.lsf.LampDetails;
+import org.allseen.lsf.LampMake;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -39,13 +40,23 @@ public class LampDetailsFragment extends PageFrameChildFragment {
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        ((SampleAppActivity)getActivity()).updateActionBar(R.string.title_lamp_details, false, false, false, false);
+        ((SampleAppActivity)getActivity()).updateActionBar(R.string.title_lamp_details, false, false, false, false, true);
     }
 
     public void updateDetailFields(LampDataModel lampModel) {
         LampDetails lampDetails = (lampModel != null) && (lampModel.getDetails() != null) ? lampModel.getDetails() : EmptyLampDetails.instance;
+        LampMake lampMake = lampDetails.getMake();
+        String lampMakeName = null;
 
-        setTextViewValue(view, R.id.lampDetailsTextMake, lampDetails.getMake(), 0);
+        if (lampMake != null) {
+            lampMakeName = lampMake.name();
+
+            if (lampMakeName.equals("OEM1")) {
+                lampMakeName = "Qualcomm Technologies, Inc.";
+            }
+        }
+
+        setTextViewValue(view, R.id.lampDetailsTextMake, lampMakeName, 0);
         setTextViewValue(view, R.id.lampDetailsTextModel, lampDetails.getModel(), 0);
         setTextViewValue(view, R.id.lampDetailsTextDevice, lampDetails.getType(), 0);
         setTextViewValue(view, R.id.lampDetailsTextLamp, lampDetails.getLampType(), 0);

@@ -38,7 +38,10 @@ public class BasicSceneSelectEffectFragment extends SelectableItemTableFragment 
 
     @Override
     protected String getHeaderText() {
-        return String.format(getString(R.string.basic_scene_select_effect), ((SampleAppActivity)getActivity()).pendingBasicSceneModel.name);
+        SampleAppActivity activity = (SampleAppActivity)getActivity();
+        String members = MemberNamesString.format(activity, activity.pendingBasicSceneElementMembers, MemberNamesOptions.en, 3, activity.pendingBasicSceneModel.getName());
+
+        return String.format(getString(R.string.basic_scene_select_effect), members);
     }
 
     @Override
@@ -61,7 +64,7 @@ public class BasicSceneSelectEffectFragment extends SelectableItemTableFragment 
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
 
-        ((SampleAppActivity)getActivity()).updateActionBar(R.string.title_basic_scene_add, false, false, true, false);
+        ((SampleAppActivity)getActivity()).updateActionBar(R.string.title_basic_scene_add, false, false, true, false, true);
     }
 
     @Override

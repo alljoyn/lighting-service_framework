@@ -136,36 +136,48 @@ public class LampStateViewAdapter implements OnSeekBarChangeListener, OnClickLis
         presetsButton.setText(presetName);
     }
 
-    public void setBrightness(long modelBrightness) {
+    public void setBrightness(long modelBrightness, boolean uniformBrightness) {
         if (capability.dimmable >= CapabilityData.SOME) {
             int viewBrightness = DimmableItemScaleConverter.convertBrightnessModelToView(modelBrightness);
+
             brightnessSeekBar.setProgress(viewBrightness);
+            brightnessSeekBar.setThumb(parentFragment.getResources().getDrawable(uniformBrightness ? R.drawable.slider_thumb_normal : R.drawable.slider_thumb_midstate));
+
             parentFragment.setTextViewValue(stateView, R.id.stateTextBrightness, viewBrightness, R.string.units_percent);
         }
     }
 
-    public void setHue(long modelHue) {
+    public void setHue(long modelHue, boolean uniformHue) {
         if (capability.color >= CapabilityData.SOME) {
             int viewHue = DimmableItemScaleConverter.convertHueModelToView(modelHue);
+
             hueSeekBar.setProgress(viewHue);
+            hueSeekBar.setThumb(parentFragment.getResources().getDrawable(uniformHue ? R.drawable.slider_thumb_normal : R.drawable.slider_thumb_midstate));
+
             parentFragment.setTextViewValue(stateView, R.id.stateTextHue, viewHue, R.string.units_degrees);
         }
     }
 
-    public void setSaturation(long modelSaturation) {
+    public void setSaturation(long modelSaturation, boolean uniformSaturation) {
         if (capability.color >= CapabilityData.SOME) {
             int viewSaturation = DimmableItemScaleConverter.convertSaturationModelToView(modelSaturation);
+
             saturationSeekBar.setProgress(viewSaturation);
+            saturationSeekBar.setThumb(parentFragment.getResources().getDrawable(uniformSaturation ? R.drawable.slider_thumb_normal : R.drawable.slider_thumb_midstate));
+
             parentFragment.setTextViewValue(stateView, R.id.stateTextSaturation, viewSaturation, R.string.units_percent);
 
             saturationCheck();
         }
     }
 
-    public void setColorTemp(long modelColorTemp) {
+    public void setColorTemp(long modelColorTemp, boolean uniformColorTemp) {
         if (capability.temp >= CapabilityData.SOME) {
             int viewColorTemp = DimmableItemScaleConverter.convertColorTempModelToView(modelColorTemp);
+
             tempSeekBar.setProgress(viewColorTemp - DimmableItemScaleConverter.VIEW_COLORTEMP_MIN);
+            tempSeekBar.setThumb(parentFragment.getResources().getDrawable(uniformColorTemp ? R.drawable.slider_thumb_normal : R.drawable.slider_thumb_midstate));
+
             parentFragment.setTextViewValue(stateView, R.id.stateTextColorTemp, viewColorTemp, R.string.units_kelvin);
         }
     }
@@ -228,7 +240,6 @@ public class LampStateViewAdapter implements OnSeekBarChangeListener, OnClickLis
             } else if (seekBarID == R.id.stateSliderColorTemp) {
                 parentFragment.setTextViewValue(stateView, R.id.stateTextColorTemp, progress + DimmableItemScaleConverter.VIEW_COLORTEMP_MIN, R.string.units_kelvin);
             }
-
         }
     }
 
@@ -258,5 +269,4 @@ public class LampStateViewAdapter implements OnSeekBarChangeListener, OnClickLis
             }
         }
     }
-
 }

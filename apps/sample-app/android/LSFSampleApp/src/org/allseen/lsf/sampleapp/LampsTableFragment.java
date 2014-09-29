@@ -63,8 +63,8 @@ public class LampsTableFragment extends DimmableItemTableFragment {
     public void addElement(String id) {
         LampDataModel lampModel = ((SampleAppActivity) getActivity()).lampModels.get(id);
         if (lampModel != null) {
-            insertDimmableItemRow(getActivity(), lampModel.id, lampModel.name + lampModel.id, lampModel.state.getOnOff(), lampModel.name,
-                    lampModel.state.getBrightness(), getColor(lampModel.state), lampModel.capability.dimmable >= CapabilityData.SOME);
+            insertDimmableItemRow(getActivity(), lampModel.id, lampModel.tag, lampModel.state.getOnOff(), lampModel.uniformity.power, lampModel.getName(),
+                    lampModel.state.getBrightness(), true, getColor(lampModel.state), lampModel.capability.dimmable >= CapabilityData.SOME);
             updateLoading();
         }
     }

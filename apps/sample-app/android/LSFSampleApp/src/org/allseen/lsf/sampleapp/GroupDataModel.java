@@ -21,6 +21,8 @@ import java.util.Set;
 import org.allseen.lsf.LampGroup;
 
 public class GroupDataModel extends DimmableItemDataModel {
+    public static final char TAG_PREFIX_GROUP = 'G';
+
     public static String defaultName = "";
 
     public LampGroup members;
@@ -33,7 +35,11 @@ public class GroupDataModel extends DimmableItemDataModel {
     }
 
     public GroupDataModel(String groupID) {
-        super(groupID, defaultName);
+        this(TAG_PREFIX_GROUP, groupID);
+    }
+
+    protected GroupDataModel(char prefix, String groupID) {
+        super(groupID, prefix, defaultName);
 
         members = new LampGroup();
     }

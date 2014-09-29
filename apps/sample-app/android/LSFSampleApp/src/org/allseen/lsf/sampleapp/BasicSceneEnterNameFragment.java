@@ -34,14 +34,14 @@ public class BasicSceneEnterNameFragment extends EnterNameFragment {
     protected void setName(String name) {
         BasicSceneDataModel sceneModel = new BasicSceneDataModel();
 
-        sceneModel.name = name;
+        sceneModel.setName(name);
 
         SampleAppActivity activity = (SampleAppActivity)getActivity();
         activity.pendingBasicSceneModel = sceneModel;
         activity.pendingBasicSceneElementMembers = new LampGroup();
         activity.pendingBasicSceneElementCapability = new CapabilityData(true, true, true);
 
-        Log.d(SampleAppActivity.TAG, "Pending basic scene name: " + activity.pendingBasicSceneModel.name);
+        Log.d(SampleAppActivity.TAG, "Pending basic scene name: " + activity.pendingBasicSceneModel.getName());
     }
 
     @Override
@@ -52,7 +52,7 @@ public class BasicSceneEnterNameFragment extends EnterNameFragment {
     @Override
     protected boolean duplicateName(String name) {
         for (BasicSceneDataModel data : ((SampleAppActivity) this.getActivity()).basicSceneModels.values()) {
-            if (data.name.equals(name)) {
+            if (data.getName().equals(name)) {
                 return true;
             }
         }

@@ -32,7 +32,7 @@ public abstract class UpdateItemNameAdapter implements ItemNameAdapter {
 
     @Override
     public String getCurrentName() {
-        return itemModel != null ? itemModel.name : "";
+        return itemModel != null ? itemModel.getName() : "";
     }
 
     @Override
@@ -54,7 +54,7 @@ public abstract class UpdateItemNameAdapter implements ItemNameAdapter {
                 builder.setPositiveButton(R.string.dialog_ok, new OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        itemModel.name = itemName;
+                        itemModel.setName(itemName);
                         doUpdateName();
                     }
                 });
@@ -70,7 +70,7 @@ public abstract class UpdateItemNameAdapter implements ItemNameAdapter {
             } else {
                 // we can go ahead and use this name
 
-                itemModel.name = itemName;
+                itemModel.setName(itemName);
                 doUpdateName();
             }
 

@@ -41,8 +41,8 @@ void LSFControllerServiceManagerCallback::ControllerServiceLightingResetCB(void)
     [_csmDelegate controllerServiceLightingReset];
 }
 
-void LSFControllerServiceManagerCallback::ControllerServiceNameChangedCB(void)
+void LSFControllerServiceManagerCallback::ControllerServiceNameChangedCB(const LSFString& controllerServiceDeviceID, const LSFString& controllerServiceName)
 {
-    [_csmDelegate controllerServiceNameChanged];
+    [_csmDelegate controllerServiceNameChangedForControllerID: [NSString stringWithUTF8String: controllerServiceDeviceID.c_str()] andName: [NSString stringWithUTF8String: controllerServiceName.c_str()]];
 }
 

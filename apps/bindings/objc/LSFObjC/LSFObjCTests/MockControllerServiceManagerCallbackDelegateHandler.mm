@@ -66,10 +66,12 @@
     [self.dataArray addObject: @"controllerServiceLightingReset"];
 }
 
--(void)controllerServiceNameChanged
+-(void)controllerServiceNameChangedForControllerID: (NSString *)controllerID andName: (NSString *)controllerName
 {
     [self.dataArray removeAllObjects];
     [self.dataArray addObject: @"controllerServiceNameChanged"];
+    [self.dataArray addObject: controllerID];
+    [self.dataArray addObject: controllerName];
 }
 
 @end

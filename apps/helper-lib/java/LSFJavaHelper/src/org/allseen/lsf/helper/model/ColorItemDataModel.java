@@ -23,8 +23,8 @@ public class ColorItemDataModel extends LightingItemDataModel {
 
     protected LampCapabilities capability;
 
-    public ColorItemDataModel(String itemID, String itemName) {
-        super(itemID, itemName);
+    public ColorItemDataModel(String itemID, char prefix, String itemName) {
+        super(itemID, prefix, itemName);
 
         state = new LampState();
         capability = new LampCapabilities();

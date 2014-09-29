@@ -28,7 +28,7 @@ public abstract class BasicSceneElementInfoFragment extends DimmableItemInfoFrag
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
 
-        ((SampleAppActivity)getActivity()).updateActionBar(R.string.title_basic_scene_element_add, false, false, false, true);
+        ((SampleAppActivity)getActivity()).updateActionBar(R.string.title_basic_scene_element_add, false, false, false, true, true);
     }
 
     @Override
@@ -64,8 +64,8 @@ public abstract class BasicSceneElementInfoFragment extends DimmableItemInfoFrag
         } else if (seekBarID == R.id.stateSliderColorTemp) {
             pendingState.setColorTemp(DimmableItemScaleConverter.convertColorTempViewToModel(seekBarProgress + DimmableItemScaleConverter.VIEW_COLORTEMP_MIN));
         }
-
         updatePresetFields(pendingState, getLampStateViewAdapter(seekBarTag));
+        setColorIndicator(getLampStateViewAdapter(seekBarTag).stateView, getPendingSceneElementState(seekBarTag));
     }
 
     @Override
@@ -98,13 +98,7 @@ public abstract class BasicSceneElementInfoFragment extends DimmableItemInfoFrag
         activity.pendingTransitionEffectModel = null;
         activity.pendingPulseEffectModel = null;
 
-        if (activity.pendingBasicSceneModel.id != null && !activity.pendingBasicSceneModel.id.isEmpty()) {
-            AllJoynManager.sceneManager.updateScene(activity.pendingBasicSceneModel.id, activity.pendingBasicSceneModel.toScene());
-        } else {
-            AllJoynManager.sceneManager.createScene(activity.pendingBasicSceneModel.toScene(), activity.pendingBasicSceneModel.name, SampleAppActivity.LANGUAGE);
-        }
-
-        parent.clearBackStack();
+        parent.popBackStack(PageFrameParentFragment.CHILD_TAG_INFO);
     }
 
     protected abstract BasicSceneElementDataModel getPendingSceneElementDataModel();

@@ -62,11 +62,11 @@ public class ScenesTableFragment extends DetailedItemTableFragment {
 
         if (basicSceneModel != null) {
             String details = Util.createMemberNamesString(activity, basicSceneModel, ", ");
-            insertDetailedItemRow(getActivity(), basicSceneModel.id, basicSceneModel.name + basicSceneModel.id, basicSceneModel.name, details, false);
+            insertDetailedItemRow(getActivity(), basicSceneModel.id, basicSceneModel.tag, basicSceneModel.getName(), details, false);
             updateLoading();
         } else if (masterSceneModel != null) {
             String details = Util.createSceneNamesString(activity, masterSceneModel.masterScene);
-            insertDetailedItemRow(getActivity(), masterSceneModel.id, masterSceneModel.name + masterSceneModel.id, masterSceneModel.name, details, true);
+            insertDetailedItemRow(getActivity(), masterSceneModel.id, masterSceneModel.tag, masterSceneModel.getName(), details, true);
             updateLoading();
         }
     }

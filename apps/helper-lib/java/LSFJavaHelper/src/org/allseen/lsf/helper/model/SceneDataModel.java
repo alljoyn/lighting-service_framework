@@ -23,6 +23,8 @@ import org.allseen.lsf.StatePulseEffect;
 import org.allseen.lsf.StateTransitionEffect;
 
 public class SceneDataModel extends LightingItemDataModel {
+    public static final char TAG_PREFIX_SCENE = 'S';
+
     public static String defaultName = "<Loading scene info...>";
 
     public List<NoEffectDataModel> noEffects;
@@ -38,7 +40,7 @@ public class SceneDataModel extends LightingItemDataModel {
     }
 
     public SceneDataModel(String sceneID, String sceneName) {
-        super(sceneID, sceneName != null ? sceneName : defaultName);
+        super(sceneID, TAG_PREFIX_SCENE, sceneName != null ? sceneName : defaultName);
 
         noEffects = new ArrayList<NoEffectDataModel>();
         transitionEffects = new ArrayList<TransitionEffectDataModel>();

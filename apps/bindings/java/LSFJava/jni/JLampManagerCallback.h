@@ -39,6 +39,8 @@ class JLampManagerCallback : public LampManagerCallback {
     virtual void GetLampManufacturerReplyCB(const LSFResponseCode& responseCode, const LSFString& lampID, const LSFString& language, const LSFString& manufacturer) LSF_OVERRIDE;
     virtual void SetLampNameReplyCB(const LSFResponseCode& responseCode, const LSFString& lampID, const LSFString& language) LSF_OVERRIDE;
     virtual void LampsNameChangedCB(const LSFStringList& lampIDs) LSF_OVERRIDE;
+    virtual void LampsFoundCB(const LSFStringList& lampIDs) LSF_OVERRIDE;
+    virtual void LampsLostCB(const LSFStringList& lampIDs) LSF_OVERRIDE;
     virtual void GetLampDetailsReplyCB(const LSFResponseCode& responseCode, const LSFString& lampID, const LampDetails& lampDetails) LSF_OVERRIDE;
     virtual void GetLampParametersReplyCB(const LSFResponseCode& responseCode, const LSFString& lampID, const LampParameters& lampParameters) LSF_OVERRIDE;
     virtual void GetLampParametersEnergyUsageMilliwattsFieldReplyCB(const LSFResponseCode& responseCode, const LSFString& lampID, const uint32_t& energyUsageMilliwatts) LSF_OVERRIDE;

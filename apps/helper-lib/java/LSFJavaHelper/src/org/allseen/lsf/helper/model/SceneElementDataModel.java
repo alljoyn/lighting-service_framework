@@ -18,6 +18,8 @@ package org.allseen.lsf.helper.model;
 import org.allseen.lsf.LampGroup;
 
 public class SceneElementDataModel extends ColorItemDataModel {
+    public static final char TAG_PREFIX_SCENE_ELEMENT = 's';
+
     protected static int nextID = 1;
 
     public final EffectType type;
@@ -28,7 +30,7 @@ public class SceneElementDataModel extends ColorItemDataModel {
     }
 
     public SceneElementDataModel(EffectType type, String name) {
-        super(String.valueOf(nextID++), name);
+        super(String.valueOf(nextID++), TAG_PREFIX_SCENE_ELEMENT, name);
 
         this.type = type;
         this.members = new LampGroup();

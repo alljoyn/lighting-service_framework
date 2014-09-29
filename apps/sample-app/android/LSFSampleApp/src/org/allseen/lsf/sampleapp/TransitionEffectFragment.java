@@ -68,6 +68,13 @@ public class TransitionEffectFragment extends BasicSceneElementInfoFragment {
 
         super.updateInfoFields(itemModel);
 
+        updateTransitionEffectInfoFields(activity, (TransitionEffectDataModel)itemModel);
+    }
+
+    protected void updateTransitionEffectInfoFields(SampleAppActivity activity, TransitionEffectDataModel elementModel) {
+        String members = MemberNamesString.format(activity, activity.pendingBasicSceneElementMembers, MemberNamesOptions.en, 3, R.string.effect_info_help_no_members);
+        setTextViewValue(view.findViewById(R.id.infoHelpRow), R.id.helpText, String.format(getString(R.string.effect_info_help_transition), members), 0);
+
         // Superclass updates the icon, so we have to re-override
         setImageButtonBackgroundResource(statusView, R.id.statusButtonPower, R.drawable.list_transition_icon);
 

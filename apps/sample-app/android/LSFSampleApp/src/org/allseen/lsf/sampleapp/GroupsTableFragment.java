@@ -53,15 +53,7 @@ public class GroupsTableFragment extends DimmableItemTableFragment {
     public void addElement(String id) {
         GroupDataModel groupModel = ((SampleAppActivity) getActivity()).groupModels.get(id);
         if (groupModel != null) {
-            String sortableName;
-
-            if (groupModel.id != SampleGroupManager.ALL_LAMPS_GROUP_ID) {
-                sortableName = groupModel.name + groupModel.id;
-            } else {
-                sortableName = groupModel.id;
-            }
-
-            insertDimmableItemRow(getActivity(), groupModel.id, sortableName, groupModel.state.getOnOff(), groupModel.name, groupModel.state.getBrightness(), 0);
+            insertDimmableItemRow(getActivity(), groupModel.id, groupModel.tag, groupModel.state.getOnOff(), groupModel.uniformity.power, groupModel.getName(), groupModel.state.getBrightness(), groupModel.uniformity.brightness, 0);
         }
     }
 }

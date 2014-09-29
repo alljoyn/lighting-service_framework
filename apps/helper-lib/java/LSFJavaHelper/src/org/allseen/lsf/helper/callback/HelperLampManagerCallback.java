@@ -80,6 +80,18 @@ public class HelperLampManagerCallback extends LampManagerCallback {
     }
 
     @Override
+    public void lampsFoundCB(String[] lampIDs) {
+        for (String lampID : lampIDs) {
+            postUpdateLampID(lampID);
+        }
+    }
+
+    @Override
+    public void lampsLostCB(String[] lampIDs) {
+        //TODO-IMPL
+    }
+
+    @Override
     public void getLampDetailsReplyCB(ResponseCode responseCode, String lampID, LampDetails lampDetails) {
         if (responseCode.equals(ResponseCode.OK)) {
             postUpdateLampDetails(lampID, lampDetails);
@@ -235,7 +247,7 @@ public class HelperLampManagerCallback extends LampManagerCallback {
 
                 LampDataModel lampModel = lamp.getLampDataModel();
 
-                if (LampDataModel.defaultName.equals(lampModel.name)) {
+                if (LampDataModel.defaultName.equals(lampModel.getName())) {
                     LampManager lampManager = director.getLampManager();
 
                     lampManager.getLampName(lampID, LightingSystemManager.LANGUAGE);
@@ -353,7 +365,7 @@ public class HelperLampManagerCallback extends LampManagerCallback {
                 LampDataModel lampModel = director.getLampCollectionManager().getModel(lampID);
 
                 if (lampModel != null) {
-                    lampModel.name = lampName;
+                    lampModel.setName(lampName);
                 }
             }
         });

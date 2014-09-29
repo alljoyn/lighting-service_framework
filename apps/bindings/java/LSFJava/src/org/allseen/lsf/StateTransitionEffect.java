@@ -21,7 +21,12 @@ public class StateTransitionEffect extends DefaultNativeClassWrapper implements 
     }
 
     public StateTransitionEffect(StateTransitionEffect other) {
-        //TODO-IMPL
+        this();
+
+        this.setLamps(other.getLamps());
+        this.setLampGroups(other.getLampGroups());
+        this.setTransitionPeriod(other.getTransitionPeriod());
+        this.setLampState(other.getLampState());
     }
 
     @Override

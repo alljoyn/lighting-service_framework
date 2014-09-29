@@ -73,7 +73,7 @@ public class HelperControllerClientCallback extends ControllerClientCallback {
 
                 if (connected || leadModel.id.equals(controllerID)) {
                     leadModel.id = controllerID;
-                    leadModel.name = controllerName;
+                    leadModel.setName(controllerName);
                     leadModel.connected = connected;
                     leadModel.updateTime();
 
@@ -92,7 +92,7 @@ public class HelperControllerClientCallback extends ControllerClientCallback {
                 ControllerDataModel leadModel = director.getControllerManager().getLeadControllerModel();
 
                 if (leadModel.id.equals(controllerID)) {
-                    leadModel.name = controllerName;
+                    leadModel.setName(controllerName);
                     leadModel.updateTime();
 
                     postSendControllerChanged();

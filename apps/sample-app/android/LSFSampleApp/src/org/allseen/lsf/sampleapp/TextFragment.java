@@ -37,6 +37,6 @@ public class TextFragment extends PageFrameChildFragment {
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
 
-        ((SampleAppActivity)getActivity()).updateActionBar(R.string.action_settings, false, false, false, false);
+        ((SampleAppActivity)getActivity()).updateActionBar(R.string.action_settings, false, false, false, false, false);
     }
 }

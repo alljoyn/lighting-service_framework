@@ -158,45 +158,15 @@ jobject JNICALL Java_org_allseen_lsf_LampManager_transitionLampState(JNIEnv *env
 }
 
 JNIEXPORT
-jobject JNICALL Java_org_allseen_lsf_LampManager_pulseLampWithState(JNIEnv *env, jobject thiz, jstring jLampID, jobject jFromLampState, jobject jToLampState, jlong jPeriod, jlong jDuration, jlong jNumPulses)
+jobject JNICALL Java_org_allseen_lsf_LampManager_pulseLampWithState(JNIEnv *env, jobject thiz, jstring jLampID, jobject jToLampState, jlong jPeriod, jlong jDuration, jlong jNumPulses, jobject jFromLampState)
 {
-    //TODO-FIX
-    return NULL;
+    return XCppDelegator::Call_ControllerClientStatus_String_Object_UInt32_UInt32_UInt32_Object<JLampManager, JLampState, LampState>(env, thiz, jLampID, jToLampState, jPeriod, jDuration, jNumPulses, jFromLampState, &JLampManager::PulseLampWithState);
 }
 
 JNIEXPORT
-jobject JNICALL Java_org_allseen_lsf_LampManager_strobeLampWithState(JNIEnv *env, jobject thiz, jstring jLampID, jobject jFromLampState, jobject jToLampState, jlong jPeriod, jlong jNumStrobes)
+jobject JNICALL Java_org_allseen_lsf_LampManager_pulseLampWithPreset(JNIEnv *env, jobject thiz, jstring jLampID, jstring jToPresetID, jlong jPeriod, jlong jDuration, jlong jNumPulses, jstring jFromPresetID)
 {
-    //TODO-FIX
-    return NULL;
-}
-
-JNIEXPORT
-jobject JNICALL Java_org_allseen_lsf_LampManager_cycleLampWithState(JNIEnv *env, jobject thiz, jstring jLampID, jobject jLampStateA, jobject jLampStateB, jlong jPeriod, jlong jDuration, jlong jNumCycles)
-{
-    //TODO-FIX
-    return NULL;
-}
-
-JNIEXPORT
-jobject JNICALL Java_org_allseen_lsf_LampManager_pulseLampWithPreset(JNIEnv *env, jobject thiz, jstring jLampID, jstring jFromPresetID, jstring jToPresetID, jlong jPeriod, jlong jDuration, jlong jNumPulses)
-{
-    //TODO-FIX
-    return NULL;
-}
-
-JNIEXPORT
-jobject JNICALL Java_org_allseen_lsf_LampManager_strobeLampWithPreset(JNIEnv *env, jobject thiz, jstring jLampID, jstring jFromPresetID, jstring jToPresetID, jlong jPeriod, jlong jNumStrobes)
-{
-    //TODO-FIX
-    return NULL;
-}
-
-JNIEXPORT
-jobject JNICALL Java_org_allseen_lsf_LampManager_cycleLampWithPreset(JNIEnv *env, jobject thiz, jstring jLampID, jstring jPresetIdA, jstring jPresetIdB, jlong jPeriod, jlong jDuration, jlong jNumPulses)
-{
-    //TODO-FIX
-    return NULL;
+    return XCppDelegator::Call_ControllerClientStatus_String_String_UInt32_UInt32_UInt32_String(env, thiz, jLampID, jToPresetID, jPeriod, jDuration, jNumPulses, jFromPresetID, &JLampManager::PulseLampWithPreset);
 }
 
 JNIEXPORT
@@ -232,8 +202,7 @@ jobject JNICALL Java_org_allseen_lsf_LampManager_transitionLampStateColorTempFie
 JNIEXPORT
 jobject JNICALL Java_org_allseen_lsf_LampManager_transitionLampStateToPreset(JNIEnv *env, jobject thiz, jstring jLampID, jstring jPresetID, jlong jTransitionPeriod)
 {
-    //TODO-FIX
-    return NULL;
+    return XCppDelegator::Call_ControllerClientStatus_String_String_UInt32<JLampManager>(env, thiz, jLampID, jPresetID, jTransitionPeriod, &JLampManager::TransitionLampStateToPreset);
 }
 
 JNIEXPORT
@@ -243,32 +212,27 @@ jobject JNICALL Java_org_allseen_lsf_LampManager_getLampFaults(JNIEnv *env, jobj
 }
 
 JNIEXPORT
-jobject JNICALL Java_org_allseen_lsf_LampManager_getLampRemainingLife(JNIEnv *env, jobject thiz, jstring jLampID)
-{
-//    return XCppDelegator::Call_ControllerClientStatus_String<JLampManager>(env, thiz, jLampID, &JLampManager::GetLampRemainingLife);
-    //TODO-FIX
-    return NULL;
-}
-
-JNIEXPORT
 jobject JNICALL Java_org_allseen_lsf_LampManager_getLampServiceVersion(JNIEnv *env, jobject thiz, jstring jLampID)
 {
-//    return XCppDelegator::Call_ControllerClientStatus_String<JLampManager>(env, thiz, jLampID, &JLampManager::GetLampServiceVersion);
-    //TODO-FIX
-    return NULL;
+    return XCppDelegator::Call_ControllerClientStatus_String<JLampManager>(env, thiz, jLampID, &JLampManager::GetLampServiceVersion);
 }
 
 JNIEXPORT
-jobject JNICALL Java_org_allseen_lsf_LampManager_clearLampFault(JNIEnv *env, jobject thiz, jstring jLampID, jobject jFaultCode)
+jobject JNICALL Java_org_allseen_lsf_LampManager_clearLampFault(JNIEnv *env, jobject thiz, jstring jLampID, jlong jFaultCode)
 {
-    //TODO-FIX
-    return NULL;
+    return XCppDelegator::Call_ControllerClientStatus_String_UInt32<JLampManager>(env, thiz, jLampID, jFaultCode, &JLampManager::ClearLampFault);
 }
 
 JNIEXPORT
 jobject JNICALL Java_org_allseen_lsf_LampManager_getLampSupportedLanguages(JNIEnv *env, jobject thiz, jstring jLampID)
 {
     return XCppDelegator::Call_ControllerClientStatus_String<JLampManager>(env, thiz, jLampID, &JLampManager::GetLampSupportedLanguages);
+}
+
+JNIEXPORT
+jobject JNICALL Java_org_allseen_lsf_LampManager_getLampDataSet(JNIEnv *env, jobject thiz, jstring jLampID, jstring jLanguage)
+{
+    return XCppDelegator::Call_ControllerClientStatus_String_String<JLampManager>(env, thiz, jLampID, jLanguage, &JLampManager::GetLampDataSet);
 }
 
 JNIEXPORT

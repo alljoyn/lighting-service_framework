@@ -23,7 +23,7 @@ public class UpdateGroupNameAdapter extends UpdateItemNameAdapter {
 
     @Override
     protected void doUpdateName() {
-        AllJoynManager.groupManager.setLampGroupName(itemModel.id, itemModel.name, SampleAppActivity.LANGUAGE);
+        AllJoynManager.groupManager.setLampGroupName(itemModel.id, itemModel.getName(), SampleAppActivity.LANGUAGE);
     }
 
     @Override
@@ -34,7 +34,7 @@ public class UpdateGroupNameAdapter extends UpdateItemNameAdapter {
     @Override
     protected boolean duplicateName(String name) {
         for (GroupDataModel data : activity.groupModels.values()) {
-            if (data.name.equals(name) && !name.equals(itemModel.name)) {
+            if (data.getName().equals(name) && !name.equals(itemModel.getName())) {
                 return true;
             }
         }

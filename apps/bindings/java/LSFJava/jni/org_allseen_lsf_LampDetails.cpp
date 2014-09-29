@@ -80,9 +80,7 @@ jobject JNICALL Java_org_allseen_lsf_LampDetails_getLampType(JNIEnv *env, jobjec
         return NULL;
     }
 
-    //TODO-FIX
-    //LampType cLampType = xLampDetails->lampType;
-    LampType cLampType = (LampType)xLampDetails->lampType;
+    LampType cLampType = xLampDetails->lampType;
 
     return JEnum::jLampTypeEnum->getObject((int)cLampType);
 }
@@ -96,9 +94,7 @@ jobject JNICALL Java_org_allseen_lsf_LampDetails_getLampBaseType(JNIEnv *env, jo
         return NULL;
     }
 
-    //TODO-FIX
-    //BaseType cBaseType = xLampDetails->lampBaseType;
-    BaseType cBaseType = (BaseType)xLampDetails->lampBaseType;
+    BaseType cBaseType = xLampDetails->lampBaseType;
 
     return JEnum::jBaseTypeEnum->getObject((int)cBaseType);
 }

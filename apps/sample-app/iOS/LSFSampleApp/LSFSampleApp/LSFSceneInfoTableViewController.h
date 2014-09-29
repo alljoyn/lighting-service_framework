@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--  
+/******************************************************************************
  * Copyright (c) 2014, AllSeen Alliance. All rights reserved.
  *
  *    Permission to use, copy, modify, and/or distribute this software for any
@@ -13,16 +12,13 @@
  *    WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
  *    ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  *    OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
- -->
-<TableRow xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent" >
+ ******************************************************************************/
 
-    <TextView
-        android:id="@+id/singleTablerowText"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textSize="@dimen/font_size_2"
-        android:textColor="@color/detail_text" />
+#import <UIKit/UIKit.h>
+#import "LSFReloadScenesCallbackDelegate.h"
 
-</TableRow>
+@interface LSFSceneInfoTableViewController : UITableViewController <UITableViewDelegate, UITableViewDelegate, LSFReloadScenesCallbackDelegate>
+
+@property (nonatomic, strong) NSString *sceneID;
+
+@end

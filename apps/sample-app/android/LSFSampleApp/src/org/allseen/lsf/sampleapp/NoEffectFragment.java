@@ -37,12 +37,21 @@ public class NoEffectFragment extends BasicSceneElementInfoFragment {
 
     @Override
     public void updateInfoFields(DimmableItemDataModel itemModel) {
+        SampleAppActivity activity = (SampleAppActivity)getActivity();
+
         // Capabilities can change if the member set is edited
-        itemModel.setCapability(((SampleAppActivity)getActivity()).pendingBasicSceneElementCapability);
+        itemModel.setCapability(activity.pendingBasicSceneElementCapability);
 
         stateAdapter.setCapability(itemModel.getCapability());
 
         super.updateInfoFields(itemModel);
+
+        updateNoEffectInfoFields(activity, (NoEffectDataModel)itemModel);
+    }
+
+    protected void updateNoEffectInfoFields(SampleAppActivity activity, NoEffectDataModel elementModel) {
+        String members = MemberNamesString.format(activity, activity.pendingBasicSceneElementMembers, MemberNamesOptions.en, 3, R.string.effect_info_help_no_members);
+        setTextViewValue(view.findViewById(R.id.infoHelpRow), R.id.helpText, String.format(getString(R.string.effect_info_help_none), members), 0);
 
         // Superclass updates the icon, so we have to re-override
         setImageButtonBackgroundResource(statusView, R.id.statusButtonPower, R.drawable.list_constant_icon);

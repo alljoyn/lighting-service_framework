@@ -59,7 +59,7 @@ public abstract class DimmableItemPresetsFragment extends SelectableItemTableFra
         table.removeAllViews();
 
         for (PresetDataModel presetModel : activity.presetModels.values()) {
-            updateSelectableItemRow(inflater, root, presetModel.id, presetModel.name + presetModel.id, R.drawable.nav_more_menu_icon, presetModel.name, false);
+            updateSelectableItemRow(inflater, root, presetModel.id, presetModel.tag, R.drawable.nav_more_menu_icon, presetModel.getName(), false);
         }
     }
 
@@ -88,7 +88,7 @@ public abstract class DimmableItemPresetsFragment extends SelectableItemTableFra
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
 
-        ((SampleAppActivity)getActivity()).updateActionBar(R.string.title_presets, false, false, false, false);
+        ((SampleAppActivity)getActivity()).updateActionBar(R.string.title_presets, false, false, false, false, true);
     }
 
     @Override
@@ -162,7 +162,7 @@ public abstract class DimmableItemPresetsFragment extends SelectableItemTableFra
         boolean isDuplicate = false;
         Map<String, PresetDataModel> currentPresets = ((SampleAppActivity) getActivity()).presetModels;
         for (String currentPresetName : currentPresets.keySet()) {
-            if (currentPresets.get(currentPresetName).name.equals(presetName)) {
+            if (currentPresets.get(currentPresetName).getName().equals(presetName)) {
                 isDuplicate = true;
             }
         }

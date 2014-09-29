@@ -23,7 +23,7 @@
 				</dictionary>
 				<dictionary>
 					<key>org.eclipse.cdt.make.core.buildArguments</key>
-					<value>ECLIPSE_WORKSPACE_PATH=${WorkspaceDirPath} V=0</value>
+					<value>ECLIPSE_WORKSPACE_PATH=${WorkspaceDirPath} NDK_DEBUG=1 V=0</value>
 				</dictionary>
 				<dictionary>
 					<key>org.eclipse.cdt.make.core.buildCommand</key>

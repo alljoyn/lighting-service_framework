@@ -28,6 +28,9 @@
 -(void)getLampManufacturerReplyWithCode: (LSFResponseCode)rc lampID: (NSString*)lampID language: (NSString*)language andManufacturer: (NSString*)manufacturer;
 -(void)setLampNameReplyWithCode: (LSFResponseCode)rc lampID: (NSString*)lampID andLanguage: (NSString*)language;
 -(void)lampsNameChanged: (NSArray *)lampIDs;
+-(void)lampsFound: (NSArray *)lampIDs;
+-(void)lampsLost: (NSArray *)lampIDs;
+-(void)pingLampReplyWithCode: (LSFResponseCode)rc andLampID: (NSString *)lampID;
 -(void)getLampDetailsReplyWithCode: (LSFResponseCode)rc lampID: (NSString *)lampID andLampDetails: (LSFLampDetails *)details;
 -(void)getLampParametersReplyWithCode: (LSFResponseCode)rc lampID: (NSString *)lampID andLampParameters: (LSFLampParameters *)params;
 -(void)getLampParametersEnergyUsageMilliwattsFieldReplyWithCode: (LSFResponseCode)rc lampID: (NSString*)lampID andEnergyUsage: (unsigned int)energyUsageMilliwatts;

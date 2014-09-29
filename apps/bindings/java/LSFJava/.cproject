@@ -6,6 +6,7 @@
 				<macros>
 					<stringMacro name="__GXX_EXPERIMENTAL_CXX0X__" type="VALUE_TEXT" value="1"/>
 				</macros>
+				<externalSettings/>
 				<extensions>
 					<extension id="org.eclipse.cdt.core.VCErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
 					<extension id="org.eclipse.cdt.core.GmakeErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
@@ -22,7 +23,7 @@
 					<folderInfo id="com.android.toolchain.gcc.1895939389.1549344498" name="/" resourcePath="">
 						<toolChain id="com.android.toolchain.gcc.1493013947" name="com.android.toolchain.gcc" superClass="com.android.toolchain.gcc">
 							<targetPlatform binaryParser="org.eclipse.cdt.core.ELF" id="com.android.targetPlatform.2132338772" isAbstract="false" superClass="com.android.targetPlatform"/>
-							<builder arguments="ECLIPSE_WORKSPACE_PATH=${WorkspaceDirPath} V=0" command="ndk-build" id="com.android.builder.187437823" keepEnvironmentInBuildfile="false" managedBuildOn="false" name="Android Builder" superClass="com.android.builder">
+							<builder arguments="ECLIPSE_WORKSPACE_PATH=${WorkspaceDirPath} NDK_DEBUG=1 V=0" command="ndk-build" id="com.android.builder.187437823" keepEnvironmentInBuildfile="false" managedBuildOn="false" name="Android Builder" superClass="com.android.builder">
 								<outputEntries>
 									<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="outputPath" name="obj"/>
 									<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="outputPath" name="libs"/>

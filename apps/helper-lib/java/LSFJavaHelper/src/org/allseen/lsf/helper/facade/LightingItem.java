@@ -18,7 +18,7 @@ import org.allseen.lsf.helper.model.LightingItemDataModel;
 
 public abstract class LightingItem {
     public String getName() {
-        return getItemDataModel().name;
+        return getItemDataModel().getName();
     }
 
     protected abstract LightingItemDataModel getItemDataModel();

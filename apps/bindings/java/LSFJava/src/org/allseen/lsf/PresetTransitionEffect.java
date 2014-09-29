@@ -22,7 +22,12 @@ public class PresetTransitionEffect extends DefaultNativeClassWrapper implements
     }
 
     public PresetTransitionEffect(PresetTransitionEffect other) {
-        //TODO-IMPL
+        this();
+
+        this.setLamps(other.getLamps());
+        this.setLampGroups(other.getLampGroups());
+        this.setTransitionPeriod(other.getTransitionPeriod());
+        this.setPresetID(other.getPresetID());
     }
 
     @Override

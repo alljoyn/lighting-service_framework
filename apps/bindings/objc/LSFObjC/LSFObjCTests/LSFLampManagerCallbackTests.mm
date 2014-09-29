@@ -217,6 +217,102 @@
     XCTAssertTrue(isSetsEqual, @"Start and end data should be equal");
 }
 
+-(void)testLampsFound
+{
+    //Ensure array is empty
+    [self.dataArray removeAllObjects];
+
+    //Populate array with test data
+    NSString *functionName = @"lampsFound";
+    NSString *lampID1 = @"lampID1";
+    NSString *lampID2 = @"lampID2";
+    NSString *lampID3 = @"lampID3";
+    NSString *lampID4 = @"lampID4";
+    NSArray *lampIDsArray = [[NSArray alloc] initWithObjects: lampID1, lampID2, lampID3, lampID4, nil];
+
+    [self.dataArray addObject: functionName];
+    [self.dataArray addObject: lampIDsArray];
+
+    //Call callback method
+    LSFStringList lampIDList;
+    std::string id1([lampID1 UTF8String]);
+    lampIDList.push_back(id1);
+    std::string id2([lampID2 UTF8String]);
+    lampIDList.push_back(id2);
+    std::string id3([lampID3 UTF8String]);
+    lampIDList.push_back(id3);
+    std::string id4([lampID4 UTF8String]);
+    lampIDList.push_back(id4);
+    self.lmc->LampsFoundCB(lampIDList);
+
+    //Test the data using NSSet
+    NSSet *startData = [[NSSet alloc] initWithArray: self.dataArray];
+    NSSet *endData = [[NSSet alloc] initWithArray: [self.lmcdh getCallbackData]];
+    BOOL isSetsEqual = [startData isEqualToSet: endData];
+    XCTAssertTrue(isSetsEqual, @"Start and end data should be equal");
+}
+
+-(void)testLampsLost
+{
+    //Ensure array is empty
+    [self.dataArray removeAllObjects];
+
+    //Populate array with test data
+    NSString *functionName = @"lampsLost";
+    NSString *lampID1 = @"lampID1";
+    NSString *lampID2 = @"lampID2";
+    NSString *lampID3 = @"lampID3";
+    NSString *lampID4 = @"lampID4";
+    NSArray *lampIDsArray = [[NSArray alloc] initWithObjects: lampID1, lampID2, lampID3, lampID4, nil];
+
+    [self.dataArray addObject: functionName];
+    [self.dataArray addObject: lampIDsArray];
+
+    //Call callback method
+    LSFStringList lampIDList;
+    std::string id1([lampID1 UTF8String]);
+    lampIDList.push_back(id1);
+    std::string id2([lampID2 UTF8String]);
+    lampIDList.push_back(id2);
+    std::string id3([lampID3 UTF8String]);
+    lampIDList.push_back(id3);
+    std::string id4([lampID4 UTF8String]);
+    lampIDList.push_back(id4);
+    self.lmc->LampsLostCB(lampIDList);
+
+    //Test the data using NSSet
+    NSSet *startData = [[NSSet alloc] initWithArray: self.dataArray];
+    NSSet *endData = [[NSSet alloc] initWithArray: [self.lmcdh getCallbackData]];
+    BOOL isSetsEqual = [startData isEqualToSet: endData];
+    XCTAssertTrue(isSetsEqual, @"Start and end data should be equal");
+}
+
+-(void)testPingLamp
+{
+    //Ensure array is empty
+    [self.dataArray removeAllObjects];
+
+    //Populate array with test data
+    LSFResponseCode code = LSF_ERR_INVALID;
+    NSNumber *responseCode = [[NSNumber alloc] initWithInt: code];
+    NSString *lampID = @"lampID1";
+    NSString *functionName = @"pingLamp";
+
+    [self.dataArray addObject: responseCode];
+    [self.dataArray addObject: functionName];
+    [self.dataArray addObject: lampID];
+
+    //Call callback method
+    std::string lid([lampID UTF8String]);
+    self.lmc->PingLampReplyCB(code, lid);
+
+    //Test the data using NSSet
+    NSSet *startData = [[NSSet alloc] initWithArray: self.dataArray];
+    NSSet *endData = [[NSSet alloc] initWithArray: [self.lmcdh getCallbackData]];
+    BOOL isSetsEqual = [startData isEqualToSet: endData];
+    XCTAssertTrue(isSetsEqual, @"Start and end data should be equal");
+}
+
 -(void)testGetLampDetails //(LSFResponseCode)rc lampID: (NSString *)lampID andLampDetails: (LSFLampDetails *)details
 {
     //Ensure array is empty

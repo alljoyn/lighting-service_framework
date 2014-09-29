@@ -81,7 +81,9 @@ public class PulseEffectFragment extends BasicSceneElementInfoFragment {
         // state adapter
         stateAdapter2 = new LampStateViewAdapter(view.findViewById(R.id.infoStateRow2), STATE2_ITEM_TAG, this);
 
-        updateInfoFields(((SampleAppActivity)getActivity()).pendingPulseEffectModel);
+        PulseEffectDataModel pulseEffectModel = ((SampleAppActivity)getActivity()).pendingPulseEffectModel;
+        setColorIndicator(view.findViewById(R.id.infoStateRow2), pulseEffectModel.endState);
+        updateInfoFields(pulseEffectModel);
 
         return view;
     }
@@ -117,7 +119,7 @@ public class PulseEffectFragment extends BasicSceneElementInfoFragment {
 
         super.updateInfoFields(itemModel);
 
-        updatePulseEffectInfoFields((PulseEffectDataModel)itemModel);
+        updatePulseEffectInfoFields(activity, (PulseEffectDataModel)itemModel);
     }
 
     @Override
@@ -126,14 +128,17 @@ public class PulseEffectFragment extends BasicSceneElementInfoFragment {
         updatePresetFields(((PulseEffectDataModel)itemModel).endState, stateAdapter2);
     }
 
-    protected void updatePulseEffectInfoFields(PulseEffectDataModel elementModel) {
+    protected void updatePulseEffectInfoFields(SampleAppActivity activity, PulseEffectDataModel elementModel) {
+        String members = MemberNamesString.format(activity, activity.pendingBasicSceneElementMembers, MemberNamesOptions.en, 3, R.string.effect_info_help_no_members);
+        setTextViewValue(view.findViewById(R.id.infoHelpRow), R.id.helpText, String.format(getString(R.string.effect_info_help_pulse), members), 0);
+
         // Superclass updates the icon, so we have to re-override
         setImageButtonBackgroundResource(statusView, R.id.statusButtonPower, R.drawable.list_pulse_icon);
 
-        stateAdapter2.setBrightness(elementModel.endState.getBrightness());
-        stateAdapter2.setHue(elementModel.endState.getHue());
-        stateAdapter2.setSaturation(elementModel.endState.getSaturation());
-        stateAdapter2.setColorTemp(elementModel.endState.getColorTemp());
+        stateAdapter2.setBrightness(elementModel.endState.getBrightness(), true);
+        stateAdapter2.setHue(elementModel.endState.getHue(), true);
+        stateAdapter2.setSaturation(elementModel.endState.getSaturation(), true);
+        stateAdapter2.setColorTemp(elementModel.endState.getColorTemp(), true);
 
         String periodValue = String.format(getString(R.string.effect_info_period_format), elementModel.period / 1000.0);
         setTextViewValue(view.findViewById(R.id.infoPeriodRow), R.id.nameValueValueText, periodValue, R.string.units_seconds);

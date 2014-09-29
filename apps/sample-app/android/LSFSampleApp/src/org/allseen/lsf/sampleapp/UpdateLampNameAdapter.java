@@ -23,7 +23,7 @@ public class UpdateLampNameAdapter extends UpdateItemNameAdapter {
 
     @Override
     protected void doUpdateName() {
-        AllJoynManager.lampManager.setLampName(itemModel.id, itemModel.name, SampleAppActivity.LANGUAGE);
+        AllJoynManager.lampManager.setLampName(itemModel.id, itemModel.getName(), SampleAppActivity.LANGUAGE);
     }
 
     @Override
@@ -34,7 +34,7 @@ public class UpdateLampNameAdapter extends UpdateItemNameAdapter {
     @Override
     protected boolean duplicateName(String name) {
         for (LampDataModel data : activity.lampModels.values()) {
-            if (data.name.equals(name) && !name.equals(itemModel.name)) {
+            if (data.getName().equals(name) && !name.equals(itemModel.getName())) {
                 return true;
             }
         }

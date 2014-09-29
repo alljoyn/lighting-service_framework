@@ -17,6 +17,9 @@
 
 #include <stddef.h>
 
+#include <sstream>
+#include <iterator>
+
 #include <qcc/Debug.h>
 
 #include "JStringArray.h"
@@ -100,6 +103,14 @@ void JStringArray::CopyStringArray(jobjectArray jarr, std::list<std::string>& st
 
         env->DeleteLocalRef(jobj);
    }
+}
+
+std::string JStringArray::FlattenStringList(const std::list<std::string>& strs)
+{
+    std::ostringstream flattened;
+    std::copy(strs.begin(), strs.end(), std::ostream_iterator<std::string>(flattened, ", "));
+
+    return flattened.str();
 }
 
 } /* namespace lsf */

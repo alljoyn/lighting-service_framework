@@ -21,12 +21,12 @@ namespace lsf {
 
 JLampDetails::JLampDetails(jobject jobj)
 {
-    // TODO Auto-generated constructor stub
+    // Currently nothing to do
 }
 
 JLampDetails::~JLampDetails()
 {
-    // TODO Auto-generated destructor stub
+    // Currently nothing to do
 }
 
 JLampDetails& JLampDetails::operator=(const LampDetails& other)

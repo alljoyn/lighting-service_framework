@@ -21,12 +21,12 @@ namespace lsf {
 
 XMasterSceneManager::XMasterSceneManager(jobject jobj, JControllerClient &jcc, XMasterSceneManagerCallback &xmsmcb) : MasterSceneManager(jcc, xmsmcb)
 {
-    // TODO Auto-generated constructor stub
+    // Currently nothing to do
 }
 
 XMasterSceneManager::~XMasterSceneManager()
 {
-    // TODO Auto-generated destructor stub
+    // Currently nothing to do
 }
 
 } /* namespace lsf */

@@ -28,12 +28,12 @@ static uint32_t emptyValue = 0;
 
 XStateTransitionEffect::XStateTransitionEffect(jobject jobj) : TransitionLampsLampGroupsToState(emptyStringList, emptyStringList, emptyState, emptyValue)
 {
-    // TODO Auto-generated constructor stub
+    // Currently nothing to do
 }
 
 XStateTransitionEffect::~XStateTransitionEffect()
 {
-    // TODO Auto-generated destructor stub
+    // Currently nothing to do
 }
 
 XStateTransitionEffect&

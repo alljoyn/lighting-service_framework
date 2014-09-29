@@ -21,6 +21,8 @@ import java.util.Set;
 import org.allseen.lsf.LampGroup;
 
 public class GroupDataModel extends ColorItemDataModel {
+    public static final char TAG_PREFIX_GROUP = 'G';
+
     public static String defaultName = "<Loading group info...>";
 
     public LampGroup members;
@@ -37,7 +39,7 @@ public class GroupDataModel extends ColorItemDataModel {
     }
 
     public GroupDataModel(String groupID, String groupName) {
-        super(groupID, groupName != null ? groupName : defaultName);
+        super(groupID, TAG_PREFIX_GROUP, groupName != null ? groupName : defaultName);
 
         members = new LampGroup();
     }

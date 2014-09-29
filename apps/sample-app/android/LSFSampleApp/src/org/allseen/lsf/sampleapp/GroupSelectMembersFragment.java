@@ -34,7 +34,7 @@ public class GroupSelectMembersFragment extends SelectMembersFragment {
 
         SampleAppActivity activity = (SampleAppActivity)getActivity();
 
-        activity.updateActionBar(activity.pendingGroupModel.id.isEmpty() ? R.string.title_group_add : R.string.title_group_edit, false, false, false, true);
+        activity.updateActionBar(activity.pendingGroupModel.id.isEmpty() ? R.string.title_group_add : R.string.title_group_edit, false, false, false, true, true);
     }
 
     @Override
@@ -58,7 +58,7 @@ public class GroupSelectMembersFragment extends SelectMembersFragment {
         activity.pendingGroupModel.members.setLampGroups(groupIDs.toArray(new String[groupIDs.size()]));
 
         if (activity.pendingGroupModel.id.isEmpty()) {
-            AllJoynManager.groupManager.createLampGroup(activity.pendingGroupModel.members, activity.pendingGroupModel.name, SampleAppActivity.LANGUAGE);
+            AllJoynManager.groupManager.createLampGroup(activity.pendingGroupModel.members, activity.pendingGroupModel.getName(), SampleAppActivity.LANGUAGE);
         } else {
             AllJoynManager.groupManager.updateLampGroup(activity.pendingGroupModel.id, activity.pendingGroupModel.members);
         }

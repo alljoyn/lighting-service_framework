@@ -150,7 +150,7 @@ T* CreateHandle(jobject jobj)
         return NULL;
     }
 
-    CreateHandle(jobj, cobj);
+    return CreateHandle(jobj, cobj);
 }
 
 template <typename T>

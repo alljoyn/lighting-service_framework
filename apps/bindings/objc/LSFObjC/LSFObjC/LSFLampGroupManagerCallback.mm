@@ -99,7 +99,7 @@ void LSFLampGroupManagerCallback::GetLampGroupReplyCB(const LSFResponseCode& res
 {
     LSFStringList lamps = lampGroup.lamps;
     NSMutableArray *lampIDsArray = [[NSMutableArray alloc] init];
-    
+
     for (std::list<LSFString>::const_iterator iter = lamps.begin(); iter != lamps.end(); ++iter)
     {
         [lampIDsArray addObject: [NSString stringWithUTF8String: (*iter).c_str()]];

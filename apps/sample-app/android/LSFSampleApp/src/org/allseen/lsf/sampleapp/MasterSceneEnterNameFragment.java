@@ -31,12 +31,12 @@ public class MasterSceneEnterNameFragment extends EnterNameFragment {
     @Override
     protected void setName(String name) {
         MasterSceneDataModel masterSceneModel = new MasterSceneDataModel();
-        masterSceneModel.name = name;
+        masterSceneModel.setName(name);
 
         SampleAppActivity activity = (SampleAppActivity)getActivity();
         activity.pendingMasterSceneModel = masterSceneModel;
 
-        Log.d(SampleAppActivity.TAG, "Pending master scene name: " + activity.pendingMasterSceneModel.name);
+        Log.d(SampleAppActivity.TAG, "Pending master scene name: " + activity.pendingMasterSceneModel.getName());
     }
 
     @Override
@@ -47,7 +47,7 @@ public class MasterSceneEnterNameFragment extends EnterNameFragment {
     @Override
     protected boolean duplicateName(String name) {
         for (MasterSceneDataModel data : ((SampleAppActivity) this.getActivity()).masterSceneModels.values()) {
-            if (data.name.equals(name)) {
+            if (data.getName().equals(name)) {
                 return true;
             }
         }

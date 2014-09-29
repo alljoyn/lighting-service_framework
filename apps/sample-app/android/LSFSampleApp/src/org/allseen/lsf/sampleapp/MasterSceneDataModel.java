@@ -18,12 +18,14 @@ package org.allseen.lsf.sampleapp;
 import org.allseen.lsf.MasterScene;
 
 public class MasterSceneDataModel extends ItemDataModel {
+    public static final char TAG_PREFIX_MASTER_SCENE = 'M';
+
     public static String defaultName = "";
 
     public MasterScene masterScene;
 
     public MasterSceneDataModel() {
-        this("", "");
+        this("");
     }
 
     public MasterSceneDataModel(String masterSceneID) {
@@ -31,7 +33,7 @@ public class MasterSceneDataModel extends ItemDataModel {
     }
 
     public MasterSceneDataModel(String masterSceneID, String masterSceneName) {
-        super(masterSceneID, masterSceneName);
+        super(masterSceneID, TAG_PREFIX_MASTER_SCENE, masterSceneName);
 
         masterScene = new MasterScene();
     }

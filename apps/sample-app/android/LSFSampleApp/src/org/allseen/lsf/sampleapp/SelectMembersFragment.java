@@ -34,10 +34,6 @@ import android.view.ViewGroup;
 import android.widget.Toast;
 
 public abstract class SelectMembersFragment extends SelectableItemTableFragment {
-    // Ensure groups are listed first, then lamps, then scenes
-    private final String SORTING_PREFIX_GROUP = "G:";
-    private final String SORTING_PREFIX_LAMP = "L:";
-    private final String SORTING_PREFIX_SCENE = "S:";
 
     protected int labelStringID;
     protected Set<String> selectedItems;
@@ -86,9 +82,8 @@ public abstract class SelectMembersFragment extends SelectableItemTableFragment 
                 String pendingGroupModelID = pendingGroupModel != null ? pendingGroupModel.id : "";
                 boolean otherIsParent = pendingGroupModelID != null && groupModel.getGroups() != null && groupModel.getGroups().contains(pendingGroupModelID);
 
-                if (groupModel != null && !itemID.equals(groupModel.id) && !SampleGroupManager.ALL_LAMPS_GROUP_ID.equals(groupModel.id) && !otherIsParent) {
-                    String sortableName = SORTING_PREFIX_GROUP + groupModel.name + groupModel.id;
-                    updateSelectableItemRow(inflater, root, groupModel.id, sortableName, R.drawable.scene_lightbulbs_icon, groupModel.name, isItemSelected(groupModel.id));
+                if (groupModel != null && !itemID.equals(groupModel.id) && !AllLampsDataModel.ALL_LAMPS_GROUP_ID.equals(groupModel.id) && !otherIsParent) {
+                    updateSelectableItemRow(inflater, root, groupModel.id, groupModel.tag, R.drawable.scene_lightbulbs_icon, groupModel.getName(), isItemSelected(groupModel.id));
                 }
             }
         }
@@ -97,8 +92,7 @@ public abstract class SelectMembersFragment extends SelectableItemTableFragment 
             for (Map.Entry<String, LampDataModel> entry : activity.lampModels.entrySet()) {
                 LampDataModel lampModel = entry.getValue();
                 if (lampModel != null && !itemID.equals(lampModel.id)) {
-                    String sortableName = SORTING_PREFIX_LAMP + lampModel.name + lampModel.id;
-                    updateSelectableItemRow(inflater, root, lampModel.id, sortableName, R.drawable.group_lightbulb_icon, lampModel.name, isItemSelected(lampModel.id));
+                    updateSelectableItemRow(inflater, root, lampModel.id, lampModel.tag, R.drawable.group_lightbulb_icon, lampModel.getName(), isItemSelected(lampModel.id));
                 }
             }
         }
@@ -107,8 +101,7 @@ public abstract class SelectMembersFragment extends SelectableItemTableFragment 
             for (Map.Entry<String, BasicSceneDataModel> entry : activity.basicSceneModels.entrySet()) {
                 BasicSceneDataModel sceneModel = entry.getValue();
                 if (sceneModel != null && !itemID.equals(sceneModel.id)) {
-                    String sortableName = SORTING_PREFIX_SCENE + sceneModel.name + sceneModel.id;
-                    updateSelectableItemRow(inflater, root, sceneModel.id, sortableName, R.drawable.scene_set_icon, sceneModel.name, isItemSelected(sceneModel.id));
+                    updateSelectableItemRow(inflater, root, sceneModel.id, sceneModel.tag, R.drawable.scene_set_icon, sceneModel.getName(), isItemSelected(sceneModel.id));
                 }
             }
         }

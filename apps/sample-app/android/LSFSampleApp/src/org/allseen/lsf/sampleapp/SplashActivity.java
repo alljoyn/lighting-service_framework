@@ -23,7 +23,7 @@ import android.os.Handler;
 public class SplashActivity extends Activity {
 
     public static final long SPLASH_TIME_OUT = 2500;
-    
+
     private Handler closeHandler;
     private Runnable closeRunnable;
 
@@ -45,15 +45,14 @@ public class SplashActivity extends Activity {
                 finish();
             }
         };
-        closeHandler.postDelayed(closeRunnable, SPLASH_TIME_OUT);
     }
-    
+
     @Override
     protected void onPause() {
         closeHandler.removeCallbacks(closeRunnable);
         super.onPause();
     }
-    
+
     @Override
     protected void onResume()
     {

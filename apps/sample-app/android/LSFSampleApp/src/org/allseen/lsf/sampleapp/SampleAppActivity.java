@@ -17,9 +17,11 @@
 package org.allseen.lsf.sampleapp;
 
 import java.lang.reflect.Method;
+import java.util.ArrayDeque;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Queue;
 
@@ -60,8 +62,18 @@ public class SampleAppActivity extends FragmentActivity implements ActionBar.Tab
     public static final boolean ERROR_CODE_ENABLED = false; // enables all error dialogs
     public static final boolean ERROR_CODE_VERBOSE = true; // when set to false enables only dependency errors
 
-    public static final int POLLING_DELAY = 10000;
-    public static final int LAMP_EXPIRATION = 15000;
+    public static final boolean POLLING_ENABLE = false;
+    public static final boolean POLLING_DISTRIBUTED = true;
+    public static final int POLLING_CYCLE = 2000;
+    public static final int POLLING_DELAY_MIN = 100;
+    public static final int LAMP_EXPIRATION = 5000;
+
+    public static final boolean COMMAND_ENABLE = false;
+    public static final int COMMAND_INTERVAL = 100;
+    public static final int COMMAND_EXPIRATION = 1000;
+
+    public static final boolean RETRY_ENABLE = true;
+    public static final int RETRY_INTERVAL = 1000;
 
     public static final long STATE_TRANSITION_DURATION = 100;
     public static final long FIELD_TRANSITION_DURATION = 0;
@@ -81,6 +93,8 @@ public class SampleAppActivity extends FragmentActivity implements ActionBar.Tab
 
     public ControllerDataModel leaderControllerModel;
 
+    public Queue<String> lampIDs = new ArrayDeque<String>();
+    public Queue<Runnable> commands = new ArrayDeque<Runnable>();
     public Map<String, LampDataModel> lampModels = new HashMap<String, LampDataModel>();
     public Map<String, GroupDataModel> groupModels = new HashMap<String, GroupDataModel>();
     public Map<String, PresetDataModel> presetModels = new HashMap<String, PresetDataModel>();
@@ -106,6 +120,8 @@ public class SampleAppActivity extends FragmentActivity implements ActionBar.Tab
     public SampleMasterSceneManagerCallback masterSceneManagerCB;
 
     public GarbageCollector garbageCollector;
+    public CommandManager commandManager;
+    public RetryManager retryManager;
 
     public PageFrameParentFragment pageFrameParent;
 
@@ -116,6 +132,8 @@ public class SampleAppActivity extends FragmentActivity implements ActionBar.Tab
     private MenuItem addActionMenuItem;
     private MenuItem nextActionMenuItem;
     private MenuItem doneActionMenuItem;
+    private MenuItem settingsActionMenuItem;
+
     private String popupItemID;
     private String popupSubItemID;
 
@@ -139,7 +157,23 @@ public class SampleAppActivity extends FragmentActivity implements ActionBar.Tab
         sceneManagerCB = new SampleBasicSceneManagerCallback(this, fragmentManager, handler);
         masterSceneManagerCB = new SampleMasterSceneManagerCallback(this, fragmentManager, handler);
 
-        garbageCollector = new GarbageCollector(this, SampleAppActivity.POLLING_DELAY, SampleAppActivity.LAMP_EXPIRATION);
+        if (POLLING_ENABLE) {
+            garbageCollector = new GarbageCollector(this, POLLING_CYCLE, LAMP_EXPIRATION);
+            commandManager = null;
+            retryManager = null;
+        } else if (COMMAND_ENABLE) {
+            garbageCollector = null;
+            commandManager = new CommandManager(this, COMMAND_INTERVAL, COMMAND_EXPIRATION);
+            retryManager = null;
+        } else if (RETRY_ENABLE) {
+            garbageCollector = null;
+            commandManager = null;
+            retryManager = new RetryManager(this, RETRY_INTERVAL);
+        } else {
+            garbageCollector = null;
+            commandManager = null;
+            retryManager = null;
+        }
 
         // Setup localized strings in data models
         ControllerDataModel.defaultName = this.getString(R.string.default_controller_name);
@@ -172,7 +206,13 @@ public class SampleAppActivity extends FragmentActivity implements ActionBar.Tab
             aboutManager,
             this);
 
-        garbageCollector.start();
+        if (POLLING_ENABLE) {
+            garbageCollector.start();
+        } else if (COMMAND_ENABLE) {
+            commandManager.start();
+        } else if (RETRY_ENABLE) {
+            retryManager.start();
+        }
 
         // Handle wifi disconnect errors
         IntentFilter filter = new IntentFilter();
@@ -209,9 +249,10 @@ public class SampleAppActivity extends FragmentActivity implements ActionBar.Tab
         addActionMenuItem = menu.findItem(R.id.action_add);
         nextActionMenuItem = menu.findItem(R.id.action_next);
         doneActionMenuItem = menu.findItem(R.id.action_done);
+        settingsActionMenuItem  = menu.findItem(R.id.action_settings);
 
         if (pageFrameParent == null) {
-            updateActionBar(viewPager.getCurrentItem() != 0, false, false);
+            updateActionBar(viewPager.getCurrentItem() != 0, false, false, true);
         }
 
         return true;
@@ -281,7 +322,7 @@ public class SampleAppActivity extends FragmentActivity implements ActionBar.Tab
         // the ViewPager.
         viewPager.setCurrentItem(tab.getPosition());
 
-        updateActionBar(tab.getPosition() != 0, false, false);
+        updateActionBar(tab.getPosition() != 0, false, false, true);
     }
 
     @Override
@@ -348,11 +389,11 @@ public class SampleAppActivity extends FragmentActivity implements ActionBar.Tab
         parent.showInfoChildFragment(itemID);
     }
 
-    private void applyBasicScene(String basicSceneID) {
+    public void applyBasicScene(String basicSceneID) {
         BasicSceneDataModel basicSceneModel = basicSceneModels.get(basicSceneID);
 
         if (basicSceneModel != null) {
-            String message = String.format(this.getString(R.string.toast_basic_scene_apply), basicSceneModel.name);
+            String message = String.format(this.getString(R.string.toast_basic_scene_apply), basicSceneModel.getName());
 
             AllJoynManager.sceneManager.applyScene(basicSceneID);
 
@@ -360,11 +401,11 @@ public class SampleAppActivity extends FragmentActivity implements ActionBar.Tab
         }
     }
 
-    private void applyMasterScene(String masterSceneID) {
+    public void applyMasterScene(String masterSceneID) {
         MasterSceneDataModel masterSceneModel = masterSceneModels.get(masterSceneID);
 
         if (masterSceneModel != null) {
-            String message = String.format(this.getString(R.string.toast_master_scene_apply), masterSceneModel.name);
+            String message = String.format(this.getString(R.string.toast_master_scene_apply), masterSceneModel.getName());
 
             AllJoynManager.masterSceneManager.applyMasterScene(masterSceneID);
 
@@ -445,10 +486,12 @@ public class SampleAppActivity extends FragmentActivity implements ActionBar.Tab
             sb.append(this.getString(R.string.error_dependency));
 
         } else {
+            String name = code.name();
+
             // default error message
             sb.append(this.getString(R.string.error_code));
             sb.append(" ");
-            sb.append(code.name());
+            sb.append(name != null ? name : code.ordinal());
             sb.append(source != null ? " - " + source : "");
 
         }
@@ -515,7 +558,7 @@ public class SampleAppActivity extends FragmentActivity implements ActionBar.Tab
             BasicSceneDataModel basicSceneModel = basicSceneModels.get(basicSceneID);
 
             if (basicSceneModel != null) {
-                showConfirmDeleteDialog(R.string.menu_basic_scene_delete, R.string.label_basic_scene, basicSceneModel.name, new DialogInterface.OnClickListener() {
+                showConfirmDeleteDialog(R.string.menu_basic_scene_delete, R.string.label_basic_scene, basicSceneModel.getName(), new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int id) {
                         Log.d(SampleAppActivity.TAG, "Delete basic scene ID: " + basicSceneID);
@@ -526,11 +569,11 @@ public class SampleAppActivity extends FragmentActivity implements ActionBar.Tab
     }
 
     private void doDeleteSceneElement(String basicSceneID, String elementID ) {
-        BasicSceneDataModel basicSceneModel = basicSceneModels.get(basicSceneID);
-
-        if (basicSceneModel != null && basicSceneModel.removeElement(elementID)) {
-            AllJoynManager.sceneManager.updateScene(basicSceneModel.id, basicSceneModel.toScene());
+        if (pendingBasicSceneModel != null) {
+            pendingBasicSceneModel.removeElement(elementID);
         }
+
+        sceneManagerCB.refreshScene(basicSceneID);
     }
 
     private void showConfirmDeleteMasterSceneDialog(final String masterSceneID) {
@@ -538,7 +581,7 @@ public class SampleAppActivity extends FragmentActivity implements ActionBar.Tab
             MasterSceneDataModel masterSceneModel = masterSceneModels.get(masterSceneID);
 
             if (masterSceneModel != null) {
-                showConfirmDeleteDialog(R.string.menu_master_scene_delete, R.string.label_master_scene, masterSceneModel.name, new DialogInterface.OnClickListener() {
+                showConfirmDeleteDialog(R.string.menu_master_scene_delete, R.string.label_master_scene, masterSceneModel.getName(), new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int id) {
                         Log.d(SampleAppActivity.TAG, "Delete master scene ID: " + masterSceneID);
@@ -553,7 +596,7 @@ public class SampleAppActivity extends FragmentActivity implements ActionBar.Tab
             GroupDataModel groupModel = groupModels.get(groupID);
 
             if (groupModel != null) {
-                showConfirmDeleteDialog(R.string.menu_group_delete, R.string.label_group, groupModel.name, new DialogInterface.OnClickListener() {
+                showConfirmDeleteDialog(R.string.menu_group_delete, R.string.label_group, groupModel.getName(), new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int id) {
                         Log.d(SampleAppActivity.TAG, "Delete group ID: " + groupID);
@@ -568,7 +611,7 @@ public class SampleAppActivity extends FragmentActivity implements ActionBar.Tab
             PresetDataModel presetModel = presetModels.get(presetID);
 
             if (presetModel != null) {
-                showConfirmDeleteDialog(R.string.menu_preset_delete, R.string.label_preset, presetModel.name, new DialogInterface.OnClickListener() {
+                showConfirmDeleteDialog(R.string.menu_preset_delete, R.string.label_preset, presetModel.getName(), new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int id) {
                         Log.d(SampleAppActivity.TAG, "Delete preset ID: " + presetID);
@@ -600,9 +643,17 @@ public class SampleAppActivity extends FragmentActivity implements ActionBar.Tab
             .show();
     }
 
-    private void showSceneInfo(boolean master) {
+    private void showSceneInfo(boolean isMaster) {
         ScenesPageFragment scenesPageFragment = (ScenesPageFragment)getSupportFragmentManager().findFragmentByTag(ScenesPageFragment.TAG);
-        scenesPageFragment.setMasterMode(master);
+        scenesPageFragment.setMasterMode(isMaster);
+
+        if (!isMaster) {
+            // Copy the selected scene into the pending state
+            pendingBasicSceneModel = new BasicSceneDataModel(basicSceneModels.get(popupItemID));
+            pendingBasicSceneElementMembers = new LampGroup();
+            pendingBasicSceneElementCapability = new CapabilityData(true, true, true);
+        }
+
         showInfoFragment(scenesPageFragment, popupItemID);
     }
 
@@ -623,7 +674,7 @@ public class SampleAppActivity extends FragmentActivity implements ActionBar.Tab
 
         PopupMenu popup = new PopupMenu(this, anchor);
         popup.inflate(R.menu.group_more);
-        popup.getMenu().findItem(R.id.group_delete).setEnabled(groupID != SampleGroupManager.ALL_LAMPS_GROUP_ID);
+        popup.getMenu().findItem(R.id.group_delete).setEnabled(groupID != AllLampsDataModel.ALL_LAMPS_GROUP_ID);
         popup.setOnMenuItemClickListener(this);
         popup.show();
     }
@@ -749,19 +800,31 @@ public class SampleAppActivity extends FragmentActivity implements ActionBar.Tab
 
             pageFrameParent = parent;
             parent.setMasterMode(isMaster);
+
+            if (!isMaster) {
+                // Create a dummy scene so that we can momentarily display the info fragment.
+                // This makes sure the info fragment is on the back stack so that we can more
+                // easily support the scene creation workflow.
+                pendingBasicSceneModel = new BasicSceneDataModel();
+                pendingBasicSceneElementMembers = new LampGroup();
+                pendingBasicSceneElementCapability = new CapabilityData(true, true, true);
+
+                parent.showInfoChildFragment(null);
+            }
+
             parent.showEnterNameChildFragment();
         }
     }
 
     public void resetActionBar() {
-        updateActionBar(null, true, viewPager.getCurrentItem() != 0, false, false);
+        updateActionBar(null, true, viewPager.getCurrentItem() != 0, false, false, true);
     }
 
-    public void updateActionBar(int titleID, boolean tabs, boolean add, boolean next, boolean done) {
-        updateActionBar(getResources().getString(titleID), tabs, add, next, done);
+    public void updateActionBar(int titleID, boolean tabs, boolean add, boolean next, boolean done, boolean settings) {
+        updateActionBar(getResources().getString(titleID), tabs, add, next, done, settings);
     }
 
-    protected void updateActionBar(String title, boolean tabs, boolean add, boolean next, boolean done) {
+    protected void updateActionBar(String title, boolean tabs, boolean add, boolean next, boolean done, boolean settings) {
         Log.d(SampleAppActivity.TAG, "Updating action bar to " + title);
         ActionBar actionBar = getActionBar();
 
@@ -769,10 +832,10 @@ public class SampleAppActivity extends FragmentActivity implements ActionBar.Tab
         actionBar.setNavigationMode(tabs ? ActionBar.NAVIGATION_MODE_TABS : ActionBar.NAVIGATION_MODE_STANDARD);
         actionBar.setDisplayHomeAsUpEnabled(!tabs);
 
-        updateActionBar(add, next, done);
+        updateActionBar(add, next, done, settings);
     }
 
-    protected void updateActionBar(boolean add, boolean next, boolean done) {
+    protected void updateActionBar(boolean add, boolean next, boolean done, boolean settings) {
         if (addActionMenuItem != null) {
             addActionMenuItem.setVisible(add);
         }
@@ -783,6 +846,10 @@ public class SampleAppActivity extends FragmentActivity implements ActionBar.Tab
 
         if (doneActionMenuItem != null) {
             doneActionMenuItem.setVisible(done);
+        }
+
+        if (settingsActionMenuItem != null) {
+            settingsActionMenuItem.setVisible(settings);
         }
     }
 
@@ -997,5 +1064,44 @@ public class SampleAppActivity extends FragmentActivity implements ActionBar.Tab
                 break;
             }
         }
+    }
+
+    public void createLostConnectionErrorDialog(String name) {
+        pageFrameParent.clearBackStack();
+
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+        alertDialogBuilder.setTitle(R.string.error_connection_lost_dialog_title);
+        alertDialogBuilder.setMessage(String.format(getString(R.string.error_connection_lost_dialog_text), name));
+        alertDialogBuilder.setPositiveButton(R.string.dialog_ok, new OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int id) {
+                dialog.cancel();
+            }
+        });
+        alertDialogBuilder.create().show();
+    }
+
+    public void setTabTitles() {
+        ActionBar actionBar = getActionBar();
+        for (int i = 0; i < actionBar.getTabCount(); i++) {
+            actionBar.getTabAt(i).setText(getPageTitle(i));
+        }
+    }
+
+    public CharSequence getPageTitle(int index) {
+        Locale locale = Locale.ENGLISH;
+        CharSequence title;
+
+        if (index == 0) {
+            title = getString(R.string.title_tab_lamps, lampModels.size()).toUpperCase(locale);
+        } else if (index == 1) {
+            title = getString(R.string.title_tab_groups, groupModels.size()).toUpperCase(locale);
+        } else if (index == 2) {
+            title = getString(R.string.title_tab_scenes, (basicSceneModels.size() + masterSceneModels.size())).toUpperCase(locale);
+        } else {
+            title = null;
+        }
+
+        return title;
     }
 }

@@ -41,7 +41,7 @@ public class EnterPeriodFragment extends EnterNumberFragment {
         SampleAppActivity activity = (SampleAppActivity)getActivity();
         long period = activity.pendingPulseEffectModel.period;
 
-        return String.format(Locale.getDefault(), getString(R.string.effect_info_period_format), period / 1000.0);
+        return String.format(Locale.ENGLISH, getString(R.string.effect_info_period_format), period / 1000.0);
     }
 
     @Override
@@ -49,7 +49,6 @@ public class EnterPeriodFragment extends EnterNumberFragment {
         SampleAppActivity activity = (SampleAppActivity)getActivity();
 
         activity.pendingPulseEffectModel.period = numberValue;
-        activity.pendingBasicSceneModel.updatePulseEffect(activity.pendingPulseEffectModel);
 
         // Go back to the effect info display
         activity.onBackPressed();

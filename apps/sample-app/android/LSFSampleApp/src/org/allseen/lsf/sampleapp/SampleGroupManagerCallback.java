@@ -29,6 +29,11 @@ public class SampleGroupManagerCallback extends LampGroupManagerCallback {
     protected FragmentManager fragmentManager;
     protected Handler handler;
 
+    protected final ColorAverager averageHue = new ColorAverager();
+    protected final ColorAverager averageSaturation = new ColorAverager();
+    protected final ColorAverager averageBrightness = new ColorAverager();
+    protected final ColorAverager averageColorTemp = new ColorAverager();
+
     protected String flattenTriggerGroupID;
 
     public SampleGroupManagerCallback(SampleAppActivity activity, FragmentManager fragmentManager, Handler handler) {
@@ -56,7 +61,7 @@ public class SampleGroupManagerCallback extends LampGroupManagerCallback {
         Log.d(SampleAppActivity.TAG, "---------------------------");
         Log.d(SampleAppActivity.TAG, "getAllLampGroupIDsReplyCB()");
         postProcessLampGroupIDs(groupIDs);
-        postProcessLampGroupID(SampleGroupManager.ALL_LAMPS_GROUP_ID);
+        postProcessLampGroupID(AllLampsDataModel.ALL_LAMPS_GROUP_ID);
 
         for (final String groupID : groupIDs) {
             postProcessLampGroupID(groupID);
@@ -211,7 +216,7 @@ public class SampleGroupManagerCallback extends LampGroupManagerCallback {
     }
 
     protected void postProcessLampGroupIDs(String[] groupIDs) {
-        final String lastGroupID = groupIDs.length > 0 ? groupIDs[groupIDs.length - 1] : SampleGroupManager.ALL_LAMPS_GROUP_ID;
+        final String lastGroupID = groupIDs.length > 0 ? groupIDs[groupIDs.length - 1] : AllLampsDataModel.ALL_LAMPS_GROUP_ID;
 
         handler.post(new Runnable() {
             @Override
@@ -247,7 +252,7 @@ public class SampleGroupManagerCallback extends LampGroupManagerCallback {
                 GroupDataModel groupModel = activity.groupModels.get(groupID);
 
                 if (groupModel == null) {
-                    groupModel = new GroupDataModel(groupID);
+                    groupModel = groupID != AllLampsDataModel.ALL_LAMPS_GROUP_ID ? new GroupDataModel(groupID) : new AllLampsDataModel();
                     activity.groupModels.put(groupID, groupModel);
                 }
             }
@@ -264,7 +269,7 @@ public class SampleGroupManagerCallback extends LampGroupManagerCallback {
                 GroupDataModel groupModel = activity.groupModels.get(groupID);
 
                 if (groupModel != null) {
-                    groupModel.name = groupName;
+                    groupModel.setName(groupName);
                 }
             }
         });
@@ -312,16 +317,14 @@ public class SampleGroupManagerCallback extends LampGroupManagerCallback {
         handler.post(new Runnable() {
             @Override
             public void run() {
-                boolean powerOn = false;
-                long hue = 0;
-                long saturation = 0;
-                long brightness = 0;
-                long colorTemp = 0;
-
-                long countDim = 0;
-                long countColor = 0;
-                long countTemp = 0;
                 CapabilityData capability = new CapabilityData();
+                int countOn = 0;
+                int countOff = 0;
+
+                averageHue.reset();
+                averageSaturation.reset();
+                averageBrightness.reset();
+                averageColorTemp.reset();
 
                 for (String lampID : groupModel.getLamps()) {
                     LampDataModel lampModel = activity.lampModels.get(lampID);
@@ -329,41 +332,44 @@ public class SampleGroupManagerCallback extends LampGroupManagerCallback {
                     if (lampModel != null) {
                         capability.includeData(lampModel.getCapability());
 
-                        powerOn = powerOn || lampModel.state.getOnOff();
-
-                        if (lampModel.getDetails().isDimmable()) {
-                            brightness = brightness + lampModel.state.getBrightness();
-                            countDim++;
+                        if ( lampModel.state.getOnOff()) {
+                            countOn++;
+                        } else {
+                            countOff++;
                         }
 
                         if (lampModel.getDetails().hasColor()) {
-                            hue = hue + lampModel.state.getHue();
-                            saturation = saturation + lampModel.state.getSaturation();
-                            countColor++;
+                            averageHue.add(lampModel.state.getHue());
+                            averageSaturation.add(lampModel.state.getSaturation());
+                        }
+
+                        if (lampModel.getDetails().isDimmable()) {
+                            averageBrightness.add(lampModel.state.getBrightness());
                         }
 
                         if (lampModel.getDetails().hasVariableColorTemp()) {
-                            colorTemp = colorTemp + lampModel.state.getColorTemp();
-                            countTemp++;
+                            averageColorTemp.add(lampModel.state.getColorTemp());
                         }
-
-                        Log.d(SampleAppActivity.TAG, lampID + ": power on " + powerOn + " (" + countDim + ") brightness " + brightness + " (" + countColor + ") hue " + hue + " saturation " + saturation + " (" + countTemp + ") colorTemp " + colorTemp);
                     } else {
                         Log.d(SampleAppActivity.TAG, "missing lamp: " + lampID);
                     }
                 }
 
-                double divisorDim = countDim > 0 ? countDim : 1.0;
-                double divisorColor = countColor > 0 ? countColor : 1.0;
-                double divisorTemp = countTemp > 0 ? countTemp : 1.0;
-
-                groupModel.state.setOnOff(powerOn);
-                groupModel.state.setHue(Math.round(hue / divisorColor));
-                groupModel.state.setSaturation(Math.round(saturation / divisorColor));
-                groupModel.state.setBrightness(Math.round(brightness / divisorDim));
-                groupModel.state.setColorTemp(Math.round(colorTemp / divisorTemp));
                 groupModel.setCapability(capability);
-                Log.d(SampleAppActivity.TAG, "updating group " + groupModel.name + " - " + groupModel.getCapability().toString());
+
+                groupModel.state.setOnOff(countOn > 0);
+                groupModel.state.setHue(averageHue.getAverage());
+                groupModel.state.setSaturation(averageSaturation.getAverage());
+                groupModel.state.setBrightness(averageBrightness.getAverage());
+                groupModel.state.setColorTemp(averageColorTemp.getAverage());
+
+                groupModel.uniformity.power = countOn == 0 || countOff == 0;
+                groupModel.uniformity.hue = averageHue.isUniform();
+                groupModel.uniformity.saturation = averageSaturation.isUniform();
+                groupModel.uniformity.brightness = averageBrightness.isUniform();
+                groupModel.uniformity.colorTemp = averageColorTemp.isUniform();
+
+                Log.d(SampleAppActivity.TAG, "updating group " + groupModel.getName() + " - " + groupModel.getCapability().toString());
             }
         });
 
@@ -393,12 +399,18 @@ public class SampleGroupManagerCallback extends LampGroupManagerCallback {
                 Fragment pageFragment = fragmentManager.findFragmentByTag(GroupsPageFragment.TAG);
                 FragmentManager childManager = pageFragment != null ? pageFragment.getChildFragmentManager() : null;
                 GroupsTableFragment tableFragment = childManager != null ? (GroupsTableFragment)childManager.findFragmentByTag(PageFrameParentFragment.CHILD_TAG_TABLE) : null;
+                GroupInfoFragment infoFragment = childManager != null ? (GroupInfoFragment)childManager.findFragmentByTag(PageFrameParentFragment.CHILD_TAG_INFO) : null;
 
                 for (String groupID : groupIDs) {
+                    String name = activity.groupModels.get(groupID).getName();
                     activity.groupModels.remove(groupID);
 
                     if (tableFragment != null) {
                         tableFragment.removeElement(groupID);
+                    }
+
+                    if ((infoFragment != null) && (infoFragment.key.equals(groupID))) {
+                        activity.createLostConnectionErrorDialog(name);
                     }
                 }
             }

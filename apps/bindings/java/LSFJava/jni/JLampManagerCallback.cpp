@@ -85,6 +85,16 @@ void JLampManagerCallback::LampsNameChangedCB(const LSFStringList& lampIDs)
     XJavaDelegator::Call_Void_StringList(jdelegate, __func__, lampIDs);
 }
 
+void JLampManagerCallback::LampsFoundCB(const LSFStringList& lampIDs)
+{
+    XJavaDelegator::Call_Void_StringList(jdelegate, __func__, lampIDs);
+}
+
+void JLampManagerCallback::LampsLostCB(const LSFStringList& lampIDs)
+{
+    XJavaDelegator::Call_Void_StringList(jdelegate, __func__, lampIDs);
+}
+
 void JLampManagerCallback::GetLampDetailsReplyCB(const LSFResponseCode& responseCode, const LSFString& lampID, const LampDetails& lampDetails)
 {
     XJavaDelegator::Call_Void_ResponseCode_String_Object<LampDetails, JLampDetails>(jdelegate, __func__, XClass::xLampDetails, responseCode, lampID, lampDetails);

@@ -34,6 +34,10 @@ public class LightingDirector {
         lightingManager.start(fragmentManager);
     }
 
+    public void stop(FragmentManager fragmentManager) {
+        lightingManager.stop(fragmentManager);
+    }
+
     public Lamp[] getLamps() {
         return lightingManager.getLampCollectionManager().getLamps();
     }

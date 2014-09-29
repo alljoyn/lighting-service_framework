@@ -23,6 +23,8 @@ import org.allseen.lsf.LampDetails;
 import org.allseen.lsf.LampParameters;
 
 public class LampDataModel extends DimmableItemDataModel {
+    public static final char TAG_PREFIX_LAMP = 'L';
+
     private LampDetails details;
     private LampParameters parameters;
 
@@ -43,7 +45,7 @@ public class LampDataModel extends DimmableItemDataModel {
     public static String dataNotFound;
 
     public LampDataModel(String lampID) {
-        super(lampID, defaultName);
+        super(lampID, TAG_PREFIX_LAMP, defaultName);
 
         details = new LampDetails();
         parameters = new LampParameters();

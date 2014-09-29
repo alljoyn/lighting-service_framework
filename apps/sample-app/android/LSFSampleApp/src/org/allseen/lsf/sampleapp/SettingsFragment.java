@@ -53,15 +53,15 @@ public class SettingsFragment extends PageFrameChildFragment implements OnClickL
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
 
-        ((SampleAppActivity)getActivity()).updateActionBar(R.string.action_settings, false, false, false, false);
+        ((SampleAppActivity)getActivity()).updateActionBar(R.string.action_settings, false, false, false, false, false);
     }
 
     public void onUpdateView() {
         ControllerDataModel leaderControllerModel = ((SampleAppActivity)getActivity()).leaderControllerModel;
         String leaderName = ControllerDataModel.defaultName;
 
-        if (leaderControllerModel != null && leaderControllerModel.name != null && !leaderControllerModel.name.isEmpty()) {
-            leaderName = leaderControllerModel.name;
+        if (leaderControllerModel != null && leaderControllerModel.getName() != null && !leaderControllerModel.getName().isEmpty()) {
+            leaderName = leaderControllerModel.getName();
         }
 
         ((TextView) view.findViewById(R.id.settingsTextController)).setText(leaderName);

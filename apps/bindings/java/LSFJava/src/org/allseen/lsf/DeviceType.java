@@ -17,10 +17,12 @@
 package org.allseen.lsf;
 
 public enum DeviceType {
+    INVALID,
     LAMP,
     OUTLET,
     LUMINAIRE,
-    SWITCH;
+    SWITCH,
+    LASTVALUE;
 
     /** Static lookup, used by the native code */
     @SuppressWarnings("unused")

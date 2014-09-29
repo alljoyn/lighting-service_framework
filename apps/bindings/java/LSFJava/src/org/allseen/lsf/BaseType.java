@@ -17,6 +17,7 @@
 package org.allseen.lsf;
 
 public enum BaseType {
+    INVALID,
     E5,
     E10,
     E11,
@@ -26,7 +27,8 @@ public enum BaseType {
     E26,
     E27,
     E29,
-    E39;
+    E39,
+    LASTVALUE;
 
     /** Static lookup, used by the native code */
     @SuppressWarnings("unused")

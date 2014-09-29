@@ -141,7 +141,7 @@ public class HelperSceneManagerCallback extends SceneManagerCallback {
     }
 
     @Override
-    public void sceneAppliedCB(String[] sceneIDs) {
+    public void scenesAppliedCB(String[] sceneIDs) {
         //TODO-CHK Do we need to do anything here?
     }
 
@@ -193,7 +193,7 @@ public class HelperSceneManagerCallback extends SceneManagerCallback {
                 SceneDataModel basicSceneModel = director.getSceneCollectionManager().getModel(sceneID);
 
                 if (basicSceneModel != null) {
-                    basicSceneModel.name = sceneName;
+                    basicSceneModel.setName(sceneName);
                 }
             }
         });

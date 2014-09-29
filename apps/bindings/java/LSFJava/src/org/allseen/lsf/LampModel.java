@@ -17,7 +17,9 @@
 package org.allseen.lsf;
 
 public enum LampModel {
-    LED;
+    INVALID,
+    LED,
+    LASTVALUE;
 
     /** Static lookup, used by the native code */
     @SuppressWarnings("unused")

@@ -175,6 +175,31 @@ jobject XCppDelegator::Call_ControllerClientStatus_String_Boolean(JNIEnv *env, j
 }
 
 template <typename T>
+jobject XCppDelegator::Call_ControllerClientStatus_String_UInt32(JNIEnv *env, jobject thiz, jstring jString, jlong jLong, ControllerClientStatus (T::*cMethod)(const std::string&, const uint32_t&))
+{
+    T *xDelegate = GetHandle<T*>(thiz);
+    if (env->ExceptionCheck() || !xDelegate) {
+        QCC_LogError(ER_FAIL, ("GetHandle() failed"));
+        return NULL;
+    }
+
+    JString xString(jString);
+    if (env->ExceptionCheck()) {
+        QCC_LogError(ER_FAIL, ("JString failed"));
+        return NULL;
+    }
+
+    if (!xString.c_str()) {
+        QCC_LogError(ER_FAIL, ("JString invalid"));
+        return NULL;
+    }
+
+    std::string cString = xString.c_str();
+
+    return JEnum::jControllerClientStatusEnum->getObject((int)((xDelegate->*cMethod)(cString, (uint32_t)jLong)));
+}
+
+template <typename T>
 jobject XCppDelegator::Call_ControllerClientStatus_String_UInt32_UInt32(JNIEnv *env, jobject thiz, jstring jString, jlong jLong1, jlong jLong2, ControllerClientStatus (T::*cMethod)(const std::string&, const uint32_t&, const uint32_t&))
 {
     T *xDelegate = GetHandle<T*>(thiz);

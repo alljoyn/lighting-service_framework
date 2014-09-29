@@ -50,6 +50,12 @@ public class TutorialActivity extends FragmentActivity {
         lightingDirector.start(getSupportFragmentManager());
     }
 
+    @Override
+    protected void onDestroy() {
+        lightingDirector.stop(getSupportFragmentManager());
+        super.onDestroy();
+    }
+
     protected void performLightingOperations() {
         // Lamp operations
         Lamp[] lamps = lightingDirector.getLamps();

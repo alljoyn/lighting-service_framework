@@ -18,19 +18,23 @@ package org.allseen.lsf.sampleapp;
 import org.allseen.lsf.LampState;
 
 public class DimmableItemDataModel extends ItemDataModel {
+    public static final char TAG_PREFIX_UNKNOWN = 'X';
 
     public LampState state;
+    public LampStateUniformity uniformity;
 
     protected CapabilityData capability;
 
     public DimmableItemDataModel() {
-        this("", "");
+        this("", TAG_PREFIX_UNKNOWN, "");
     }
 
-    public DimmableItemDataModel(String itemID, String itemName) {
-        super(itemID, itemName);
+    public DimmableItemDataModel(String itemID, char prefix, String itemName) {
+        super(itemID, prefix, itemName);
 
         state = new LampState();
+        uniformity = new LampStateUniformity();
+
         capability = new CapabilityData();
 
         state.setOnOff(false);
@@ -44,6 +48,7 @@ public class DimmableItemDataModel extends ItemDataModel {
         super(other);
 
         this.state = new LampState(other.state);
+        this.uniformity = new LampStateUniformity(other.uniformity);
         this.capability = other.getCapability();
     }
 

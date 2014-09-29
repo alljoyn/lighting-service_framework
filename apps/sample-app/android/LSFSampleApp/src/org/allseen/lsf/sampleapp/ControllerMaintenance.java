@@ -32,7 +32,7 @@ public class ControllerMaintenance {
             if (AllJoynManager.lampManager != null) {
                 AllJoynManager.lampManager.getAllLampIDs();
 
-                handler.postDelayed(this, SampleAppActivity.POLLING_DELAY);
+                handler.postDelayed(this, SampleAppActivity.POLLING_CYCLE);
             }
         }
     }

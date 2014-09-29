@@ -17,48 +17,58 @@ package org.allseen.lsf.sampleapp;
 
 import android.os.SystemClock;
 
-public class ItemDataModel implements Comparable<ItemDataModel> {
+public class ItemDataModel {
 
     public String id;
-    public String name;
+    private final char prefix;
+    private String name;
     public long timestamp;
+    public LightingItemSortableTag tag;
 
-    public ItemDataModel(String itemID, String itemName) {
+    public ItemDataModel(String id, char prefix, String name) {
         super();
 
-        id = itemID;
-        name = itemName;
-        timestamp = SystemClock.elapsedRealtime();
+        this.id = id;
+        this.prefix = prefix;
+        this.name = name;
+        this.timestamp = SystemClock.elapsedRealtime();
+        this.tag = new LightingItemSortableTag(this.id, this.prefix, this.name);
     }
 
     public ItemDataModel(ItemDataModel other) {
         this.id = other.id;
+        this.prefix = other.prefix;
         this.name = other.name;
         this.timestamp = other.timestamp;
+        this.tag = new LightingItemSortableTag(other.tag);
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+        this.tag = new LightingItemSortableTag(this.id, this.prefix, this.name);
     }
 
     @Override
-	public int compareTo(ItemDataModel other) {
-		ItemDataModel otherDataModel = (ItemDataModel) other;
-		String otherDataModelStr = otherDataModel.name + otherDataModel.id;
-		String thisDataModelStr = this.name + this.id;
-
-		return thisDataModelStr.compareTo(otherDataModelStr);
-	}
-
-	@Override
     public int hashCode() {
         return id.hashCode();
     }
 
-    @Override
-    public boolean equals(Object that) {
-        boolean result = false;
+    public boolean equalsID(String itemID) {
+        return id.equals(itemID);
+    }
 
-        if ((that != null) && (that instanceof ItemDataModel)) {
-            result = (that == this) || (id.equals(((ItemDataModel)that).id));
+    @Override
+    public boolean equals(Object other) {
+        boolean equivalent = false;
+
+        if ((other != null) && (other instanceof ItemDataModel)) {
+            equivalent = (other == this) || (equalsID(((ItemDataModel)other).id));
         }
 
-        return result;
+        return equivalent;
     }
 }

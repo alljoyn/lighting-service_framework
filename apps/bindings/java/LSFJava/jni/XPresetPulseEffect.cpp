@@ -26,12 +26,14 @@ static LSFStringList emptyStringList;
 static LSFString emptyString;
 static uint32_t emptyValue = 0;
 
-XPresetPulseEffect::XPresetPulseEffect(jobject jobj) : PulseLampsLampGroupsWithPreset(emptyStringList, emptyStringList, emptyString, emptyString, emptyValue, emptyValue, emptyValue) {
-    // TODO Auto-generated constructor stub
+XPresetPulseEffect::XPresetPulseEffect(jobject jobj) : PulseLampsLampGroupsWithPreset(emptyStringList, emptyStringList, emptyString, emptyString, emptyValue, emptyValue, emptyValue)
+{
+    // Currently nothing to do
 }
 
-XPresetPulseEffect::~XPresetPulseEffect() {
-    // TODO Auto-generated destructor stub
+XPresetPulseEffect::~XPresetPulseEffect()
+{
+    // Currently nothing to do
 }
 
 XPresetPulseEffect&

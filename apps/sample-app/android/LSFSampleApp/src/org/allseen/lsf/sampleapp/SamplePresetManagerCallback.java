@@ -212,7 +212,7 @@ public class SamplePresetManagerCallback extends PresetManagerCallback {
                 PresetDataModel presetModel = activity.presetModels.get(presetID);
 
                 if (presetModel != null) {
-                    presetModel.name = presetName;
+                    presetModel.setName(presetName);
                 }
             }
         });

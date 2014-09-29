@@ -16,6 +16,8 @@
 package org.allseen.lsf.helper.model;
 
 public class ControllerDataModel extends LightingItemDataModel {
+    public static final char TAG_PREFIX_CONTROLLER = 'C';
+
     public static String defaultName = "<Loading controller info...>";
 
     public boolean connected;
@@ -30,7 +32,7 @@ public class ControllerDataModel extends LightingItemDataModel {
     }
 
     public ControllerDataModel(String controllerID, String controllerName) {
-        super(controllerID, controllerName != null ? controllerName : defaultName);
+        super(controllerID, TAG_PREFIX_CONTROLLER, controllerName != null ? controllerName : defaultName);
     }
 
     public ControllerDataModel(ControllerDataModel other) {

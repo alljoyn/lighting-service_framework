@@ -15,15 +15,12 @@
  */
 package org.allseen.lsf.sampleapp;
 
-import android.content.Context;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.Toast;
 
@@ -45,7 +42,7 @@ public abstract class EnterNumberFragment extends PageFrameChildFragment {
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        ((SampleAppActivity)getActivity()).updateActionBar(getTitleID(), false, false, false, true);
+        ((SampleAppActivity)getActivity()).updateActionBar(getTitleID(), false, false, false, true, true);
     }
 
     @Override
@@ -58,12 +55,7 @@ public abstract class EnterNumberFragment extends PageFrameChildFragment {
                 long maxValue = (long)Integer.MAX_VALUE - Integer.MIN_VALUE;
 
                 if (longValue >= 0 && longValue <= maxValue) {
-
-                    if (setNumberValue(longValue)) {
-                        // hide soft keyboard
-                        InputMethodManager inputManager = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
-                        inputManager.hideSoftInputFromWindow(view.getWindowToken(), 0);
-                    }
+                    setNumberValue(longValue);
                 } else {
                     Toast.makeText(getActivity(), String.format(getString(R.string.toast_number_value_invalid), maxValue / getScale()), Toast.LENGTH_LONG).show();
                 }

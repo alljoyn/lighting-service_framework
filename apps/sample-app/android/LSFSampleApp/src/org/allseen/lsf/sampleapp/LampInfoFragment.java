@@ -47,7 +47,7 @@ public class LampInfoFragment extends DimmableItemInfoFragment {
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        ((SampleAppActivity)getActivity()).updateActionBar(R.string.title_lamp_info, false, false, false, false);
+        ((SampleAppActivity)getActivity()).updateActionBar(R.string.title_lamp_info, false, false, false, false, true);
     }
 
     @Override

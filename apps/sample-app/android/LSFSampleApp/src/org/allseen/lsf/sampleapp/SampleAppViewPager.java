@@ -53,7 +53,7 @@ public class SampleAppViewPager extends ViewPager {
         });
 
         for (int tabIndex = 0; tabIndex < pageAdapter.getCount(); tabIndex++) {
-            actionBar.addTab(actionBar.newTab().setText(pageAdapter.getPageTitle(tabIndex)).setTabListener(activity));
+            actionBar.addTab(actionBar.newTab().setText(activity.getPageTitle(tabIndex)).setTabListener(activity));
         }
     }
 

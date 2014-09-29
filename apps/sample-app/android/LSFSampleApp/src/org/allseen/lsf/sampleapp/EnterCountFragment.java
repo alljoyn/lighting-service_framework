@@ -64,7 +64,6 @@ public class EnterCountFragment extends EnterNumberFragment {
         SampleAppActivity activity = (SampleAppActivity)getActivity();
 
         activity.pendingPulseEffectModel.count = numberValue;
-        activity.pendingBasicSceneModel.updatePulseEffect(activity.pendingPulseEffectModel);
 
         // Go back to the effect info display
         activity.onBackPressed();

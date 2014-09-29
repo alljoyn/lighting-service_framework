@@ -56,19 +56,6 @@ public class PageFrameParentAdapter extends FragmentPagerAdapter {
 
     @Override
     public CharSequence getPageTitle(int index) {
-        Locale locale = Locale.getDefault();
-        CharSequence title;
-
-        if (index == 0) {
-            title = context.getString(R.string.title_tab_lamps).toUpperCase(locale);
-        } else if (index == 1) {
-            title = context.getString(R.string.title_tab_groups).toUpperCase(locale);
-        } else if (index == 2) {
-            title = context.getString(R.string.title_tab_scenes).toUpperCase(locale);
-        } else {
-            title = null;
-        }
-
-        return title;
+        return ((SampleAppActivity) context).getPageTitle(index);
     }
 }

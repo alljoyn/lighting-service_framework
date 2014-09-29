@@ -15,10 +15,6 @@
  */
 package org.allseen.lsf.sampleapp;
 
-import java.util.Map;
-
-import org.alljoyn.about.AboutKeys;
-import org.alljoyn.bus.Variant;
 import org.allseen.lsf.ControllerClientCallback;
 import org.allseen.lsf.ErrorCode;
 
@@ -45,13 +41,17 @@ public class SampleControllerClientCallback extends ControllerClientCallback {
     public void connectedToControllerServiceCB(String controllerServiceDeviceID, String controllerServiceName) {
         Log.d(SampleAppActivity.TAG, "Connection succeeded: " + controllerServiceName + " (" + controllerServiceDeviceID + ")");
         AllJoynManager.controllerConnected = true;
-        updateUI();
+        postUpdateControllerDisplay();
 
         // Update lamp IDs
-        new ControllerMaintenance(activity);
+        if (SampleAppActivity.POLLING_DISTRIBUTED) {
+            AllJoynManager.lampManager.getAllLampIDs();
+        } else {
+            new ControllerMaintenance(activity);
+        }
 
         // Update all other object IDs
-        postUpdateControllerID(controllerServiceDeviceID, controllerServiceName, 0);
+        postOnControllerConnected(controllerServiceDeviceID, controllerServiceName, 0);
         postGetAllLampGroupIDs();
         postGetAllPresetIDs();
         postGetAllBasicSceneIDs();
@@ -62,14 +62,14 @@ public class SampleControllerClientCallback extends ControllerClientCallback {
     public void connectToControllerServiceFailedCB(String controllerServiceDeviceID, String controllerServiceName) {
         Log.w(SampleAppActivity.TAG, "Connection failed: " + controllerServiceName + " (" + controllerServiceDeviceID + ")");
         AllJoynManager.controllerConnected = false;
-        updateUI();
+        postOnControllerDisconnected(controllerServiceDeviceID, controllerServiceName, 0);
     }
 
     @Override
     public void disconnectedFromControllerServiceCB(String controllerServiceDeviceID, String controllerServiceName) {
         Log.d(SampleAppActivity.TAG, "Disconnected: " + controllerServiceName + " (" + controllerServiceDeviceID + ")");
         AllJoynManager.controllerConnected = false;
-        updateUI();
+        postOnControllerDisconnected(controllerServiceDeviceID, controllerServiceName, 0);
     }
 
     @Override
@@ -81,29 +81,48 @@ public class SampleControllerClientCallback extends ControllerClientCallback {
         }
     }
 
-    public void postUpdateControllerID(final String controllerID, final Map<String, Variant> announceData, int delay) {
-        String controllerName = AboutManager.getStringFromAnnounceData(AboutKeys.ABOUT_DEVICE_NAME, announceData, null);
-
-        postUpdateControllerID(controllerID, controllerName, delay);
-    }
-
-    public void postUpdateControllerID(final String controllerID, final String controllerName, int delay) {
-        Log.d(SampleAppActivity.TAG, "Updating ID " + controllerID);
+    public void postOnControllerConnected(final String controllerID, final String controllerName, int delay) {
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
-                Log.d(SampleAppActivity.TAG, "update controller model " + controllerID);
-
                 if (activity.leaderControllerModel == null) {
                     activity.leaderControllerModel = new ControllerDataModel(controllerID, controllerName);
-                    updateUI();
-                } else if (activity.leaderControllerModel.id.equals(controllerID)){
-                    activity.leaderControllerModel.name = controllerName;
-                    updateUI();
+                } else {
+                    activity.leaderControllerModel.id = controllerID;
+                    activity.leaderControllerModel.setName(controllerName);
                 }
 
                 // update the timestamp
                 activity.leaderControllerModel.timestamp = SystemClock.elapsedRealtime();
+
+                postUpdateControllerDisplay();
+            }
+        }, delay);
+    }
+
+    public void postOnControllerDisconnected(final String controllerID, final String controllerName, int delay) {
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                activity.leaderControllerModel = null;
+
+                postUpdateControllerDisplay();
+            }
+        }, delay);
+    }
+
+    public void postOnControllerAboutAnnouncement(final String controllerID, final String controllerName, int delay) {
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if (activity.leaderControllerModel != null) {
+                    if (activity.leaderControllerModel.id.equals(controllerID)) {
+                        activity.leaderControllerModel.setName(controllerName);
+                        activity.leaderControllerModel.timestamp = SystemClock.elapsedRealtime();
+
+                        postUpdateControllerDisplay();
+                    }
+                }
             }
         }, delay);
     }
@@ -144,7 +163,7 @@ public class SampleControllerClientCallback extends ControllerClientCallback {
         }), 400);
     }
 
-    protected void updateUI() {
+    protected void postUpdateControllerDisplay() {
         // if connection status is ever changed, then prompt for updating the loading information
         handler.post(new Runnable() {
             @Override

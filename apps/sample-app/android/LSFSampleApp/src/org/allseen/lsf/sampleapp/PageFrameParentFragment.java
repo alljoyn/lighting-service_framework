@@ -65,13 +65,17 @@ public abstract class PageFrameParentFragment extends Fragment {
     }
 
     public void clearBackStack() {
-        FragmentManager manager = getChildFragmentManager();
-
-        manager.popBackStack(CHILD_TAG_TABLE, 0);
-
-        child = (PageFrameChildFragment)manager.findFragmentByTag(CHILD_TAG_TABLE);
+        popBackStack(CHILD_TAG_TABLE);
 
         ((SampleAppActivity)getActivity()).onClearBackStack();
+    }
+
+    public void popBackStack(String tag) {
+        FragmentManager manager = getChildFragmentManager();
+
+        manager.popBackStack(tag, 0);
+
+        child = (PageFrameChildFragment)manager.findFragmentByTag(tag);
     }
 
     public void showTableChildFragment() {

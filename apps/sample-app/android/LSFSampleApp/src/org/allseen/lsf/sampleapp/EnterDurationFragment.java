@@ -43,7 +43,7 @@ public class EnterDurationFragment extends EnterNumberFragment {
         SampleAppActivity activity = (SampleAppActivity)getActivity();
         long duration = activity.pendingTransitionEffectModel != null ? activity.pendingTransitionEffectModel.duration : activity.pendingPulseEffectModel.duration;
 
-        return String.format(Locale.getDefault(), getString(R.string.effect_info_duration_format), duration / 1000.0);
+        return String.format(Locale.ENGLISH, getString(R.string.effect_info_duration_format), duration / 1000.0);
     }
 
     @Override

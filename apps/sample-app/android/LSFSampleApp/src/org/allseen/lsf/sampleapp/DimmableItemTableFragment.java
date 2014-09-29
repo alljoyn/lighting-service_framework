@@ -20,10 +20,7 @@ import android.graphics.Color;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
-import android.view.View.OnClickListener;
-import android.view.View.OnTouchListener;
 import android.widget.ImageButton;
 import android.widget.SeekBar;
 import android.widget.TableRow;
@@ -39,58 +36,38 @@ public abstract class DimmableItemTableFragment
     protected abstract int getInfoButtonImageID();
     protected abstract Fragment getInfoFragment();
 
-    public TableRow insertDimmableItemRow(Context context, String itemID, String sortableName, boolean powerOn, String displayName, long brightness, int infoBG) {
+    public <T> TableRow insertDimmableItemRow(Context context, String itemID, Comparable<T> tag, boolean powerOn, boolean uniformPower, String name, long modelBrightness, boolean uniformBrightness, int infoBG) {
         return insertDimmableItemRow(
             context,
             (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE),
             itemID,
-            sortableName,
+            tag,
             powerOn,
-            displayName,
-            brightness,
-            infoBG);
+            uniformPower,
+            name,
+            modelBrightness,
+            uniformBrightness,
+            infoBG,
+            true);
     }
 
-    public TableRow insertDimmableItemRow(Context context, String itemID, String sortableName, boolean powerOn, String displayName, long brightness, int infoBG, boolean enabled) {
+    public <T> TableRow insertDimmableItemRow(Context context, String itemID, Comparable<T> tag, boolean powerOn, boolean uniformPower, String name, long modelBrightness, boolean uniformBrightness, int infoBG, boolean enabled) {
         return insertDimmableItemRow(
             context,
             (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE),
             itemID,
-            sortableName,
+            tag,
             powerOn,
-            displayName,
-            brightness,
+            uniformPower,
+            name,
+            modelBrightness,
+            uniformBrightness,
             infoBG,
             enabled);
     }
 
-    public TableRow insertDimmableItemRow(LayoutInflater inflater, View root, String itemID, String sortableName, boolean powerOn, String displayName, long brightness, int infoBG) {
-        return insertDimmableItemRow(
-            root.getContext(),
-            inflater,
-            itemID,
-            sortableName,
-            powerOn,
-            displayName,
-            brightness,
-            infoBG);
-    }
-
-    public TableRow insertDimmableItemRow(Context context, LayoutInflater inflater, String itemID, String sortableName, boolean powerOn, String displayName, long modelBrightness, int infoBG) {
-        return insertDimmableItemRow(
-                context,
-                inflater,
-                itemID,
-                sortableName,
-                powerOn,
-                displayName,
-                modelBrightness,
-                infoBG,
-                true);
-    }
-
-    public TableRow insertDimmableItemRow(Context context, LayoutInflater inflater, String itemID, String sortableName, boolean powerOn, String displayName, long modelBrightness, int infoBG, boolean enabled) {
-        Log.d(SampleAppActivity.TAG, "insertDimmableItemRow(): " + itemID + ", " + sortableName + ", " + displayName);
+    public <T> TableRow insertDimmableItemRow(Context context, LayoutInflater inflater, String itemID, Comparable<T> tag, boolean powerOn, boolean uniformPower, String name, long modelBrightness, boolean uniformBrightness, int infoBG, boolean enabled) {
+        Log.d(SampleAppActivity.TAG, "insertDimmableItemRow(): " + itemID + ", " + tag + ", " + name);
 
         final boolean isEnabled = enabled;
 
@@ -103,18 +80,18 @@ public abstract class DimmableItemTableFragment
 
             ImageButton powerButton = (ImageButton)tableRow.findViewById(R.id.dimmableItemButtonPower);
             powerButton.setTag(itemID);
-            powerButton.setBackgroundResource(powerOn ? R.drawable.power_button_on : R.drawable.power_button_off);
+            powerButton.setBackgroundResource(uniformPower ? (powerOn ? R.drawable.power_button_on : R.drawable.power_button_off) : R.drawable.power_button_mix);
             powerButton.setOnClickListener(this);
 
-            ((TextView)tableRow.findViewById(R.id.dimmableItemRowText)).setText(displayName);
+            ((TextView)tableRow.findViewById(R.id.dimmableItemRowText)).setText(name);
 
             SeekBar seekBar = (SeekBar)tableRow.findViewById(R.id.dimmableItemRowSlider);
             seekBar.setProgress(DimmableItemScaleConverter.convertBrightnessModelToView(modelBrightness));
             seekBar.setTag(itemID);
             seekBar.setSaveEnabled(false);
             seekBar.setOnSeekBarChangeListener(this);
+            seekBar.setThumb(getResources().getDrawable(uniformBrightness ? R.drawable.slider_thumb_normal : R.drawable.slider_thumb_midstate));
             seekBar.setEnabled(isEnabled);
-
 
             ImageButton infoButton = (ImageButton)tableRow.findViewById(R.id.dimmableItemButtonMore);
             infoButton.setImageResource(getInfoButtonImageID());
@@ -125,24 +102,26 @@ public abstract class DimmableItemTableFragment
             }
 
             tableRow.setTag(itemID);
-            TableSorter.insertSortedTableRow(table, tableRow, sortableName);
+            TableSorter.insertSortedTableRow(table, tableRow, tag);
         } else {
-            ((ImageButton)tableRow.findViewById(R.id.dimmableItemButtonPower)).setBackgroundResource(powerOn ? R.drawable.power_button_on : R.drawable.power_button_off);
-            ((TextView)tableRow.findViewById(R.id.dimmableItemRowText)).setText(displayName);
-            ((SeekBar)tableRow.findViewById(R.id.dimmableItemRowSlider)).setProgress(DimmableItemScaleConverter.convertBrightnessModelToView(modelBrightness));
-            ((SeekBar)tableRow.findViewById(R.id.dimmableItemRowSlider)).setEnabled(isEnabled);
+            ((ImageButton)tableRow.findViewById(R.id.dimmableItemButtonPower)).setBackgroundResource(uniformPower ? (powerOn ? R.drawable.power_button_on : R.drawable.power_button_off) : R.drawable.power_button_mix);
+            ((TextView)tableRow.findViewById(R.id.dimmableItemRowText)).setText(name);
+
+            SeekBar seekBar = (SeekBar)tableRow.findViewById(R.id.dimmableItemRowSlider);
+            seekBar.setProgress(DimmableItemScaleConverter.convertBrightnessModelToView(modelBrightness));
+            seekBar.setThumb(getResources().getDrawable(uniformBrightness ? R.drawable.slider_thumb_normal : R.drawable.slider_thumb_midstate));
+            seekBar.setEnabled(isEnabled);
+
             if (infoBG != 0) {
                 ((ImageButton)tableRow.findViewById(R.id.dimmableItemButtonMore)).setBackgroundColor(powerOn ? infoBG : Color.BLACK);
             }
 
-            if (!sortableName.equals(tableRow.getTag(R.id.TAG_KEY_SORTABLE_NAME).toString())) {
-                table.removeView(tableRow);
-                TableSorter.insertSortedTableRow(table, tableRow, sortableName);
-            }
+            TableSorter.updateSortedTableRow(table, tableRow, tag);
         }
 
         tableRow.setClickable(true);
         tableRow.setOnClickListener(this);
+        ((SampleAppActivity)getActivity()).setTabTitles();
         return tableRow;
     }
 
@@ -156,7 +135,7 @@ public abstract class DimmableItemTableFragment
             if (buttonID == R.id.dimmableItemButtonPower) {
                 ((SampleAppActivity)getActivity()).togglePower(type, button.getTag().toString());
             } else if (buttonID == R.id.dimmableItemButtonMore) {
-                ((SampleAppActivity)getActivity()).onItemButtonMore(parent, type ,button, button.getTag().toString(), null);
+                ((SampleAppActivity)getActivity()).onItemButtonMore(parent, type, button, button.getTag().toString(), null);
             } else if (!((SeekBar)button.findViewById(R.id.dimmableItemRowSlider)).isEnabled()) {
                 Toast.makeText(getActivity(), R.string.no_support_dimmable, Toast.LENGTH_LONG).show();
             }

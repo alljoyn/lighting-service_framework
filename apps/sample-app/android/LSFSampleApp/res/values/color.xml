@@ -28,4 +28,5 @@
     <color name="detail_text">#989898</color>
     <color name="detail_text_dark">#595959</color>
     <color name="divider">#e0e0e0</color>
+    <color name="color_indicator_border">#7d7d7d</color>
 </resources>

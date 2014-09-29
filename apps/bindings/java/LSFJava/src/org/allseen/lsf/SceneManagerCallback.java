@@ -34,7 +34,7 @@ public class SceneManagerCallback extends DefaultNativeClassWrapper {
     public void scenesDeletedCB(String[] sceneIDs)                                                                  { }
     public void getSceneReplyCB(ResponseCode responseCode, String sceneID, Scene scene)                             { }
     public void applySceneReplyCB(ResponseCode responseCode, String sceneID)                                        { }
-    public void sceneAppliedCB(String[] sceneIDs)                                                                   { }
+    public void scenesAppliedCB(String[] sceneIDs)                                                                   { }
 
     // @Override
     @Override

@@ -94,6 +94,10 @@ public class LightingSystemManager {
 //TODO-IMPL            garbageCollector.start();
     }
 
+    public void stop(FragmentManager fragmentManager) {
+        AllJoynManager.destroy(fragmentManager);
+    }
+
     public Handler getHandler() {
         return handler;
     }

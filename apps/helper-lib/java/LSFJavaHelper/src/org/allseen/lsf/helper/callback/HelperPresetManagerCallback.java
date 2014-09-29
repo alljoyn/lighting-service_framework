@@ -191,7 +191,7 @@ public class HelperPresetManagerCallback extends PresetManagerCallback {
                 PresetDataModel presetModel = director.getPresetCollectionManager().getModel(presetID);
 
                 if (presetModel != null) {
-                    presetModel.name = presetName;
+                    presetModel.setName(presetName);
                 }
             }
         });

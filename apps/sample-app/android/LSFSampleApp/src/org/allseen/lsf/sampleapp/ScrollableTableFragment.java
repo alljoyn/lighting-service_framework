@@ -81,5 +81,6 @@ public class ScrollableTableFragment extends PageFrameChildFragment {
                 }
             });
         }
+        ((SampleAppActivity)getActivity()).setTabTitles();
     }
 }

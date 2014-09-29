@@ -21,7 +21,15 @@ public class StatePulseEffect extends DefaultNativeClassWrapper implements Pulse
     }
 
     public StatePulseEffect(StatePulseEffect other) {
-        //TODO-IMPL
+        this();
+
+        this.setLamps(other.getLamps());
+        this.setLampGroups(other.getLampGroups());
+        this.setPulsePeriod(other.getPulsePeriod());
+        this.setPulseDuration(other.getPulseDuration());
+        this.setPulseCount(other.getPulseCount());
+        this.setFromLampState(other.getFromLampState());
+        this.setToLampState(other.getToLampState());
     }
 
     @Override

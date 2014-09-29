@@ -22,7 +22,15 @@ public class PresetPulseEffect extends DefaultNativeClassWrapper implements Puls
     }
 
     public PresetPulseEffect(PresetPulseEffect other) {
-        //TODO-IMPL
+        this();
+
+        this.setLamps(other.getLamps());
+        this.setLampGroups(other.getLampGroups());
+        this.setPulsePeriod(other.getPulsePeriod());
+        this.setPulseDuration(other.getPulseDuration());
+        this.setPulseCount(other.getPulseCount());
+        this.setFromPreset(other.getFromPreset());
+        this.setToPreset(other.getToPreset());
     }
 
     @Override

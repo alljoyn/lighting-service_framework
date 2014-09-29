@@ -122,10 +122,17 @@
     [self.dataArray removeAllObjects];
     
     //Populate array with test data
+    NSString *controllerServiceID = @"ControllerServiceID1";
+    NSString *controllerServiceName = @"ControllerServiceName";
     NSString *functionName = @"controllerServiceNameChanged";
+    [self.dataArray addObject: controllerServiceID];
+    [self.dataArray addObject: controllerServiceName];
     [self.dataArray addObject: functionName];
-    
-    self.csmc->ControllerServiceNameChangedCB();
+
+    //Call callback method
+    std::string csID([controllerServiceID UTF8String]);
+    std::string csName([controllerServiceName UTF8String]);
+    self.csmc->ControllerServiceNameChangedCB(csID, csName);
     
     //Test the data using NSSet
     NSSet *startData = [[NSSet alloc] initWithArray: self.dataArray];

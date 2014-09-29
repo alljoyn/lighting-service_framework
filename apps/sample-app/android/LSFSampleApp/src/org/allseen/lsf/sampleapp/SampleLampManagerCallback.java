@@ -31,7 +31,7 @@ import android.support.v4.app.FragmentManager;
 import android.util.Log;
 
 public class SampleLampManagerCallback extends LampManagerCallback {
-    private static final int RETRY_DELAY = 500;
+    private static final int RETRY_DELAY = 1000;
 
     protected SampleAppActivity activity;
     protected FragmentManager fragmentManager;
@@ -60,6 +60,8 @@ public class SampleLampManagerCallback extends LampManagerCallback {
 
             postUpdateLampID(lampID);
         }
+
+        unblock();
     }
 
     @Override
@@ -70,7 +72,9 @@ public class SampleLampManagerCallback extends LampManagerCallback {
         } else {
             postGetLampName(lampID, RETRY_DELAY);
             activity.showErrorResponseCode(responseCode, "getLampNameReplyCB");
-       }
+        }
+
+        unblock();
     }
 
     @Override
@@ -81,14 +85,32 @@ public class SampleLampManagerCallback extends LampManagerCallback {
 
         // Read back name regardless of response code
         Log.d(SampleAppActivity.TAG, "setLampNameReplyCB(): " + lampID);
-        AllJoynManager.lampManager.getLampName(lampID, SampleAppActivity.LANGUAGE);
+        postGetLampName(lampID, 0);
+
+        unblock();
     }
 
     @Override
     public void lampsNameChangedCB(String[] lampIDs) {
         for (String lampID : lampIDs) {
             Log.d(SampleAppActivity.TAG, "lampsNameChangedCB() " + lampID);
-            AllJoynManager.lampManager.getLampName(lampID, SampleAppActivity.LANGUAGE);
+            postGetLampName(lampID, 0);
+        }
+    }
+
+    @Override
+    public void lampsFoundCB(String[] lampIDs) {
+        Log.d(SampleAppActivity.TAG, "lampsFoundCB(): " + lampIDs.length);
+        for (String lampID : lampIDs) {
+            postUpdateLampID(lampID);
+        }
+    }
+
+    @Override
+    public void lampsLostCB(String[] lampIDs) {
+        Log.d(SampleAppActivity.TAG, "lampsLostCB(): " + lampIDs.length);
+        for (String lampID : lampIDs) {
+            postRemoveLampID(lampID);
         }
     }
 
@@ -101,6 +123,8 @@ public class SampleLampManagerCallback extends LampManagerCallback {
             postGetLampDetails(lampID, RETRY_DELAY);
             activity.showErrorResponseCode(responseCode, "getLampDetailsReplyCB");
         }
+
+        unblock();
     }
 
     @Override
@@ -112,6 +136,8 @@ public class SampleLampManagerCallback extends LampManagerCallback {
             postGetLampParameters(lampID, RETRY_DELAY);
             activity.showErrorResponseCode(responseCode, "getLampParametersReplyCB");
         }
+
+        unblock();
     }
 
     @Override
@@ -124,6 +150,8 @@ public class SampleLampManagerCallback extends LampManagerCallback {
             postGetLampState(lampID, RETRY_DELAY);
             activity.showErrorResponseCode(responseCode, "getLampStateReplyCB");
         }
+
+        unblock();
     }
 
     @Override
@@ -136,6 +164,8 @@ public class SampleLampManagerCallback extends LampManagerCallback {
             postGetLampStateOnOffField(lampID, RETRY_DELAY);
             activity.showErrorResponseCode(responseCode, "getLampStateOnOffFieldReplyCB");
         }
+
+        unblock();
     }
 
     @Override
@@ -147,6 +177,8 @@ public class SampleLampManagerCallback extends LampManagerCallback {
             postGetLampStateHueField(lampID, RETRY_DELAY);
             activity.showErrorResponseCode(responseCode, "getLampStateHueFieldReplyCB");
         }
+
+        unblock();
     }
 
     @Override
@@ -158,6 +190,8 @@ public class SampleLampManagerCallback extends LampManagerCallback {
             postGetLampStateSaturationField(lampID, RETRY_DELAY);
             activity.showErrorResponseCode(responseCode, "getLampStateSaturationFieldReplyCB");
         }
+
+        unblock();
     }
 
     @Override
@@ -170,6 +204,8 @@ public class SampleLampManagerCallback extends LampManagerCallback {
             postGetLampStateBrightnessField(lampID, RETRY_DELAY);
             activity.showErrorResponseCode(responseCode, "getLampStateBrightnessFieldReplyCB");
         }
+
+        unblock();
     }
 
     @Override
@@ -181,13 +217,15 @@ public class SampleLampManagerCallback extends LampManagerCallback {
             postGetLampStateColorTempField(lampID, RETRY_DELAY);
             activity.showErrorResponseCode(responseCode, "getLampStateColorTempFieldReplyCB");
         }
+
+        unblock();
     }
 
     @Override
     public void lampsStateChangedCB(String[] lampIDs) {
         for (String lampID : lampIDs) {
             Log.d(SampleAppActivity.TAG, "lampsStateChangedCB()" + lampID);
-            AllJoynManager.lampManager.getLampState(lampID);
+            postGetLampState(lampID, 0);
         }
     }
 
@@ -198,7 +236,9 @@ public class SampleLampManagerCallback extends LampManagerCallback {
         }
 
         // Read back field value regardless of response code
-        AllJoynManager.lampManager.getLampStateOnOffField(lampID);
+        postGetLampStateOnOffField(lampID, 0);
+
+        unblock();
     }
 
     @Override
@@ -208,7 +248,9 @@ public class SampleLampManagerCallback extends LampManagerCallback {
         }
 
         // Read back field value regardless of response code
-        AllJoynManager.lampManager.getLampStateHueField(lampID);
+        postGetLampStateHueField(lampID, 0);
+
+        unblock();
     }
 
     @Override
@@ -218,7 +260,9 @@ public class SampleLampManagerCallback extends LampManagerCallback {
         }
 
         // Read back field value regardless of response code
-        AllJoynManager.lampManager.getLampStateSaturationField(lampID);
+        postGetLampStateSaturationField(lampID, 0);
+
+        unblock();
     }
 
     @Override
@@ -228,7 +272,9 @@ public class SampleLampManagerCallback extends LampManagerCallback {
         }
 
         // Read back field value regardless of response code
-        AllJoynManager.lampManager.getLampStateBrightnessField(lampID);
+        postGetLampStateBrightnessField(lampID, 0);
+
+        unblock();
     }
 
     @Override
@@ -238,7 +284,9 @@ public class SampleLampManagerCallback extends LampManagerCallback {
         }
 
         // Read back field value regardless of response code
-        AllJoynManager.lampManager.getLampStateColorTempField(lampID);
+        postGetLampStateColorTempField(lampID, 0);
+
+        unblock();
     }
 
     protected void postUpdateLampID(final String lampID) {
@@ -256,14 +304,17 @@ public class SampleLampManagerCallback extends LampManagerCallback {
                 if (lampModel == null) {
                     lampModel = new LampDataModel(lampID);
                     activity.lampModels.put(lampID, lampModel);
+                    activity.lampIDs.offer(lampID);
                 }
 
-                if (LampDataModel.defaultName.equals(lampModel.name)) {
+                if (LampDataModel.defaultName.equals(lampModel.getName())) {
                     Log.d(SampleAppActivity.TAG, "Getting data set for " + lampID);
-                    AllJoynManager.lampManager.getLampName(lampID, SampleAppActivity.LANGUAGE);
-                    AllJoynManager.lampManager.getLampState(lampID);
-                    AllJoynManager.lampManager.getLampParameters(lampID);
-                    AllJoynManager.lampManager.getLampDetails(lampID);
+                    postGetLampName(lampID, 0);
+                    postGetLampState(lampID, 0);
+                    postGetLampParameters(lampID, 0);
+                    postGetLampDetails(lampID, 0);
+                } else if (announceData != null) {
+                    postGetLampName(lampID, 0);
                 }
 
                 if (announceData != null) {
@@ -279,11 +330,39 @@ public class SampleLampManagerCallback extends LampManagerCallback {
         postUpdateDimmableItemTask(lampID);
     }
 
-    protected void postGetLampName(final String lampID, int delay) {
-        handler.postDelayed(new Runnable() {
+    public void postRemoveLampID(final String lampID) {
+        Log.d(SampleAppActivity.TAG, "postRemoveLampID() " + lampID);
+        handler.post(new Runnable() {
             @Override
             public void run() {
-                if (!activity.garbageCollector.isLampExpired(lampID)) {
+                LampDataModel lampModel = activity.lampModels.get(lampID);
+                if (lampModel != null) {
+                    Log.d(SampleAppActivity.TAG, "Removing lamp " + lampModel.id);
+                    activity.lampModels.remove(lampID);
+
+                    Fragment pageFragment = activity.getSupportFragmentManager().findFragmentByTag(LampsPageFragment.TAG);
+
+                    if (pageFragment != null) {
+                        LampsTableFragment tableFragment = (LampsTableFragment) pageFragment.getChildFragmentManager().findFragmentByTag(PageFrameParentFragment.CHILD_TAG_TABLE);
+
+                        if (tableFragment != null) {
+                            tableFragment.removeElement(lampModel.id);
+
+                            if (activity.lampModels.size() == 0) {
+                                tableFragment.updateLoading();
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    protected void postGetLampName(final String lampID, int delay) {
+        postCommand(new Runnable() {
+            @Override
+            public void run() {
+                if (AllJoynManager.controllerConnected) {
                     AllJoynManager.lampManager.getLampName(lampID, SampleAppActivity.LANGUAGE);
                 }
             }
@@ -307,10 +386,10 @@ public class SampleLampManagerCallback extends LampManagerCallback {
     }
 
     protected void postGetLampState(final String lampID, int delay) {
-        handler.postDelayed(new Runnable() {
+        postCommand(new Runnable() {
             @Override
             public void run() {
-                if (!activity.garbageCollector.isLampExpired(lampID)) {
+                if (AllJoynManager.controllerConnected) {
                     AllJoynManager.lampManager.getLampState(lampID);
                 }
             }
@@ -334,10 +413,10 @@ public class SampleLampManagerCallback extends LampManagerCallback {
     }
 
     protected void postGetLampParameters(final String lampID, int delay) {
-        handler.postDelayed(new Runnable() {
+        postCommand(new Runnable() {
             @Override
             public void run() {
-                if (!activity.garbageCollector.isLampExpired(lampID)) {
+                if (AllJoynManager.controllerConnected) {
                     AllJoynManager.lampManager.getLampParameters(lampID);
                 }
             }
@@ -361,14 +440,14 @@ public class SampleLampManagerCallback extends LampManagerCallback {
     }
 
     protected void postGetLampDetails(final String lampID, final int delay) {
-        if (!activity.garbageCollector.isLampExpired(lampID)) {
-            handler.postDelayed(new Runnable() {
-                @Override
-                public void run() {
+        postCommand(new Runnable() {
+            @Override
+            public void run() {
+                if (AllJoynManager.controllerConnected) {
                     AllJoynManager.lampManager.getLampDetails(lampID);
                 }
-            }, delay);
-        }
+            }
+        }, delay);
     }
 
     protected void postUpdateLampName(final String lampID, final String lampName) {
@@ -379,7 +458,7 @@ public class SampleLampManagerCallback extends LampManagerCallback {
                 LampDataModel lampModel = activity.lampModels.get(lampID);
 
                 if (lampModel != null) {
-                    lampModel.name = lampName;
+                    lampModel.setName(lampName);
                 }
             }
         });
@@ -404,10 +483,10 @@ public class SampleLampManagerCallback extends LampManagerCallback {
     }
 
     protected void postGetLampStateOnOffField(final String lampID, int delay) {
-        handler.postDelayed(new Runnable() {
+        postCommand(new Runnable() {
             @Override
             public void run() {
-                if (!activity.garbageCollector.isLampExpired(lampID)) {
+                if (AllJoynManager.controllerConnected) {
                     AllJoynManager.lampManager.getLampStateOnOffField(lampID);
                 }
             }
@@ -431,10 +510,10 @@ public class SampleLampManagerCallback extends LampManagerCallback {
     }
 
     protected void postGetLampStateHueField(final String lampID, int delay) {
-        handler.postDelayed(new Runnable() {
+        postCommand(new Runnable() {
             @Override
             public void run() {
-                if (!activity.garbageCollector.isLampExpired(lampID)) {
+                if (AllJoynManager.controllerConnected) {
                     AllJoynManager.lampManager.getLampStateHueField(lampID);
                 }
             }
@@ -458,10 +537,10 @@ public class SampleLampManagerCallback extends LampManagerCallback {
     }
 
     protected void postGetLampStateSaturationField(final String lampID, int delay) {
-        handler.postDelayed(new Runnable() {
+        postCommand(new Runnable() {
             @Override
             public void run() {
-                if (!activity.garbageCollector.isLampExpired(lampID)) {
+                if (AllJoynManager.controllerConnected) {
                     AllJoynManager.lampManager.getLampStateSaturationField(lampID);
                 }
             }
@@ -485,10 +564,10 @@ public class SampleLampManagerCallback extends LampManagerCallback {
     }
 
     protected void postGetLampStateBrightnessField(final String lampID, int delay) {
-        handler.postDelayed(new Runnable() {
+        postCommand(new Runnable() {
             @Override
             public void run() {
-                if (!activity.garbageCollector.isLampExpired(lampID)) {
+                if (AllJoynManager.controllerConnected) {
                     AllJoynManager.lampManager.getLampStateBrightnessField(lampID);
                 }
             }
@@ -512,10 +591,10 @@ public class SampleLampManagerCallback extends LampManagerCallback {
     }
 
     protected void postGetLampStateColorTempField(final String lampID, int delay) {
-        handler.postDelayed(new Runnable() {
+        postCommand(new Runnable() {
             @Override
             public void run() {
-                if (!activity.garbageCollector.isLampExpired(lampID)) {
+                if (AllJoynManager.controllerConnected) {
                     AllJoynManager.lampManager.getLampStateColorTempField(lampID);
                 }
             }
@@ -551,5 +630,21 @@ public class SampleLampManagerCallback extends LampManagerCallback {
                 }
             }
         });
+    }
+
+    protected void unblock() {
+        if (SampleAppActivity.COMMAND_ENABLE) {
+            activity.commandManager.unblock();
+        }
+    }
+
+    protected void postCommand(Runnable command, int delay) {
+        if (SampleAppActivity.COMMAND_ENABLE) {
+            activity.commandManager.post(command);
+        } else if (SampleAppActivity.RETRY_ENABLE && delay > 0) {
+            activity.retryManager.post(command);
+        } else {
+            handler.postDelayed(command, delay);
+        }
     }
 }

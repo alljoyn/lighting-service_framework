@@ -16,7 +16,6 @@
 
 package org.allseen.lsf;
 
-// TODO-IMPL
 public class LampState extends DefaultNativeClassWrapper {
 	public LampState() {
 		createNativeObject();

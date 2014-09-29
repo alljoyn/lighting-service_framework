@@ -67,13 +67,13 @@ public class AboutManager implements AnnouncementHandler {
             Log.e(SampleAppActivity.TAG, "Exception caught when starting AboutService client: " + e.getMessage());
         }
 
-        aboutService.addAnnouncementHandler(this, AboutManager.LAMP_SERVICE_INTERFACE_NAMES);
+//TODO-FIX        aboutService.addAnnouncementHandler(this, AboutManager.LAMP_SERVICE_INTERFACE_NAMES);
         aboutService.addAnnouncementHandler(this, AboutManager.CONTROLLER_SERVICE_INTERFACE_NAMES);
     }
 
     public void destroy() {
         if (aboutService != null) {
-            aboutService.removeAnnouncementHandler(this, AboutManager.LAMP_SERVICE_INTERFACE_NAMES);
+//TODO-FIX            aboutService.removeAnnouncementHandler(this, AboutManager.LAMP_SERVICE_INTERFACE_NAMES);
             aboutService.removeAnnouncementHandler(this, AboutManager.CONTROLLER_SERVICE_INTERFACE_NAMES);
 
             try {
@@ -158,19 +158,20 @@ public class AboutManager implements AnnouncementHandler {
 //            Log.e(SampleAppActivity.TAG, "About data retrieval failed: " + e.getMessage());
 //        }
 
-        if (lampID != null) {
-            Log.d(SampleAppActivity.TAG, "Announce received: " + lampID);
-
-            activity.lampManagerCB.postUpdateLampID(lampID, announceData, aboutData, 200);
-        } else {
-            Log.e(SampleAppActivity.TAG, "Announcement lacks device ID");
-        }
+//        if (lampID != null) {
+//            Log.d(SampleAppActivity.TAG, "Announce received: " + lampID);
+//
+//            activity.lampManagerCB.postUpdateLampID(lampID, announceData, aboutData, 200);
+//        } else {
+//            Log.e(SampleAppActivity.TAG, "Announcement lacks device ID");
+//        }
     }
 
     protected void addControllerAboutData(final Map<String, Variant> announceData) {
         String controllerID = getStringFromAnnounceData(AboutKeys.ABOUT_DEVICE_ID, announceData, null);
+        String controllerName = getStringFromAnnounceData(AboutKeys.ABOUT_DEVICE_NAME, announceData, null);
 
-        activity.controllerClientCB.postUpdateControllerID(controllerID, announceData, 200);
+        activity.controllerClientCB.postOnControllerAboutAnnouncement(controllerID, controllerName, 200);
     }
 
     public static String getStringFromAnnounceData(String key, Map<String, Variant> announceData, String defaultValue) {

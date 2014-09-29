@@ -21,12 +21,12 @@ namespace lsf {
 
 JLampParameters::JLampParameters(jobject jobj)
 {
-    // TODO Auto-generated constructor stub
+    // Currently nothing to do
 }
 
 JLampParameters::~JLampParameters()
 {
-    // TODO Auto-generated destructor stub
+    // Currently nothing to do
 }
 
 JLampParameters& JLampParameters::operator=(const LampParameters& other)

@@ -26,12 +26,12 @@ using namespace lsf;
 
 JLampState::JLampState(jobject jobj)
 {
-    // TODO Auto-generated constructor stub
+    // Currently nothing to do
 }
 
 JLampState::~JLampState()
 {
-    // TODO Auto-generated destructor stub
+    // Currently nothing to do
 }
 
 JLampState& JLampState::operator=(const LampState& other)

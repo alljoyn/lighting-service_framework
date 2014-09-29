@@ -23,7 +23,7 @@ public class UpdateMasterSceneNameAdapter extends UpdateItemNameAdapter {
 
     @Override
     protected void doUpdateName() {
-        AllJoynManager.masterSceneManager.setMasterSceneName(itemModel.id, itemModel.name, SampleAppActivity.LANGUAGE);
+        AllJoynManager.masterSceneManager.setMasterSceneName(itemModel.id, itemModel.getName(), SampleAppActivity.LANGUAGE);
     }
 
     @Override
@@ -34,7 +34,7 @@ public class UpdateMasterSceneNameAdapter extends UpdateItemNameAdapter {
     @Override
     protected boolean duplicateName(String name) {
         for (MasterSceneDataModel data : activity.masterSceneModels.values()) {
-            if (data.name.equals(name) && !name.equals(itemModel.name)) {
+            if (data.getName().equals(name) && !name.equals(itemModel.getName())) {
                 return true;
             }
         }

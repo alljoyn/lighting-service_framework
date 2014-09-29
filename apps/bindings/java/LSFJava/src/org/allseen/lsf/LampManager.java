@@ -42,12 +42,8 @@ public class LampManager extends BaseNativeClassWrapper {
     public native ControllerClientStatus resetLampStateBrightnessField(String lampID);
     public native ControllerClientStatus resetLampStateColorTempField(String lampID);
     public native ControllerClientStatus transitionLampState(String lampID, LampState lampState, long transitionPeriod);
-    public native ControllerClientStatus pulseLampWithState(String lampID, LampState fromLampState, LampState toLampState, long period, long duration, long numPulses);
-    public native ControllerClientStatus strobeLampWithState(String lampID, LampState fromLampState, LampState toLampState, long period, long numStrobes);
-    public native ControllerClientStatus cycleLampWithState(String lampID, LampState lampStateA, LampState lampStateB, long period, long duration, long numCycles);
-    public native ControllerClientStatus pulseLampWithPreset(String lampID, String fromPresetID, String toPresetID, long period, long duration, long numPulses);
-    public native ControllerClientStatus strobeLampWithPreset(String lampID, String fromPresetID, String toPresetID, long period, long numStrobes);
-    public native ControllerClientStatus cycleLampWithPreset(String lampID, String presetIdA, String presetIdB, long period, long duration, long numCycles);
+    public native ControllerClientStatus pulseLampWithState(String lampID, LampState toLampState, long period, long duration, long numPulses, LampState fromLampState);
+    public native ControllerClientStatus pulseLampWithPreset(String lampID, String toPresetID, long period, long duration, long numPulses, String fromPresetID);
     public native ControllerClientStatus transitionLampStateOnOffField(String lampID, boolean onOff);
     public native ControllerClientStatus transitionLampStateHueField(String lampID, long hue, long transitionPeriod);
     public native ControllerClientStatus transitionLampStateSaturationField(String lampID, long saturation, long transitionPeriod);
@@ -55,10 +51,10 @@ public class LampManager extends BaseNativeClassWrapper {
     public native ControllerClientStatus transitionLampStateColorTempField(String lampID, long colorTemp, long transitionPeriod);
     public native ControllerClientStatus transitionLampStateToPreset(String lampID, String presetID, long transitionPeriod);
     public native ControllerClientStatus getLampFaults(String lampID);
-    public native ControllerClientStatus getLampRemainingLife(String lampID);
     public native ControllerClientStatus getLampServiceVersion(String lampID);
     public native ControllerClientStatus clearLampFault(String lampID, long faultCode);
     public native ControllerClientStatus getLampSupportedLanguages(String lampID);
+    public native ControllerClientStatus getLampDataSet(String lampID, String language);
 
     protected native void createNativeObject(ControllerClient controller, LampManagerCallback callback);
 

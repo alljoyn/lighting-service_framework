@@ -17,6 +17,7 @@
 package org.allseen.lsf;
 
 public enum LampType {
+    INVALID,
     A15,
     A17,
     A19,
@@ -107,7 +108,8 @@ public enum LampType {
     S8,
     S11,
     S14,
-    ST18;
+    ST18,
+    LASTVALUE;
 
     /** Static lookup, used by the native code */
     @SuppressWarnings("unused")

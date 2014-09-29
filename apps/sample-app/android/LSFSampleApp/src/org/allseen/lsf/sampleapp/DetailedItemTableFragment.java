@@ -46,29 +46,29 @@ public abstract class DetailedItemTableFragment extends ScrollableTableFragment 
             false);
     }
 
-    protected void insertDetailedItemRow(Context context, String itemID, String sortableName, String displayName, String details, boolean isMasterScene) {
+    protected <T> void insertDetailedItemRow(Context context, String itemID, Comparable<T> tag, String name, String details, boolean isMasterScene) {
         insertDetailedItemRow(
             context,
             (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE),
             itemID,
-            sortableName,
-            displayName,
+            tag,
+            name,
             details,
             isMasterScene);
     }
 
-    protected void insertDetailedItemRow(Context context, LayoutInflater inflater, String itemID, String sortableName, String displayName, String details) {
+    protected <T> void insertDetailedItemRow(Context context, LayoutInflater inflater, String itemID, Comparable<T> tag, String name, String details) {
         insertDetailedItemRow(context,
             inflater,
             itemID,
-            sortableName,
-            displayName,
+            tag,
+            name,
             details,
             false);
     }
 
-    protected void insertDetailedItemRow(Context context, LayoutInflater inflater, String itemID, String sortableName, String displayName, String details, boolean isMasterScene) {
-        Log.d(SampleAppActivity.TAG, "insertDetailedItemRow(): " + itemID + ", " + sortableName + ", " + displayName);
+    protected <T> void insertDetailedItemRow(Context context, LayoutInflater inflater, String itemID, Comparable<T> tag, String name, String details, boolean isMasterScene) {
+        Log.d(SampleAppActivity.TAG, "insertDetailedItemRow(): " + itemID + ", " + ", " + name);
 
         TableRow tableRow = (TableRow)table.findViewWithTag(itemID);
 
@@ -79,8 +79,16 @@ public abstract class DetailedItemTableFragment extends ScrollableTableFragment 
 
             ImageButton icon = (ImageButton)tableRow.findViewById(R.id.detailedItemButtonIcon);
             icon.setBackgroundResource(isMasterScene ? R.drawable.master_scene_set_icon : R.drawable.scene_set_icon);
-            ((TextView)tableRow.findViewById(R.id.detailedItemRowTextHeader)).setText(displayName);
-            ((TextView)tableRow.findViewById(R.id.detailedItemRowTextDetails)).setText(details);
+
+            TextView textHeader = (TextView)tableRow.findViewById(R.id.detailedItemRowTextHeader);
+            textHeader.setText(name);
+            textHeader.setTag(itemID);
+            textHeader.setOnClickListener(this);
+
+            TextView textDetails = (TextView)tableRow.findViewById(R.id.detailedItemRowTextDetails);
+            textDetails.setText(details);
+            textDetails.setTag(itemID);
+            textDetails.setOnClickListener(this);
 
             ImageButton infoButton = (ImageButton)tableRow.findViewById(R.id.detailedItemButtonMore);
             infoButton.setImageResource(R.drawable.nav_more_menu_icon);
@@ -89,34 +97,45 @@ public abstract class DetailedItemTableFragment extends ScrollableTableFragment 
 
             tableRow.setTag(itemID);
 
-            TableSorter.insertSortedTableRow(table, tableRow, sortableName);
+            TableSorter.insertSortedTableRow(table, tableRow, tag);
         } else {
-            ((TextView)tableRow.findViewById(R.id.detailedItemRowTextHeader)).setText(displayName);
+            ((TextView)tableRow.findViewById(R.id.detailedItemRowTextHeader)).setText(name);
             ((TextView)tableRow.findViewById(R.id.detailedItemRowTextDetails)).setText(details);
 
-            if (!sortableName.equals(tableRow.getTag(R.id.TAG_KEY_SORTABLE_NAME).toString())) {
-                table.removeView(tableRow);
+            TableSorter.updateSortedTableRow(table, tableRow, tag);
+        }
 
-                TableSorter.insertSortedTableRow(table, tableRow, sortableName);
+        ((SampleAppActivity)getActivity()).setTabTitles();
+    }
+
+    @Override
+    public void onClick(View clickedView) {
+        int clickedID = clickedView.getId();
+
+        Log.d(SampleAppActivity.TAG, "onClick(): " + clickedID + ", " + parent);
+
+        if (parent != null) {
+            if (clickedID == R.id.detailedItemButtonMore) {
+                ((SampleAppActivity)getActivity()).onItemButtonMore(parent, type, clickedView, clickedView.getTag().toString(), null);
+            } else if (clickedID == R.id.detailedItemRowTextHeader || clickedID == R.id.detailedItemRowTextDetails) {
+                onClickRowText(clickedView.getTag().toString());
             }
         }
     }
 
-    @Override
-    public void onClick(View button) {
-        int buttonID = button.getId();
+    protected void onClickRowText(String itemID) {
+        SampleAppActivity activity = (SampleAppActivity)getActivity();
 
-        Log.d(SampleAppActivity.TAG, "onClick(): " + buttonID + ", " + parent);
-
-        if (parent != null) {
-            if (buttonID == R.id.detailedItemButtonMore) {
-                ((SampleAppActivity)getActivity()).onItemButtonMore(parent, type, button, button.getTag().toString(), null);
-            }
+        if (activity.basicSceneModels.containsKey(itemID)) {
+            activity.applyBasicScene(itemID);
+        } else {
+            activity.applyMasterScene(itemID);
         }
     }
 
     public abstract void addElement(String id);
 
+    @Override
     public void removeElement(String id) {
         final TableRow row = (TableRow) table.findViewWithTag(id);
         if (row != null) {

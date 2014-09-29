@@ -162,8 +162,8 @@ public class SampleBasicSceneManagerCallback extends SceneManagerCallback {
     }
 
     @Override
-    public void sceneAppliedCB(String[] sceneIDs) {
-        Log.d(SampleAppActivity.TAG, "applySceneReplyCB(): " + sceneIDs.length);
+    public void scenesAppliedCB(String[] sceneIDs) {
+        Log.d(SampleAppActivity.TAG, "scenesAppliedCB(): " + sceneIDs.length);
         //TODO-CHK Do we need to do anything here?
     }
 
@@ -223,7 +223,7 @@ public class SampleBasicSceneManagerCallback extends SceneManagerCallback {
                 BasicSceneDataModel basicSceneModel = activity.basicSceneModels.get(sceneID);
 
                 if (basicSceneModel != null) {
-                    basicSceneModel.name = sceneName;
+                    basicSceneModel.setName(sceneName);
                 }
             }
         });
@@ -239,12 +239,18 @@ public class SampleBasicSceneManagerCallback extends SceneManagerCallback {
                 Fragment pageFragment = fragmentManager.findFragmentByTag(ScenesPageFragment.TAG);
                 FragmentManager childManager = pageFragment != null ? pageFragment.getChildFragmentManager() : null;
                 ScenesTableFragment tableFragment = childManager != null ? (ScenesTableFragment)childManager.findFragmentByTag(PageFrameParentFragment.CHILD_TAG_TABLE) : null;
+                BasicSceneInfoFragment infoFragment = childManager != null ? (BasicSceneInfoFragment)childManager.findFragmentByTag(PageFrameParentFragment.CHILD_TAG_INFO) : null;
 
                 for (String sceneID : sceneIDs) {
+                    String name = activity.basicSceneModels.get(sceneID).getName();
                     activity.basicSceneModels.remove(sceneID);
 
                     if (tableFragment != null) {
                         tableFragment.removeElement(sceneID);
+                    }
+
+                    if ((infoFragment != null) && (infoFragment.key.equals(sceneID))) {
+                        activity.createLostConnectionErrorDialog(name);
                     }
                 }
             }

@@ -19,12 +19,14 @@
 
 namespace lsf {
 
-JLampManager::JLampManager(jobject jobj, JControllerClient &jcc, JLampManagerCallback &jlmcb) : LampManager(jcc, jlmcb) {
-    // TODO Auto-generated constructor stub
+JLampManager::JLampManager(jobject jobj, JControllerClient &jcc, JLampManagerCallback &jlmcb) : LampManager(jcc, jlmcb)
+{
+    // Currently nothing to do
 }
 
-JLampManager::~JLampManager() {
-    // TODO Auto-generated destructor stub
+JLampManager::~JLampManager()
+{
+    // Currently nothing to do
 }
 
 } /* namespace lsf */

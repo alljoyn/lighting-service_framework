@@ -27,12 +27,12 @@ static uint32_t emptyValue = 0;
 
 XPresetTransitionEffect::XPresetTransitionEffect(jobject jobj) : TransitionLampsLampGroupsToPreset(emptyStringList, emptyStringList, emptyString, emptyValue)
 {
-    // TODO Auto-generated constructor stub
+    // Currently nothing to do
 }
 
 XPresetTransitionEffect::~XPresetTransitionEffect()
 {
-    // TODO Auto-generated destructor stub
+    // Currently nothing to do
 }
 
 XPresetTransitionEffect&

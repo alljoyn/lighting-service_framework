@@ -19,6 +19,8 @@ import java.util.Map;
 
 import org.allseen.lsf.LampState;
 
+import android.graphics.Color;
+import android.graphics.PorterDuff.Mode;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -30,6 +32,7 @@ import android.widget.TextView;
 
 public abstract class DimmableItemInfoFragment extends PageFrameChildFragment implements View.OnClickListener {
     public static final String STATE_ITEM_TAG = "STATE";
+    public static int defaultIndicatorColor = 00000000;
 
     protected SampleAppActivity.Type itemType = SampleAppActivity.Type.LAMP;
     protected Map<String, ? extends DimmableItemDataModel> itemModels;
@@ -101,16 +104,27 @@ public abstract class DimmableItemInfoFragment extends PageFrameChildFragment im
 
     public void updateInfoFields(DimmableItemDataModel itemModel) {
         if (itemModel.id.equals(key)) {
-            setImageButtonBackgroundResource(statusView, R.id.statusButtonPower, itemModel.state.getOnOff() ? R.drawable.power_button_on : R.drawable.power_button_off);
-            setTextViewValue(statusView, R.id.statusTextName, itemModel.name, 0);
+            if (itemModel.uniformity.power) {
+                setImageButtonBackgroundResource(statusView, R.id.statusButtonPower, itemModel.state.getOnOff() ? R.drawable.power_button_on : R.drawable.power_button_off);
+            } else {
+                setImageButtonBackgroundResource(statusView, R.id.statusButtonPower, R.drawable.power_button_mix);
+            }
 
-            stateAdapter.setBrightness(itemModel.state.getBrightness());
-            stateAdapter.setHue(itemModel.state.getHue());
-            stateAdapter.setSaturation(itemModel.state.getSaturation());
-            stateAdapter.setColorTemp(itemModel.state.getColorTemp());
+            setTextViewValue(statusView, R.id.statusTextName, itemModel.getName(), 0);
+
+            stateAdapter.setBrightness(itemModel.state.getBrightness(), itemModel.uniformity.brightness);
+            stateAdapter.setHue(itemModel.state.getHue(), itemModel.uniformity.hue);
+            stateAdapter.setSaturation(itemModel.state.getSaturation(), itemModel.uniformity.saturation);
+            stateAdapter.setColorTemp(itemModel.state.getColorTemp(), itemModel.uniformity.colorTemp);
 
             // presets button
             updatePresetFields(itemModel);
+
+            if (itemModel.uniformity.brightness && itemModel.uniformity.hue && itemModel.uniformity.saturation && itemModel.uniformity.colorTemp) {
+                setColorIndicator(stateAdapter.stateView, itemModel.state);
+            } else {
+                setColorIndicator(stateAdapter.stateView, null);
+            }
         }
     }
 
@@ -123,20 +137,25 @@ public abstract class DimmableItemInfoFragment extends PageFrameChildFragment im
     }
 
     public void updatePresetFields(LampState itemState, LampStateViewAdapter itemAdapter) {
-        String presetName = getString(R.string.title_presets_save_new);
+        itemAdapter.setPreset(Util.createPresetNamesString((SampleAppActivity)getActivity(), itemState));
+    }
 
-        String tempName = "";
-        for (PresetDataModel presetModel : ((SampleAppActivity)getActivity()).presetModels.values()) {
-            if (presetModel.state != null) {
-                if (presetModel.stateEquals(itemState)) {
-                    tempName += presetModel.name + ", ";
-                }
-            }
+    public static int getColor(LampState lampState) {
+        if (lampState != null) {
+            int viewHue = DimmableItemScaleConverter.convertHueModelToView(lampState.getHue());
+            int viewSaturation = DimmableItemScaleConverter.convertSaturationModelToView(lampState.getSaturation());
+            int viewBrightness = DimmableItemScaleConverter.convertBrightnessModelToView(lampState.getBrightness());
+
+            return Color.HSVToColor(new float[] { viewHue,
+                    (float) (viewSaturation / 100.0),
+                    (float) (viewBrightness / 100.0) });
+        } else {
+            return defaultIndicatorColor;
         }
-        if (tempName.length() > 0) {
-            presetName = tempName.substring(0, tempName.length() - 2);
-        }
-        itemAdapter.setPreset(presetName);
+    }
+
+    public void setColorIndicator(View parentStateView, LampState lampState) {
+        parentStateView.findViewById(R.id.stateRowColorIndicator).getBackground().setColorFilter(getColor(lampState), Mode.MULTIPLY);
     }
 
     protected abstract int getLayoutID();

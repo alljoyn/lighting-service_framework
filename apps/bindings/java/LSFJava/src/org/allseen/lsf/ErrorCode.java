@@ -17,20 +17,14 @@
 package org.allseen.lsf;
 
 public enum ErrorCode {
-    NONE(0x00),
-    ERR_REGISTERING_SIGNAL_HANDLERS(0x01),
-    ERR_NO_ACTIVE_CONTROLLER_SERVICE_FOUND(0x02),
-    ERR_ALLJOYN_METHOD_CALL_TIMEOUT(0x03),
-    ERR_IRRECOVERABLE(0x04),
-    ERR_DISCONNECTED_FROM_BUS(0x05);
-
-    /** Integer value */
-    private int value;
-
-    /** Constructor */
-    private ErrorCode(int value) {
-        this.value = value;
-    }
+    NONE,
+    ERR_REGISTERING_SIGNAL_HANDLERS,
+    ERR_NO_ACTIVE_CONTROLLER_SERVICE_FOUND,
+    ERR_ALLJOYN_METHOD_CALL_TIMEOUT,
+    ERR_IRRECOVERABLE,
+    ERR_DISCONNECTED_FROM_BUS,
+    ERR_CONTROLLER_CLIENT_EXITING,
+    ERROR_CODE_LAST;
 
     /** Static lookup, used by the native code */
     @SuppressWarnings("unused")
@@ -49,5 +43,5 @@ public enum ErrorCode {
      *
      * @return the integer value
      */
-    public int getValue() { return value; }
+    public int getValue() { return ordinal(); }
 }

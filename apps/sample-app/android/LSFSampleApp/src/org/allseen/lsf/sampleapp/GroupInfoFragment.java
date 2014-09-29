@@ -52,7 +52,7 @@ public class GroupInfoFragment extends DimmableItemInfoFragment {
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        ((SampleAppActivity)getActivity()).updateActionBar(R.string.title_group_info, false, false, false, false);
+        ((SampleAppActivity)getActivity()).updateActionBar(R.string.title_group_info, false, false, false, false, true);
     }
 
     @Override
@@ -60,7 +60,7 @@ public class GroupInfoFragment extends DimmableItemInfoFragment {
         int viewID = view.getId();
 
         if (viewID == R.id.nameValueNameText || viewID == R.id.nameValueValueText) {
-            if ((parent != null) && (!SampleGroupManager.ALL_LAMPS_GROUP_ID.equals(key))) {
+            if ((parent != null) && (!AllLampsDataModel.ALL_LAMPS_GROUP_ID.equals(key))) {
                 GroupDataModel groupModel = ((SampleAppActivity)getActivity()).groupModels.get(key);
 
                 if (groupModel != null) {
@@ -94,7 +94,7 @@ public class GroupInfoFragment extends DimmableItemInfoFragment {
 
     @Override
     protected void onHeaderClick() {
-        if (!SampleGroupManager.ALL_LAMPS_GROUP_ID.equals(key)) {
+        if (!AllLampsDataModel.ALL_LAMPS_GROUP_ID.equals(key)) {
             SampleAppActivity activity = (SampleAppActivity)getActivity();
             GroupDataModel groupModel = activity.groupModels.get(key);
 

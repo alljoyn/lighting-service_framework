@@ -28,12 +28,12 @@ static uint32_t emptyValue = 0;
 
 XStatePulseEffect::XStatePulseEffect(jobject jobj) : PulseLampsLampGroupsWithState(emptyStringList, emptyStringList, emptyState, emptyState, emptyValue, emptyValue, emptyValue)
 {
-    // TODO Auto-generated constructor stub
+    // Currently nothing to do
 }
 
 XStatePulseEffect::~XStatePulseEffect()
 {
-    // TODO Auto-generated destructor stub
+    // Currently nothing to do
 }
 
 XStatePulseEffect&

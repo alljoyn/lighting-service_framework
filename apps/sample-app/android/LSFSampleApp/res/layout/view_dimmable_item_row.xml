@@ -52,7 +52,6 @@
             android:scrollHorizontally="true"
             android:singleLine="true"
             android:ellipsize="end"
-            android:text="your-label-here"
             android:textColor="@color/actionbar_text"
             android:textSize="@dimen/font_size_1" />
 
@@ -71,7 +70,7 @@
             android:paddingLeft="8dip"
             android:paddingRight="8dip"
             android:progressDrawable="@drawable/slider_track"
-            android:thumb="@drawable/slider_thumb" />
+            android:thumb="@drawable/slider_thumb_normal" />
 
         <ImageButton
             android:id="@+id/dimmableItemButtonMore"

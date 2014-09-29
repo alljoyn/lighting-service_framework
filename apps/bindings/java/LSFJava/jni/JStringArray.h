@@ -29,6 +29,8 @@ class JStringArray {
   public:
     static jobjectArray NewStringArray(const std::list<std::string>& strs);
     static void CopyStringArray(jobjectArray jarr, std::list<std::string>& strs);
+
+    static std::string FlattenStringList(const std::list<std::string>& strs);
 };
 
 } /* namespace lsf */

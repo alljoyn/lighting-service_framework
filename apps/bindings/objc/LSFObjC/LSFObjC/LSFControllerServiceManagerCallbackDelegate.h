@@ -25,6 +25,6 @@ using namespace lsf;
 -(void)getControllerServiceVersionReply: (unsigned int)version;
 -(void)lightingResetControllerServiceReplyWithCode: (LSFResponseCode)rc;
 -(void)controllerServiceLightingReset;
--(void)controllerServiceNameChanged;
+-(void)controllerServiceNameChangedForControllerID: (NSString *)controllerID andName: (NSString *)controllerName;
 
 @end

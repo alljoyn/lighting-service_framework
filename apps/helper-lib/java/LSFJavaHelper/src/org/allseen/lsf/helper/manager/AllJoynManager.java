@@ -123,7 +123,7 @@ public class AllJoynManager {
                         AllJoynManagerFragment alljoynManagerFragment = (AllJoynManagerFragment) fragmentManager.findFragmentByTag(AllJoynManager.TAG);
 
                         if (alljoynManagerFragment != null) {
-                            fragmentManager.beginTransaction().remove(alljoynManagerFragment).commit();
+                            fragmentManager.beginTransaction().remove(alljoynManagerFragment).commitAllowingStateLoss();
                         }
 //TODO-FIX
 //                    }
@@ -184,13 +184,14 @@ public class AllJoynManager {
             bus.disconnect();
             bus.release();
 
-            AllJoynManager.masterSceneManager = null;
-            AllJoynManager.sceneManager = null;
-            AllJoynManager.presetManager = null;
-            AllJoynManager.groupManager = null;
-            AllJoynManager.lampManager = null;
-            AllJoynManager.controllerClient = null;
-            AllJoynManager.bus = null;
+//TODO-DEL?
+//            AllJoynManager.masterSceneManager = null;
+//            AllJoynManager.sceneManager = null;
+//            AllJoynManager.presetManager = null;
+//            AllJoynManager.groupManager = null;
+//            AllJoynManager.lampManager = null;
+//            AllJoynManager.controllerClient = null;
+//            AllJoynManager.bus = null;
 
             AllJoynManager.alljoynSemaphore.release();
             Log.d(AllJoynManager.TAG, "AllJoynManager.destroy() - unlocked");

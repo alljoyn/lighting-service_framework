@@ -23,7 +23,7 @@ public class UpdateBasicSceneNameAdapter extends UpdateItemNameAdapter {
 
     @Override
     protected void doUpdateName() {
-        AllJoynManager.sceneManager.setSceneName(itemModel.id, itemModel.name, SampleAppActivity.LANGUAGE);
+        AllJoynManager.sceneManager.setSceneName(itemModel.id, itemModel.getName(), SampleAppActivity.LANGUAGE);
     }
 
     @Override
@@ -34,7 +34,7 @@ public class UpdateBasicSceneNameAdapter extends UpdateItemNameAdapter {
     @Override
     protected boolean duplicateName(String name) {
         for (BasicSceneDataModel data : activity.basicSceneModels.values()) {
-            if (data.name.equals(name) && !name.equals(itemModel.name)) {
+            if (data.getName().equals(name) && !name.equals(itemModel.getName())) {
                 return true;
             }
         }

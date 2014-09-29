@@ -31,12 +31,12 @@ public class GroupEnterNameFragment extends EnterNameFragment {
     @Override
     protected void setName(String name) {
         GroupDataModel groupModel = new GroupDataModel();
-        groupModel.name = name;
+        groupModel.setName(name);
 
         SampleAppActivity activity = (SampleAppActivity)getActivity();
         activity.pendingGroupModel = groupModel;
 
-        Log.d(SampleAppActivity.TAG, "Pending lamp group name: " + activity.pendingGroupModel.name);
+        Log.d(SampleAppActivity.TAG, "Pending lamp group name: " + activity.pendingGroupModel.getName());
     }
 
     @Override
@@ -47,7 +47,7 @@ public class GroupEnterNameFragment extends EnterNameFragment {
     @Override
     protected boolean duplicateName(String name) {
         for (GroupDataModel data : ((SampleAppActivity) this.getActivity()).groupModels.values()) {
-            if (data.name.equals(name)) {
+            if (data.getName().equals(name)) {
                 return true;
             }
         }

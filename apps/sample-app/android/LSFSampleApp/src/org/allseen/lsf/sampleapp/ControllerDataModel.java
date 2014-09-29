@@ -16,6 +16,7 @@
 package org.allseen.lsf.sampleapp;
 
 public class ControllerDataModel extends ItemDataModel {
+    public static final char TAG_PREFIX_CONTROLLER = 'C';
 
     public static String defaultName;
 
@@ -24,7 +25,7 @@ public class ControllerDataModel extends ItemDataModel {
     }
 
     public ControllerDataModel(String controllerID, String controllerName) {
-        super(controllerID, controllerName != null ? controllerName : defaultName);
+        super(controllerID, TAG_PREFIX_CONTROLLER, controllerName != null ? controllerName : defaultName);
     }
 
     public ControllerDataModel(ControllerDataModel other) {
