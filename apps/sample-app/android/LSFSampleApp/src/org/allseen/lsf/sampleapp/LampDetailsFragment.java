@@ -31,8 +31,15 @@ public class LampDetailsFragment extends PageFrameChildFragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         view = inflater.inflate(R.layout.fragment_lamp_details, container, false);
 
+        LampDataModel lampModel = ((SampleAppActivity)getActivity()).lampModels.get(key);
+        LampAbout lampAbout = lampModel.getAbout();
+
+        if (!lampAbout.aboutQuery && lampAbout.aboutPeer != null) {
+            AllJoynManager.aboutManager.getLampQueriedAboutData(key, lampAbout.aboutPeer, lampAbout.aboutPort);
+        }
+
         if (view != null) {
-            updateDetailFields(((SampleAppActivity)getActivity()).lampModels.get(key));
+            updateDetailFields(lampModel);
         }
 
         return view;
@@ -77,18 +84,20 @@ public class LampDetailsFragment extends PageFrameChildFragment {
         setTextViewValue(view, R.id.lampDetailsTextTempMax, lampDetails.getMaxTemperature(), R.string.units_kelvin);
 
         if (lampModel != null) {
-	        setTextViewValue(view, R.id.lampAboutTextDeviceID, lampModel.aboutDeviceID, 0);
-	        setTextViewValue(view, R.id.lampAboutTextAppID, lampModel.aboutAppID, 0);
-	        setTextViewValue(view, R.id.lampAboutTextDeviceName, lampModel.aboutDeviceName, 0);
-	        setTextViewValue(view, R.id.lampAboutTextDefaultLang, lampModel.aboutDefaultLanguage, 0);
-	        setTextViewValue(view, R.id.lampAboutTextAppName, lampModel.aboutAppName, 0);
-	        setTextViewValue(view, R.id.lampAboutTextDescription, lampModel.aboutDescription, 0);
-	        setTextViewValue(view, R.id.lampAboutTextManufacturer, lampModel.aboutManufacturer, 0);
-	        setTextViewValue(view, R.id.lampAboutTextModel, lampModel.aboutModelNumber, 0);
-	        setTextViewValue(view, R.id.lampAboutTextDate, lampModel.aboutDateOfManufacture, 0);
-	        setTextViewValue(view, R.id.lampAboutTextSoftVer, lampModel.aboutSoftwareVersion, 0);
-	        setTextViewValue(view, R.id.lampAboutTextHardVer, lampModel.aboutHardwareVersion, 0);
-	        setTextViewValue(view, R.id.lampAboutTextSuppoerUrl, lampModel.aboutSupportUrl, 0);
+            LampAbout lampAbout = lampModel.getAbout();
+
+	        setTextViewValue(view, R.id.lampAboutTextDeviceID, lampAbout.aboutDeviceID, 0);
+	        setTextViewValue(view, R.id.lampAboutTextAppID, lampAbout.aboutAppID, 0);
+	        setTextViewValue(view, R.id.lampAboutTextDeviceName, lampAbout.aboutDeviceName, 0);
+	        setTextViewValue(view, R.id.lampAboutTextDefaultLang, lampAbout.aboutDefaultLanguage, 0);
+	        setTextViewValue(view, R.id.lampAboutTextAppName, lampAbout.aboutAppName, 0);
+	        setTextViewValue(view, R.id.lampAboutTextDescription, lampAbout.aboutDescription, 0);
+	        setTextViewValue(view, R.id.lampAboutTextManufacturer, lampAbout.aboutManufacturer, 0);
+	        setTextViewValue(view, R.id.lampAboutTextModel, lampAbout.aboutModelNumber, 0);
+	        setTextViewValue(view, R.id.lampAboutTextDate, lampAbout.aboutDateOfManufacture, 0);
+	        setTextViewValue(view, R.id.lampAboutTextSoftVer, lampAbout.aboutSoftwareVersion, 0);
+	        setTextViewValue(view, R.id.lampAboutTextHardVer, lampAbout.aboutHardwareVersion, 0);
+	        setTextViewValue(view, R.id.lampAboutTextSuppoerUrl, lampAbout.aboutSupportUrl, 0);
         }
     }
 }

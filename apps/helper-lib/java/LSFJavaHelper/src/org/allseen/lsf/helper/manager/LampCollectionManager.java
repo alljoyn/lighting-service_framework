@@ -25,6 +25,10 @@ import org.allseen.lsf.helper.listener.LampCollectionListener;
 import org.allseen.lsf.helper.listener.LightingItemErrorEvent;
 import org.allseen.lsf.helper.model.LampDataModel;
 
+/**
+ * <b>WARNING: This class is not intended to be used by clients, and its interface may change
+ * in subsequent releases of the SDK</b>.
+ */
 public class LampCollectionManager extends LightingItemCollectionManager<Lamp, LampCollectionListener, LampDataModel> {
 
     protected final Queue<String> lampIDs = new ArrayDeque<String>();

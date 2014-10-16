@@ -19,6 +19,10 @@ import java.util.Iterator;
 
 import org.allseen.lsf.helper.facade.Lamp;
 
+/**
+ * <b>WARNING: This class is not intended to be used by clients, and its interface may change
+ * in subsequent releases of the SDK</b>.
+ */
 public interface LampCollectionListener {
     public void onLampsChanged(Iterator<Lamp> lamps, int count);
     public void onLampsRemoved(Iterator<Lamp> lamps, int count);

@@ -26,6 +26,10 @@ import java.util.Map;
 import org.allseen.lsf.ResponseCode;
 import org.allseen.lsf.helper.listener.LightingItemErrorEvent;
 
+/**
+ * <b>WARNING: This class is not intended to be used by clients, and its interface may change
+ * in subsequent releases of the SDK</b>.
+ */
 public abstract class LightingItemCollectionManager<ADAPTER, LISTENER, MODEL> extends LightingItemListenerManager<LISTENER> {
 
     protected final Map<String, ADAPTER> itemAdapters = new HashMap<String, ADAPTER>();

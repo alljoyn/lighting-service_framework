@@ -18,6 +18,12 @@ import org.allseen.lsf.helper.manager.AllJoynManager;
 import org.allseen.lsf.helper.model.LightingItemDataModel;
 import org.allseen.lsf.helper.model.PresetDataModel;
 
+/**
+ * A Preset object represents a predefined color state in a lighting system.
+ * <p>
+ * <b>WARNING: This class is not intended to be used by clients, and its interface may change
+ * in subsequent releases of the SDK</b>.
+ */
 public class Preset extends LightingItem {
 
     protected PresetDataModel presetModel;

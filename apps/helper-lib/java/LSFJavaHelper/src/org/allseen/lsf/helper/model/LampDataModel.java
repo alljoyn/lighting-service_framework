@@ -18,6 +18,10 @@ package org.allseen.lsf.helper.model;
 import org.allseen.lsf.LampDetails;
 import org.allseen.lsf.LampParameters;
 
+/**
+ * <b>WARNING: This class is not intended to be used by clients, and its interface may change
+ * in subsequent releases of the SDK</b>.
+ */
 public class LampDataModel extends ColorItemDataModel {
     public static final char TAG_PREFIX_LAMP = 'L';
 

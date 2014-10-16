@@ -22,6 +22,10 @@ import org.allseen.lsf.Scene;
 import org.allseen.lsf.StatePulseEffect;
 import org.allseen.lsf.StateTransitionEffect;
 
+/**
+ * <b>WARNING: This class is not intended to be used by clients, and its interface may change
+ * in subsequent releases of the SDK</b>.
+ */
 public class SceneDataModel extends LightingItemDataModel {
     public static final char TAG_PREFIX_SCENE = 'S';
 

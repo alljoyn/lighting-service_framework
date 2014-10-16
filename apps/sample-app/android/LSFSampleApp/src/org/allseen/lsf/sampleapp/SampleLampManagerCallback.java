@@ -58,7 +58,7 @@ public class SampleLampManagerCallback extends LampManagerCallback {
         for (String lampID : lampIDs) {
             Log.d(SampleAppActivity.TAG, "Got new lamp ID reply " + lampID);
 
-            postUpdateLampID(lampID);
+            postUpdateLampID(lampID, 0);
         }
 
         unblock();
@@ -91,18 +91,16 @@ public class SampleLampManagerCallback extends LampManagerCallback {
     }
 
     @Override
-    public void lampsNameChangedCB(String[] lampIDs) {
-        for (String lampID : lampIDs) {
-            Log.d(SampleAppActivity.TAG, "lampsNameChangedCB() " + lampID);
-            postGetLampName(lampID, 0);
-        }
+    public void lampNameChangedCB(String lampID, String lampName) {
+        Log.d(SampleAppActivity.TAG, "lampNameChangedCB() " + lampID);
+        postUpdateLampName(lampID, lampName);
     }
 
     @Override
     public void lampsFoundCB(String[] lampIDs) {
         Log.d(SampleAppActivity.TAG, "lampsFoundCB(): " + lampIDs.length);
         for (String lampID : lampIDs) {
-            postUpdateLampID(lampID);
+            postUpdateLampID(lampID, 0);
         }
     }
 
@@ -222,21 +220,18 @@ public class SampleLampManagerCallback extends LampManagerCallback {
     }
 
     @Override
-    public void lampsStateChangedCB(String[] lampIDs) {
-        for (String lampID : lampIDs) {
-            Log.d(SampleAppActivity.TAG, "lampsStateChangedCB()" + lampID);
-            postGetLampState(lampID, 0);
-        }
+    public void lampStateChangedCB(String lampID, LampState lampState) {
+        Log.d(SampleAppActivity.TAG, "lampStateChangedCB() " + lampID);
+        postUpdateLampState(lampID, lampState);
+        postGetLampParameters(lampID, 0);
     }
 
     @Override
     public void transitionLampStateOnOffFieldReplyCB(ResponseCode responseCode, String lampID) {
         if (!responseCode.equals(ResponseCode.OK)) {
+            postGetLampStateOnOffField(lampID, 0);
             activity.showErrorResponseCode(responseCode, "transitionLampStateOnOffFieldReplyCB");
         }
-
-        // Read back field value regardless of response code
-        postGetLampStateOnOffField(lampID, 0);
 
         unblock();
     }
@@ -244,11 +239,9 @@ public class SampleLampManagerCallback extends LampManagerCallback {
     @Override
     public void transitionLampStateHueFieldReplyCB(ResponseCode responseCode, String lampID) {
         if (!responseCode.equals(ResponseCode.OK)) {
+            postGetLampStateHueField(lampID, 0);
             activity.showErrorResponseCode(responseCode, "transitionLampStateHueFieldReplyCB");
         }
-
-        // Read back field value regardless of response code
-        postGetLampStateHueField(lampID, 0);
 
         unblock();
     }
@@ -256,11 +249,9 @@ public class SampleLampManagerCallback extends LampManagerCallback {
     @Override
     public void transitionLampStateSaturationFieldReplyCB(ResponseCode responseCode, String lampID) {
         if (!responseCode.equals(ResponseCode.OK)) {
+            postGetLampStateSaturationField(lampID, 0);
             activity.showErrorResponseCode(responseCode, "transitionLampStateSaturationFieldReplyCB");
         }
-
-        // Read back field value regardless of response code
-        postGetLampStateSaturationField(lampID, 0);
 
         unblock();
     }
@@ -268,11 +259,9 @@ public class SampleLampManagerCallback extends LampManagerCallback {
     @Override
     public void transitionLampStateBrightnessFieldReplyCB(ResponseCode responseCode, String lampID) {
         if (!responseCode.equals(ResponseCode.OK)) {
+            postGetLampStateBrightnessField(lampID, 0);
             activity.showErrorResponseCode(responseCode, "transitionLampStateBrightnessFieldReplyCB");
         }
-
-        // Read back field value regardless of response code
-        postGetLampStateBrightnessField(lampID, 0);
 
         unblock();
     }
@@ -280,20 +269,52 @@ public class SampleLampManagerCallback extends LampManagerCallback {
     @Override
     public void transitionLampStateColorTempFieldReplyCB(ResponseCode responseCode, String lampID) {
         if (!responseCode.equals(ResponseCode.OK)) {
+            postGetLampStateColorTempField(lampID, 0);
             activity.showErrorResponseCode(responseCode, "transitionLampStateColorTempFieldReplyCB");
         }
-
-        // Read back field value regardless of response code
-        postGetLampStateColorTempField(lampID, 0);
 
         unblock();
     }
 
-    protected void postUpdateLampID(final String lampID) {
-        postUpdateLampID(lampID, null, null, 0);
+    public void postOnLampAboutAnnouncedData(final String lampID, final String peer, final short port, final Map<String, Variant> announcedData, int delay) {
+        Log.d(SampleAppActivity.TAG, "postOnLampAboutAnnouncedData()" + lampID);
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                LampDataModel lampModel = activity.lampModels.get(lampID);
+
+                if (lampModel != null) {
+                    Log.d(SampleAppActivity.TAG, "Setting about announcement for lamp " + lampID);
+                    lampModel.getAbout().setAnnouncedData(peer, port, announcedData);
+                    postGetLampName(lampID, 0);
+                } else {
+                    Log.d(SampleAppActivity.TAG, "Caching about announcement for lamp " + lampID);
+                    LampAbout lampAbout = new LampAbout();
+                    lampAbout.setAnnouncedData(peer, port, announcedData);
+                    activity.lampAbouts.put(lampID, lampAbout);
+                }
+            }
+        }, delay);
     }
 
-    public void postUpdateLampID(final String lampID, final Map<String, Variant> announceData, final Map<String, Object> aboutData, int delay) {
+    public void postOnLampQueriedAboutData(final String lampID, final Map<String, Object> queriedData, int delay) {
+        Log.d(SampleAppActivity.TAG, "postOnLampAboutQueriedData()" + lampID);
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                LampDataModel lampModel = activity.lampModels.get(lampID);
+
+                if (lampModel != null) {
+                    Log.d(SampleAppActivity.TAG, "Setting about data for lamp " + lampID);
+                    lampModel.getAbout().setQueriedData(queriedData);
+                }
+            }
+        }, delay);
+
+        postUpdateLampDetailsUI(lampID);
+    }
+
+    protected void postUpdateLampID(final String lampID, int delay) {
         Log.d(SampleAppActivity.TAG, "Updating ID " + lampID);
         handler.postDelayed(new Runnable() {
             @Override
@@ -313,13 +334,12 @@ public class SampleLampManagerCallback extends LampManagerCallback {
                     postGetLampState(lampID, 0);
                     postGetLampParameters(lampID, 0);
                     postGetLampDetails(lampID, 0);
-                } else if (announceData != null) {
-                    postGetLampName(lampID, 0);
                 }
 
-                if (announceData != null) {
-                    Log.d(SampleAppActivity.TAG, "Setting about data for lamp " + lampID);
-                    lampModel.setAboutData(announceData, aboutData);
+                LampAbout lampAbout = activity.lampAbouts.remove(lampID);
+
+                if (lampAbout != null) {
+                    lampModel.setAbout(lampAbout);
                 }
 
                 // update the timestamp
@@ -627,6 +647,28 @@ public class SampleLampManagerCallback extends LampManagerCallback {
 
                     activity.groupManagerCB.refreshAllLampGroupIDs();
                     activity.sceneManagerCB.refreshScene(null);
+                }
+            }
+        });
+    }
+
+    protected void postUpdateLampDetailsUI(final String lampID) {
+        Log.d(SampleAppActivity.TAG, "postUpdateLampDetailsUI() " + lampID);
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+                LampDataModel lampModel = activity.lampModels.get(lampID);
+
+                if (lampModel != null) {
+                    Fragment lampsPageFragment = fragmentManager.findFragmentByTag(LampsPageFragment.TAG);
+
+                    if (lampsPageFragment != null) {
+                        LampDetailsFragment detailsFragment = (LampDetailsFragment)lampsPageFragment.getChildFragmentManager().findFragmentByTag(LampsPageFragment.CHILD_TAG_DETAILS);
+
+                        if (detailsFragment != null) {
+                            detailsFragment.updateDetailFields(lampModel);
+                        }
+                    }
                 }
             }
         });

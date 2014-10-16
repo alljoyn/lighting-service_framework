@@ -23,6 +23,10 @@ import org.allseen.lsf.helper.listener.LightingItemErrorEvent;
 import org.allseen.lsf.helper.model.GroupDataModel;
 import org.allseen.lsf.helper.model.GroupsFlattener;
 
+/**
+ * <b>WARNING: This class is not intended to be used by clients, and its interface may change
+ * in subsequent releases of the SDK</b>.
+ */
 public class GroupCollectionManager extends LightingItemCollectionManager<Group, GroupCollectionListener, GroupDataModel> {
 
     protected GroupsFlattener groupsFlattener = new GroupsFlattener();

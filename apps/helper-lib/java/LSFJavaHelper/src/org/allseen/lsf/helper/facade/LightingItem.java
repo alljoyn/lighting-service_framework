@@ -16,6 +16,12 @@ package org.allseen.lsf.helper.facade;
 
 import org.allseen.lsf.helper.model.LightingItemDataModel;
 
+/**
+ * Abstract base class for items in a Lighting system.
+ * <p>
+ * <b>WARNING: This class is not intended to be used by clients, and its interface may change
+ * in subsequent releases of the SDK</b>.
+ */
 public abstract class LightingItem {
     public String getName() {
         return getItemDataModel().getName();

@@ -13,20 +13,19 @@
  *    ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  *    OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
-package org.allseen.lsf.helper.model;
+package org.allseen.lsf.sampleapp;
 
 import java.util.Map;
 
 import org.alljoyn.about.AboutKeys;
 import org.alljoyn.bus.Variant;
-import org.allseen.lsf.helper.manager.AboutManager;
 
-/**
- * <b>WARNING: This class is not intended to be used by clients, and its interface may change
- * in subsequent releases of the SDK</b>.
- */
 public class LampAbout {
     public static String dataNotFound = "-";
+
+    public String aboutPeer;
+    public short aboutPort;
+    public boolean aboutQuery;
 
     // Announced data
     public String aboutDeviceID;
@@ -45,6 +44,10 @@ public class LampAbout {
     public String aboutSupportUrl;
 
     public LampAbout() {
+        aboutPeer = null;
+        aboutPort = 0;
+        aboutQuery = false;
+
         aboutDeviceID = dataNotFound;
         aboutAppID = dataNotFound;
         aboutDeviceName = dataNotFound;
@@ -60,25 +63,30 @@ public class LampAbout {
         aboutSupportUrl = dataNotFound;
     }
 
-    public void setAnnouncedData(Map<String, Variant> announcedData) {
+    public void setAnnouncedData(String peer, short port, Map<String, Variant> announcedData) {
         if (announcedData != null) {
-            aboutDeviceID = AboutManager.getStringFromAnnounceData(AboutKeys.ABOUT_DEVICE_ID, announcedData, dataNotFound);
-            aboutAppID = AboutManager.getByteArrayHexStringFromAnnounceData(AboutKeys.ABOUT_APP_ID, announcedData, dataNotFound);
-            aboutDeviceName = AboutManager.getStringFromAnnounceData(AboutKeys.ABOUT_DEVICE_NAME, announcedData, dataNotFound);
-            aboutDefaultLanguage = AboutManager.getStringFromAnnounceData(AboutKeys.ABOUT_DEFAULT_LANGUAGE, announcedData, dataNotFound);
-            aboutAppName = AboutManager.getStringFromAnnounceData(AboutKeys.ABOUT_APP_NAME, announcedData, dataNotFound);
-            aboutManufacturer = AboutManager.getStringFromAnnounceData(AboutKeys.ABOUT_MANUFACTURER, announcedData, dataNotFound);
-            aboutModelNumber = AboutManager.getStringFromAnnounceData(AboutKeys.ABOUT_MODEL_NUMBER, announcedData, dataNotFound);
+            aboutPeer = peer;
+            aboutPort = port;
+
+            aboutDeviceID = AboutManager.getStringFromAnnouncedData(AboutKeys.ABOUT_DEVICE_ID, announcedData, dataNotFound);
+            aboutAppID = AboutManager.getByteArrayHexStringFromAnnouncedData(AboutKeys.ABOUT_APP_ID, announcedData, dataNotFound);
+            aboutDeviceName = AboutManager.getStringFromAnnouncedData(AboutKeys.ABOUT_DEVICE_NAME, announcedData, dataNotFound);
+            aboutDefaultLanguage = AboutManager.getStringFromAnnouncedData(AboutKeys.ABOUT_DEFAULT_LANGUAGE, announcedData, dataNotFound);
+            aboutAppName = AboutManager.getStringFromAnnouncedData(AboutKeys.ABOUT_APP_NAME, announcedData, dataNotFound);
+            aboutManufacturer = AboutManager.getStringFromAnnouncedData(AboutKeys.ABOUT_MANUFACTURER, announcedData, dataNotFound);
+            aboutModelNumber = AboutManager.getStringFromAnnouncedData(AboutKeys.ABOUT_MODEL_NUMBER, announcedData, dataNotFound);
         }
     }
 
     public void setQueriedData(Map<String, Object> queriedData) {
         if (queriedData != null) {
-            aboutDescription = AboutManager.getStringFromAboutData(AboutKeys.ABOUT_DESCRIPTION, queriedData, dataNotFound);
-            aboutDateOfManufacture = AboutManager.getStringFromAboutData(AboutKeys.ABOUT_DATE_OF_MANUFACTURE, queriedData, dataNotFound);
-            aboutSoftwareVersion = AboutManager.getStringFromAboutData(AboutKeys.ABOUT_SOFTWARE_VERSION, queriedData, dataNotFound);
-            aboutHardwareVersion = AboutManager.getStringFromAboutData(AboutKeys.ABOUT_HARDWARE_VERSION, queriedData, dataNotFound);
-            aboutSupportUrl = AboutManager.getStringFromAboutData(AboutKeys.ABOUT_SUPPORT_URL, queriedData, dataNotFound);
+            aboutQuery = true;
+
+            aboutDescription = AboutManager.getStringFromQueriedData(AboutKeys.ABOUT_DESCRIPTION, queriedData, dataNotFound);
+            aboutDateOfManufacture = AboutManager.getStringFromQueriedData(AboutKeys.ABOUT_DATE_OF_MANUFACTURE, queriedData, dataNotFound);
+            aboutSoftwareVersion = AboutManager.getStringFromQueriedData(AboutKeys.ABOUT_SOFTWARE_VERSION, queriedData, dataNotFound);
+            aboutHardwareVersion = AboutManager.getStringFromQueriedData(AboutKeys.ABOUT_HARDWARE_VERSION, queriedData, dataNotFound);
+            aboutSupportUrl = AboutManager.getStringFromQueriedData(AboutKeys.ABOUT_SUPPORT_URL, queriedData, dataNotFound);
         }
     }
 }

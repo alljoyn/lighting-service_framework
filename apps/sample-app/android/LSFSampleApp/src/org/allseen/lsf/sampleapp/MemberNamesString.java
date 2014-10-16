@@ -42,21 +42,28 @@ public class MemberNamesString {
             lampNames.add(lampModel != null ? lampModel.getName() : String.format(activity.getString(R.string.member_lamp_not_found), lampID));
         }
 
-        Collections.sort(groupNames);
-        Collections.sort(lampNames);
+        return format(activity, groupNames, lampNames, options, maxCount, noMembers);
+    }
+
+    public static String format(SampleAppActivity activity, List<String> names, MemberNamesOptions options, int maxCount, String noMembers) {
+        return format(activity, names, new ArrayList<String>(), options, maxCount, noMembers);
+    }
+
+    public static String format(SampleAppActivity activity, List<String> primaryNames, List<String> secondaryNames, MemberNamesOptions options, int maxCount, String noMembers) {
+        Collections.sort(primaryNames);
+        Collections.sort(secondaryNames);
 
         String details = noMembers;
-        int totalCount = groupNames.size() + lampNames.size();
+        int totalCount = primaryNames.size() + secondaryNames.size();
 
         if (totalCount > 0) {
             StringBuilder sb = new StringBuilder();
             int nextIndex = 0;
-            boolean others = totalCount > maxCount;
 
-            nextIndex = format(sb, groupNames.iterator(), nextIndex, maxCount, others, options);
-            nextIndex = format(sb, lampNames.iterator(), nextIndex, maxCount, others, options);
+            nextIndex = format(sb, primaryNames.iterator(), nextIndex, totalCount, maxCount, options);
+            nextIndex = format(sb, secondaryNames.iterator(), nextIndex, totalCount, maxCount, options);
 
-            if (others) {
+            if (totalCount > maxCount) {
                 sb.append(options.finalSeparator);
                 sb.append(String.format(options.andOthersFormat, totalCount - maxCount));
             }
@@ -67,12 +74,16 @@ public class MemberNamesString {
         return details;
     }
 
-    protected static int format(StringBuilder sb, Iterator<String> it, int nextIndex, int maxCount, boolean others, MemberNamesOptions options) {
+    protected static int format(StringBuilder sb, Iterator<String> it, int nextIndex, int totalCount, int maxCount, MemberNamesOptions options) {
+        boolean others = totalCount > maxCount;
+
         while (nextIndex < maxCount && it.hasNext()) {
             nextIndex++;
 
             if (nextIndex > 1) {
                 if (nextIndex == maxCount && !others) {
+                    sb.append(options.finalSeparator);
+                } else if (nextIndex == totalCount) {
                     sb.append(options.finalSeparator);
                 } else {
                     sb.append(options.innerSeparator);

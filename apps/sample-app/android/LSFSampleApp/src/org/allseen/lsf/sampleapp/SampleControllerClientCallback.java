@@ -111,7 +111,7 @@ public class SampleControllerClientCallback extends ControllerClientCallback {
         }, delay);
     }
 
-    public void postOnControllerAboutAnnouncement(final String controllerID, final String controllerName, int delay) {
+    public void postOnControllerAnnouncedAboutData(final String controllerID, final String controllerName, int delay) {
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
@@ -163,7 +163,7 @@ public class SampleControllerClientCallback extends ControllerClientCallback {
         }), 400);
     }
 
-    protected void postUpdateControllerDisplay() {
+    public void postUpdateControllerDisplay() {
         // if connection status is ever changed, then prompt for updating the loading information
         handler.post(new Runnable() {
             @Override

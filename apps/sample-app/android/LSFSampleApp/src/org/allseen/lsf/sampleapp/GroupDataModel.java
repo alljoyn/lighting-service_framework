@@ -72,4 +72,18 @@ public class GroupDataModel extends DimmableItemDataModel {
     public Set<String> getGroups() {
         return groups;
     }
+
+    // Only checks immediate child groups. To see if the group is a descendent (child, grandchild,
+    // great-grandchild, etc.) you can use getGroups().contains(groupID);
+    public boolean containsGroup(String groupID) {
+        String[] childIDs = members.getLampGroups();
+
+        for (String childID : childIDs) {
+            if (childID.equals(groupID)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
 }

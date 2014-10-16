@@ -38,6 +38,10 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.util.Log;
 
+/**
+ * <b>WARNING: This class is not intended to be used by clients, and its interface may change
+ * in subsequent releases of the SDK</b>.
+ */
 public class AllJoynManager {
     private static final String TAG = "TagAlljoynManager";
 
@@ -133,6 +137,10 @@ public class AllJoynManager {
 //        Log.d(AllJoynManager.TAG, "AllJoynManager.destroy() - thread started, resuming");
     }
 
+    /**
+     * <b>WARNING: This class is not intended to be used by clients, and its interface may change
+     * in subsequent releases of the SDK</b>.
+     */
     public static class AllJoynManagerFragment extends Fragment {
         private AllJoynManagerAsyncTask alljoynManagerTask;
 

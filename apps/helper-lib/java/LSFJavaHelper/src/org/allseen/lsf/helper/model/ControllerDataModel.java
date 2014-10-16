@@ -15,6 +15,10 @@
  */
 package org.allseen.lsf.helper.model;
 
+/**
+ * <b>WARNING: This class is not intended to be used by clients, and its interface may change
+ * in subsequent releases of the SDK</b>.
+ */
 public class ControllerDataModel extends LightingItemDataModel {
     public static final char TAG_PREFIX_CONTROLLER = 'C';
 

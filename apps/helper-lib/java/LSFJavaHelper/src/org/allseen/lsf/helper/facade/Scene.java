@@ -18,16 +18,33 @@ import org.allseen.lsf.helper.manager.AllJoynManager;
 import org.allseen.lsf.helper.model.LightingItemDataModel;
 import org.allseen.lsf.helper.model.SceneDataModel;
 
+/**
+ * A Scene object represents a set of lamps and associated states in a lighting system, and can be
+ * used to apply the states to the lamps.
+ */
 public final class Scene extends LightingItem {
 
     protected SceneDataModel sceneModel;
 
+    /**
+     * Constructs a Scene using the specified ID.
+     * <p>
+     * <b>WARNING: This method is intended to be used internally. Client software should not instantiate
+     * Scenes directly, but should instead get them from the {@link LightingDirector} using the
+     * {@link LightingDirector#getScenes()} method.</b>
+     *
+     * @param sceneID The ID of the scene
+     */
     public Scene(String sceneID) {
         super();
 
         sceneModel = new SceneDataModel(sceneID);
     }
 
+    /**
+     * Sends a command to apply this Scene, which sets the appropriate state for all
+     * constituent lamps.
+     */
     public void apply() {
         AllJoynManager.sceneManager.applyScene(sceneModel.id);
     }
@@ -37,6 +54,10 @@ public final class Scene extends LightingItem {
         return getSceneDataModel();
     }
 
+    /**
+     * <b>WARNING: This method is not intended to be used by clients, and may change or be
+     * removed in subsequent releases of the SDK.</b>
+     */
     public SceneDataModel getSceneDataModel() {
         return sceneModel;
     }

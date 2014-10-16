@@ -18,6 +18,10 @@ package org.allseen.lsf.helper.manager;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * <b>WARNING: This class is not intended to be used by clients, and its interface may change
+ * in subsequent releases of the SDK</b>.
+ */
 public abstract class LightingItemListenerManager<LISTENER> {
     protected final List<LISTENER> itemListeners = new ArrayList<LISTENER>();
     protected final LightingSystemManager director;

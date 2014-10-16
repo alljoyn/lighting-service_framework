@@ -27,6 +27,10 @@ import org.allseen.lsf.helper.manager.ControllerMaintenance;
 import org.allseen.lsf.helper.manager.LightingSystemManager;
 import org.allseen.lsf.helper.model.ControllerDataModel;
 
+/**
+ * <b>WARNING: This class is not intended to be used by clients, and its interface may change
+ * in subsequent releases of the SDK</b>.
+ */
 public class HelperControllerClientCallback extends ControllerClientCallback {
     protected LightingSystemManager director;
 

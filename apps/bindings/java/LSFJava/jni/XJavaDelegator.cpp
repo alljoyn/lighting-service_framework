@@ -98,7 +98,59 @@ void XJavaDelegator::Call_Void_ResponseCode_StringList(const jweak jdelegate, ch
 
     Call_Void_Variadic(env, jdelegate, func, "(Lorg/allseen/lsf/ResponseCode;[Ljava/lang/String;)V", jresponseCode, jstrList);
 }
+#endif //LSF_JNI_XJAVADELEGATOR_H_INCLUDE_TEMPLATE_METHODS
 
+// This .cpp file is #include'd in the .h file because some templated
+// methods must be defined there. The following #ifdef allows the
+// templated code to be visible there.
+#ifdef LSF_JNI_XJAVADELEGATOR_H_INCLUDE_TEMPLATE_METHODS
+template <typename CTYPE, typename XTYPE>
+void XJavaDelegator::Call_Void_String_Object(const jweak jdelegate, char const *func, XClass *xClass, const LSFString &strValue, const CTYPE &objValue)
+{
+    // Get the JNIEnv for the current native thread
+    JScopedEnv env;
+
+    jstring jstrValue = env->NewStringUTF(strValue.c_str());
+    if (env->ExceptionCheck() || !jstrValue) {
+        QCC_LogError(ER_FAIL, ("NewStringUTF() failed"));
+        return;
+    }
+
+    jmethodID jconstructor = env->GetMethodID(xClass->classRef, "<init>", "()V");
+    if (env->ExceptionCheck() || !jconstructor) {
+        QCC_LogError(ER_FAIL, ("GetMethodID() failed"));
+        return;
+    }
+
+    jobject jobjValue = env->NewObject(xClass->classRef, jconstructor);
+    if (env->ExceptionCheck() || !jobjValue) {
+        QCC_LogError(ER_FAIL, ("NewObject() failed"));
+        return;
+    }
+
+    XTYPE *xobjValue = GetHandle<XTYPE *>(jobjValue);
+    if (env->ExceptionCheck() || !xobjValue) {
+        QCC_LogError(ER_FAIL, ("GetHandle() failed"));
+        return;
+    }
+
+    *xobjValue = objValue;
+
+//    __android_log_print(ANDROID_LOG_DEBUG, QCC_MODULE, "cObj = %s", objValue.c_str());
+//    __android_log_print(ANDROID_LOG_DEBUG, QCC_MODULE, "xObj = %s", xobjValue->c_str());
+
+    char sig[512];
+    snprintf(sig, sizeof(sig), "(Ljava/lang/String;L%s;)V", xClass->className);
+
+    Call_Void_Variadic(env, jdelegate, func, sig, jstrValue, jobjValue);
+}
+#endif //LSF_JNI_XJAVADELEGATOR_H_INCLUDE_TEMPLATE_METHODS
+
+
+// This .cpp file is #include'd in the .h file because some templated
+// methods must be defined there. The following #ifndef prevents the
+// non-templated code from being visible there.
+#ifndef LSF_JNI_XJAVADELEGATOR_H_INCLUDE_TEMPLATE_METHODS
 void XJavaDelegator::Call_Void_String_String(const jweak jdelegate, char const *func, const LSFString &strValue1, const LSFString &strValue2)
 {
     // Get the JNIEnv for the current native thread
@@ -291,7 +343,6 @@ void XJavaDelegator::Call_Void_ResponseCode_String_Object(const jweak jdelegate,
 
     Call_Void_Variadic(env, jdelegate, func, sig, jresponseCode, jstrValue, jobjValue);
 }
-
 #endif //LSF_JNI_XJAVADELEGATOR_H_INCLUDE_TEMPLATE_METHODS
 
 // This .cpp file is #include'd in the .h file because some templated

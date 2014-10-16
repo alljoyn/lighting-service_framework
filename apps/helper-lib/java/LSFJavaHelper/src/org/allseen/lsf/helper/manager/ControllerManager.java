@@ -20,6 +20,10 @@ import org.allseen.lsf.helper.listener.ControllerErrorEvent;
 import org.allseen.lsf.helper.listener.ControllerListener;
 import org.allseen.lsf.helper.model.ControllerDataModel;
 
+/**
+ * <b>WARNING: This class is not intended to be used by clients, and its interface may change
+ * in subsequent releases of the SDK</b>.
+ */
 public class ControllerManager extends LightingItemListenerManager<ControllerListener> {
 
     protected ControllerDataModel leadModel = new ControllerDataModel();

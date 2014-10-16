@@ -22,6 +22,10 @@ import org.allseen.lsf.helper.listener.LightingItemErrorEvent;
 import org.allseen.lsf.helper.listener.SceneCollectionListener;
 import org.allseen.lsf.helper.model.SceneDataModel;
 
+/**
+ * <b>WARNING: This class is not intended to be used by clients, and its interface may change
+ * in subsequent releases of the SDK</b>.
+ */
 public class SceneCollectionManager extends LightingItemCollectionManager<Scene, SceneCollectionListener, SceneDataModel> {
 
     public SceneCollectionManager(LightingSystemManager director) {

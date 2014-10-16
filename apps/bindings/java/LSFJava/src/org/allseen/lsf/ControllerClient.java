@@ -17,6 +17,7 @@
 package org.allseen.lsf;
 
 import org.alljoyn.bus.BusAttachment;
+import org.alljoyn.bus.Status;
 
 public class ControllerClient extends BaseNativeClassWrapper
 {
@@ -33,10 +34,8 @@ public class ControllerClient extends BaseNativeClassWrapper
         return 0;
     }
 
-    // TODO-FIX make native
-    public void reset()
-    {
-    }
+    public native Status start();
+    public native Status stop();
 
     protected native void createNativeObject(BusAttachment bus, ControllerClientCallback callback);
 

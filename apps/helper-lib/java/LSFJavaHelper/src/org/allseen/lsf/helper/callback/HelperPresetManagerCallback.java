@@ -22,6 +22,10 @@ import org.allseen.lsf.helper.manager.AllJoynManager;
 import org.allseen.lsf.helper.manager.LightingSystemManager;
 import org.allseen.lsf.helper.model.PresetDataModel;
 
+/**
+ * <b>WARNING: This class is not intended to be used by clients, and its interface may change
+ * in subsequent releases of the SDK</b>.
+ */
 public class HelperPresetManagerCallback extends PresetManagerCallback {
     protected LightingSystemManager director;
 

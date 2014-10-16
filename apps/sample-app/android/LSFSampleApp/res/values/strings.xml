@@ -207,6 +207,12 @@
     <string name="error_title">Controller Service Error</string>
     <string name="error_code">Error code</string>
     <string name="error_dependency">Cannot delete because another group, scene, or master scene depends on this.</string>
+    <string name="error_dependency_group_title">Can\'t Delete Group</string>
+    <string name="error_dependency_group_text">The group \"%1$s\" is being used by the following other groups or scenes: %2$s. It cannot be deleted until it is removed from those items, or those items are deleted.</string>
+    <string name="error_dependency_scene_title">Can\'t Delete Scene</string>
+    <string name="error_dependency_scene_text">The scene \"%1$s\" is being used by the following master scene: %2$s. It cannot be deleted until it is removed from those master scenes, or those master scenes are deleted.</string>
+    <string name="error_dependency_preset_title">Can\'t Delete Preset</string>
+    <string name="error_dependency_preset_text">The preset \"%1$s\" is being used by the following scenes: %2$s. It cannot be deleted until it is removed from those scenes, or those scenes are deleted.</string>
     <string name="duplicate_name">Duplicate Name</string>
     <string name="error_connection_lost_dialog_title">Connection Lost</string>
     <string name="error_connection_lost_dialog_text">Unable to connect to \"%1$s.\"</string>

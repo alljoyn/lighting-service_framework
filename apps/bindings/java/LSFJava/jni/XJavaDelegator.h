@@ -40,6 +40,9 @@ class XJavaDelegator {
 
     static void Call_Void_String_String(const jweak jdelegate, char const *func, const LSFString &strValue1, const LSFString &strValue2);
 
+    template <typename CTYPE, typename XTYPE>
+    static void Call_Void_String_Object(const jweak jdelegate, char const *func, XClass *xClass, const LSFString &strValue, const CTYPE &objValue);
+
     // 3 Args
     static void Call_Void_ResponseCode_String_Boolean(const jweak jdelegate, char const *func, const LSFResponseCode &responseCode, const LSFString &strValue, const bool &boolValue);
     static void Call_Void_ResponseCode_String_SInt32(const jweak jdelegate, char const *func,const LSFResponseCode &responseCode, const LSFString &strValue, const uint32_t &uint32Value);

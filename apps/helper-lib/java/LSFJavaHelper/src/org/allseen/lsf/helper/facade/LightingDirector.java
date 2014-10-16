@@ -15,41 +15,122 @@
  */
 package org.allseen.lsf.helper.facade;
 
+import org.alljoyn.bus.BusAttachment;
 import org.allseen.lsf.helper.facade.Group;
 import org.allseen.lsf.helper.facade.Lamp;
 import org.allseen.lsf.helper.facade.Scene;
+import org.allseen.lsf.helper.manager.AllJoynManager;
 import org.allseen.lsf.helper.manager.LightingSystemManager;
 import android.os.Handler;
 import android.support.v4.app.FragmentManager;
 
+/**
+ * LightingDirector is the main class in the facade interface of the Lighting SDK.
+ * It provides access to instances of other facade classes that represent active
+ * components in the Lighting system.
+ * <p>
+ * Please see the LSFTutorial project for an example of how to use the LightingDirector
+ * class.
+ */
 public class LightingDirector {
     private final LightingSystemManager lightingManager;
 
+    /**
+     * Construct a LightingDirector instance.
+     *
+     * Note that the start() method must be called at some point after construction when
+     * you're ready to begin working with the Lighting system.
+     *
+     * @param handler A handler which receives tasks to run when certain events occur.
+     */
     public LightingDirector(Handler handler) {
         super();
         lightingManager = new LightingSystemManager(handler);
     }
 
+    /**
+     * The version number of the interface provided by this class.
+     *
+     * @return The version number
+     */
+    public int getVersion() {
+        return 1;
+    }
+
+    /**
+     * Causes the LightingDirector to start interacting with the Lighting system.
+     *
+     * @param fragmentManager Currently needed for system initialization
+     */
     public void start(FragmentManager fragmentManager) {
         lightingManager.start(fragmentManager);
     }
 
+    /**
+     * Causes the LightingDirector to start interacting with the Lighting system.
+     *
+     * @param fragmentManager Must be the same instance passed to start()
+     */
     public void stop(FragmentManager fragmentManager) {
         lightingManager.stop(fragmentManager);
     }
 
+    /**
+     * Returns the AllJoyn BusAttachment object being used to connect to the Lighting system.
+     *
+     * The BusAttachment will be null until some time after the call to start().
+     *
+     * @return The BusAttachment object
+     */
+    public BusAttachment getBusAttachment() {
+        return AllJoynManager.bus;
+    }
+
+    /**
+     * Returns a snapshot of the active Lamps in the Lighting system.
+     *
+     * The contents of this array may change in subsequent calls to this method as new lamps
+     * are discovered or existing lamps are determined to be offline. This array may be empty.
+     *
+     * @return An array of active Lamps
+     */
     public Lamp[] getLamps() {
         return lightingManager.getLampCollectionManager().getLamps();
     }
 
+    /**
+     * Returns a snapshot of the active Group definitions in the Lighting system.
+     *
+     * The contents of this array may change in subsequent calls to this method as new groups
+     * are created or existing groups are deleted. This array may be empty.
+     *
+     * @return An array of active Groups
+     */
     public Group[] getGroups() {
         return lightingManager.getGroupCollectionManager().getGroups();
     }
 
+    /**
+     * Returns a snapshot of the active Scene definitions in the Lighting system.
+     *
+     * The contents of this array may change in subsequent calls to this method as new scenes
+     * are created or existing scenes are deleted. This array may be empty.
+     *
+     * @return An array of active Scenes
+     */
     public Scene[] getScenes() {
         return lightingManager.getSceneCollectionManager().getScenes();
     }
 
+    /**
+     * Specifies a task to run once a connection to a lighting system has been established.
+     *
+     * This allows clients of the LightingDirector to be notified once a connection has been
+     * established.
+     *
+     * @param task The task to run on connection
+     * @param delay Specifies a delay between when a connection occurs and when the task should be run
+     */
     public void postOnNextControllerConnection(Runnable task, int delay) {
         lightingManager.postOnNextControllerConnection(task, delay);
     }

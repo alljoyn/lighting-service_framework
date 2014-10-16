@@ -18,6 +18,12 @@ import org.allseen.lsf.helper.model.ColorItemDataModel;
 import org.allseen.lsf.helper.model.ColorStateConverter;
 import org.allseen.lsf.helper.model.LightingItemDataModel;
 
+/**
+ * Abstract base class for Lighting items that support color.
+ * <p>
+ * <b>WARNING: This class is not intended to be used by clients, and its interface may change
+ * in subsequent releases of the SDK</b>.
+ */
 public abstract class ColorItem extends LightingItem {
 
     public void turnOn() {

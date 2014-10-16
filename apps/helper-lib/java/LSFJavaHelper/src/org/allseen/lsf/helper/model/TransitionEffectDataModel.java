@@ -15,6 +15,10 @@
  */
 package org.allseen.lsf.helper.model;
 
+/**
+ * <b>WARNING: This class is not intended to be used by clients, and its interface may change
+ * in subsequent releases of the SDK</b>.
+ */
 public class TransitionEffectDataModel extends SceneElementDataModel {
     public static String defaultName = "<Loading transition effect info...>";
 

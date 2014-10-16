@@ -29,6 +29,10 @@ import org.allseen.lsf.helper.manager.LightingSystemManager;
 import org.allseen.lsf.helper.model.LampAbout;
 import org.allseen.lsf.helper.model.LampDataModel;
 
+/**
+ * <b>WARNING: This class is not intended to be used by clients, and its interface may change
+ * in subsequent releases of the SDK</b>.
+ */
 public class HelperLampManagerCallback extends LampManagerCallback {
     private static final int RETRY_DELAY = 500;
 
@@ -73,10 +77,8 @@ public class HelperLampManagerCallback extends LampManagerCallback {
     }
 
     @Override
-    public void lampsNameChangedCB(String[] lampIDs) {
-        for (String lampID : lampIDs) {
-            director.getLampManager().getLampName(lampID, LightingSystemManager.LANGUAGE);
-        }
+    public void lampNameChangedCB(String lampID, String lampName) {
+        postUpdateLampName(lampID, lampName);
     }
 
     @Override
@@ -175,10 +177,9 @@ public class HelperLampManagerCallback extends LampManagerCallback {
     }
 
     @Override
-    public void lampsStateChangedCB(String[] lampIDs) {
-        for (String lampID : lampIDs) {
-            director.getLampManager().getLampState(lampID);
-        }
+    public void lampStateChangedCB(String lampID, LampState lampState) {
+        postUpdateLampState(lampID, lampState);
+        postGetLampParameters(lampID, 0);
     }
 
     @Override

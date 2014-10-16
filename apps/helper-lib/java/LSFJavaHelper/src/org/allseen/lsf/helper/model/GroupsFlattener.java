@@ -22,6 +22,10 @@ import java.util.Set;
 
 import org.allseen.lsf.helper.facade.Group;
 
+/**
+ * <b>WARNING: This class is not intended to be used by clients, and its interface may change
+ * in subsequent releases of the SDK</b>.
+ */
 public class GroupsFlattener {
     public Set<String> groupIDSet;
     public Set<String> lampIDSet;

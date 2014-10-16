@@ -17,6 +17,10 @@ package org.allseen.lsf.helper.model;
 
 import org.allseen.lsf.LampState;
 
+/**
+ * <b>WARNING: This class is not intended to be used by clients, and its interface may change
+ * in subsequent releases of the SDK</b>.
+ */
 public class PulseEffectDataModel extends SceneElementDataModel {
     public static String defaultName = "<Loading pulse effect info...>";
 

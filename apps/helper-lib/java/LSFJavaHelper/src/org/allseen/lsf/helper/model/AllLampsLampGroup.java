@@ -19,6 +19,10 @@ import org.allseen.lsf.LampGroup;
 import org.allseen.lsf.ResponseCode;
 import org.allseen.lsf.helper.manager.LightingSystemManager;
 
+/**
+ * <b>WARNING: This class is not intended to be used by clients, and its interface may change
+ * in subsequent releases of the SDK</b>.
+ */
 public class AllLampsLampGroup extends LampGroup {
     protected LightingSystemManager director;
 

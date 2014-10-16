@@ -17,6 +17,10 @@ package org.allseen.lsf.helper.listener;
 
 import org.allseen.lsf.ResponseCode;
 
+/**
+ * <b>WARNING: This class is not intended to be used by clients, and its interface may change
+ * in subsequent releases of the SDK</b>.
+ */
 public class LightingItemErrorEvent {
     public String name;
     public ResponseCode responseCode;

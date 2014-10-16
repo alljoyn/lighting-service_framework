@@ -57,13 +57,13 @@ public abstract class EnterNumberFragment extends PageFrameChildFragment {
                 if (longValue >= 0 && longValue <= maxValue) {
                     setNumberValue(longValue);
                 } else {
-                    Toast.makeText(getActivity(), String.format(getString(R.string.toast_number_value_invalid), maxValue / getScale()), Toast.LENGTH_LONG).show();
+                	((SampleAppActivity)getActivity()).showToast(String.format(getString(R.string.toast_number_value_invalid), maxValue / getScale()));
                 }
             } catch (NumberFormatException e) {
-                Toast.makeText(getActivity(), R.string.toast_number_format_invalid, Toast.LENGTH_LONG).show();
+                ((SampleAppActivity)getActivity()).showToast(R.string.toast_number_format_invalid);
             }
         } else {
-            Toast.makeText(getActivity(), String.format(getString(R.string.toast_number_missing), getString(getLabelID())), Toast.LENGTH_LONG).show();
+        	((SampleAppActivity)getActivity()).showToast(String.format(getString(R.string.toast_number_missing), getString(getLabelID())));
         }
     }
 

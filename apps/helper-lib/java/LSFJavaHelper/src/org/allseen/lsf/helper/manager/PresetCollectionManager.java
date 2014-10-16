@@ -22,6 +22,10 @@ import org.allseen.lsf.helper.listener.LightingItemErrorEvent;
 import org.allseen.lsf.helper.listener.PresetCollectionListener;
 import org.allseen.lsf.helper.model.PresetDataModel;
 
+/**
+ * <b>WARNING: This class is not intended to be used by clients, and its interface may change
+ * in subsequent releases of the SDK</b>.
+ */
 public class PresetCollectionManager extends LightingItemCollectionManager<Preset, PresetCollectionListener, PresetDataModel> {
 
     public PresetCollectionManager(LightingSystemManager director) {

@@ -155,4 +155,20 @@ public class ScenesPageFragment extends PageMainContainerFragment {
 
         return root;
     }
+
+    @Override
+    public int onBackPressed() {
+        String startingChildTag = child.getTag();
+        int backStackCount = super.onBackPressed();
+
+        if (!isMasterMode && CHILD_TAG_ENTER_NAME.equals(startingChildTag)) {
+            // To support the basic scene creation workflow, when going backwards
+            // from the enter name fragment we have to skip over the dummy scene
+            // info fragment (see SampleAppActivity.doAddScene()). So we queue up
+            // a second back press here.
+            ((SampleAppActivity)getActivity()).postOnBackPressed();
+        }
+
+        return backStackCount;
+    }
 }

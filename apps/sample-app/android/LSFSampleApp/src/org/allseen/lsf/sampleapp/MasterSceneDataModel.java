@@ -43,4 +43,16 @@ public class MasterSceneDataModel extends ItemDataModel {
 
         this.masterScene = new MasterScene(other.masterScene);
     }
+
+    public boolean containsBasicScene(String basicSceneID) {
+        String[] childIDs = masterScene.getScenes();
+
+        for (String childID : childIDs) {
+            if (childID.equals(basicSceneID)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
 }

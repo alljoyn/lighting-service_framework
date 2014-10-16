@@ -80,9 +80,9 @@ void JLampManagerCallback::SetLampNameReplyCB(const LSFResponseCode& responseCod
     XJavaDelegator::Call_Void_ResponseCode_String_String(jdelegate, __func__, responseCode, lampID, language);
 }
 
-void JLampManagerCallback::LampsNameChangedCB(const LSFStringList& lampIDs)
+void JLampManagerCallback::LampNameChangedCB(const LSFString& lampID, const LSFString& lampName)
 {
-    XJavaDelegator::Call_Void_StringList(jdelegate, __func__, lampIDs);
+    XJavaDelegator::Call_Void_String_String(jdelegate, __func__, lampID, lampName);
 }
 
 void JLampManagerCallback::LampsFoundCB(const LSFStringList& lampIDs)
@@ -150,9 +150,9 @@ void JLampManagerCallback::ResetLampStateReplyCB(const LSFResponseCode& response
     XJavaDelegator::Call_Void_ResponseCode_String(jdelegate, __func__, responseCode, lampID);
 }
 
-void JLampManagerCallback::LampsStateChangedCB(const LSFStringList& lampIDs)
+void JLampManagerCallback::LampStateChangedCB(const LSFString& lampID, const LampState& lampState)
 {
-    XJavaDelegator::Call_Void_StringList(jdelegate, __func__, lampIDs);
+    XJavaDelegator::Call_Void_String_Object<LampState, JLampState>(jdelegate, __func__, XClass::xLampState, lampID, lampState);
 }
 
 void JLampManagerCallback::TransitionLampStateReplyCB(const LSFResponseCode& responseCode, const LSFString& lampID)

@@ -15,10 +15,6 @@
  */
 package org.allseen.lsf.sampleapp;
 
-import java.util.Map;
-
-import org.alljoyn.about.AboutKeys;
-import org.alljoyn.bus.Variant;
 import org.allseen.lsf.LampDetails;
 import org.allseen.lsf.LampParameters;
 
@@ -27,19 +23,7 @@ public class LampDataModel extends DimmableItemDataModel {
 
     private LampDetails details;
     private LampParameters parameters;
-
-    public String aboutDeviceID;
-    public String aboutAppID;
-    public String aboutDeviceName;
-    public String aboutDefaultLanguage;
-    public String aboutAppName;
-    public String aboutDescription;
-    public String aboutManufacturer;
-    public String aboutModelNumber;
-    public String aboutDateOfManufacture;
-    public String aboutSoftwareVersion;
-    public String aboutHardwareVersion;
-    public String aboutSupportUrl;
+    private LampAbout about;
 
     public static String defaultName;
     public static String dataNotFound;
@@ -49,35 +33,7 @@ public class LampDataModel extends DimmableItemDataModel {
 
         details = new LampDetails();
         parameters = new LampParameters();
-
-        aboutDeviceID = dataNotFound;
-        aboutAppID = dataNotFound;
-        aboutDeviceName = dataNotFound;
-        aboutDefaultLanguage = dataNotFound;
-        aboutAppName = dataNotFound;
-        aboutDescription = dataNotFound;
-        aboutManufacturer = dataNotFound;
-        aboutModelNumber = dataNotFound;
-        aboutDateOfManufacture = dataNotFound;
-        aboutSoftwareVersion = dataNotFound;
-        aboutHardwareVersion = dataNotFound;
-        aboutSupportUrl = dataNotFound;
-    }
-
-    public void setAboutData(Map<String, Variant> announceData, Map<String, Object> aboutData) {
-        aboutDeviceID = AboutManager.getStringFromAnnounceData(AboutKeys.ABOUT_DEVICE_ID, announceData, dataNotFound);
-        aboutAppID = AboutManager.getByteArrayHexStringFromAnnounceData(AboutKeys.ABOUT_APP_ID, announceData, dataNotFound);
-        aboutDeviceName = AboutManager.getStringFromAnnounceData(AboutKeys.ABOUT_DEVICE_NAME, announceData, dataNotFound);
-        aboutDefaultLanguage = AboutManager.getStringFromAnnounceData(AboutKeys.ABOUT_DEFAULT_LANGUAGE, announceData, dataNotFound);
-        aboutAppName = AboutManager.getStringFromAnnounceData(AboutKeys.ABOUT_APP_NAME, announceData, dataNotFound);
-        aboutManufacturer = AboutManager.getStringFromAnnounceData(AboutKeys.ABOUT_MANUFACTURER, announceData, dataNotFound);
-        aboutModelNumber = AboutManager.getStringFromAnnounceData(AboutKeys.ABOUT_MODEL_NUMBER, announceData, dataNotFound);
-
-        aboutDescription = AboutManager.getStringFromAboutData(AboutKeys.ABOUT_DESCRIPTION, aboutData, dataNotFound);
-        aboutDateOfManufacture = AboutManager.getStringFromAboutData(AboutKeys.ABOUT_DATE_OF_MANUFACTURE, aboutData, dataNotFound);
-        aboutSoftwareVersion = AboutManager.getStringFromAboutData(AboutKeys.ABOUT_SOFTWARE_VERSION, aboutData, dataNotFound);
-        aboutHardwareVersion = AboutManager.getStringFromAboutData(AboutKeys.ABOUT_HARDWARE_VERSION, aboutData, dataNotFound);
-        aboutSupportUrl = AboutManager.getStringFromAboutData(AboutKeys.ABOUT_SUPPORT_URL, aboutData, dataNotFound);
+        about = new LampAbout();
     }
 
     public void setDetails(LampDetails details) {
@@ -89,11 +45,19 @@ public class LampDataModel extends DimmableItemDataModel {
         this.parameters = parameters;
     }
 
+    public void setAbout(LampAbout about) {
+        this.about = about;
+    }
+
     public LampDetails getDetails() {
         return details;
     }
 
     public LampParameters getParameters() {
         return parameters;
+    }
+
+    public LampAbout getAbout() {
+        return about;
     }
 }

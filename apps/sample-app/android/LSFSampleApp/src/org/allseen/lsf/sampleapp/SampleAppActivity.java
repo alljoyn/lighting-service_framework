@@ -18,9 +18,11 @@ package org.allseen.lsf.sampleapp;
 
 import java.lang.reflect.Method;
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Queue;
@@ -73,7 +75,7 @@ public class SampleAppActivity extends FragmentActivity implements ActionBar.Tab
     public static final int COMMAND_EXPIRATION = 1000;
 
     public static final boolean RETRY_ENABLE = true;
-    public static final int RETRY_INTERVAL = 1000;
+    public static final int RETRY_INTERVAL = 200;
 
     public static final long STATE_TRANSITION_DURATION = 100;
     public static final long FIELD_TRANSITION_DURATION = 0;
@@ -95,6 +97,7 @@ public class SampleAppActivity extends FragmentActivity implements ActionBar.Tab
 
     public Queue<String> lampIDs = new ArrayDeque<String>();
     public Queue<Runnable> commands = new ArrayDeque<Runnable>();
+    public Map<String, LampAbout> lampAbouts = new HashMap<String, LampAbout>();
     public Map<String, LampDataModel> lampModels = new HashMap<String, LampDataModel>();
     public Map<String, GroupDataModel> groupModels = new HashMap<String, GroupDataModel>();
     public Map<String, PresetDataModel> presetModels = new HashMap<String, PresetDataModel>();
@@ -136,11 +139,14 @@ public class SampleAppActivity extends FragmentActivity implements ActionBar.Tab
 
     private String popupItemID;
     private String popupSubItemID;
+	private Toast toast;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_sample_app);
+
+        toast = Toast.makeText(this, "", Toast.LENGTH_LONG);
 
         viewPager = (SampleAppViewPager) findViewById(R.id.sampleAppViewPager);
         viewPager.setActivity(this);
@@ -221,24 +227,35 @@ public class SampleAppActivity extends FragmentActivity implements ActionBar.Tab
         registerReceiver(new BroadcastReceiver() {
             @Override
             public void onReceive(final Context context, Intent intent) {
-                NetworkInfo wifiNetworkInfo = ((ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE)).getNetworkInfo(ConnectivityManager.TYPE_WIFI);
-
-                // determine if wifi AP mode is on
-                boolean isWifiApEnabled = false;
-                WifiManager wifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
-                // need reflection because wifi ap is not in the public API
-                try {
-                    Method isWifiApEnabledMethod = wifiManager.getClass().getDeclaredMethod("isWifiApEnabled");
-                    isWifiApEnabled = (Boolean) isWifiApEnabledMethod.invoke(wifiManager);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-
-                Log.d(SampleAppActivity.TAG, "Connectivity state " + wifiNetworkInfo.getState().name() + " - connected:" + wifiNetworkInfo.isConnected() + " hotspot:" + isWifiApEnabled);
-
-                wifiConnectionStateUpdate(wifiNetworkInfo.isConnected() || isWifiApEnabled);
+                controllerClientCB.postUpdateControllerDisplay();
+                wifiConnectionStateUpdate(isWifiConnected());
             }
         }, filter);
+    }
+
+    protected boolean isWifiConnected() {
+        NetworkInfo wifiNetworkInfo = ((ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE)).getNetworkInfo(ConnectivityManager.TYPE_WIFI);
+
+        // determine if wifi AP mode is on
+        boolean isWifiApEnabled = false;
+        WifiManager wifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
+        // need reflection because wifi ap is not in the public API
+        try {
+            Method isWifiApEnabledMethod = wifiManager.getClass().getDeclaredMethod("isWifiApEnabled");
+            isWifiApEnabled = (Boolean) isWifiApEnabledMethod.invoke(wifiManager);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        Log.d(SampleAppActivity.TAG, "Connectivity state " + wifiNetworkInfo.getState().name() + " - connected:" + wifiNetworkInfo.isConnected() + " hotspot:" + isWifiApEnabled);
+
+        return wifiNetworkInfo.isConnected() || isWifiApEnabled;
+    }
+
+    public void onAllJoynManagerInitialized() {
+        if (isWifiConnected()) {
+            AllJoynManager.start();
+        }
     }
 
     @Override
@@ -316,8 +333,7 @@ public class SampleAppActivity extends FragmentActivity implements ActionBar.Tab
     }
 
     @Override
-    public void onTabSelected(ActionBar.Tab tab,
-            FragmentTransaction fragmentTransaction) {
+    public void onTabSelected(ActionBar.Tab tab, FragmentTransaction fragmentTransaction) {
         // When the given tab is selected, switch to the corresponding page in
         // the ViewPager.
         viewPager.setCurrentItem(tab.getPosition());
@@ -326,13 +342,20 @@ public class SampleAppActivity extends FragmentActivity implements ActionBar.Tab
     }
 
     @Override
-    public void onTabUnselected(ActionBar.Tab tab,
-            FragmentTransaction fragmentTransaction) {
+    public void onTabUnselected(ActionBar.Tab tab, FragmentTransaction fragmentTransaction) {
     }
 
     @Override
-    public void onTabReselected(ActionBar.Tab tab,
-            FragmentTransaction fragmentTransaction) {
+    public void onTabReselected(ActionBar.Tab tab, FragmentTransaction fragmentTransaction) {
+    }
+
+    public void postOnBackPressed() {
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+                onBackPressed();
+            }
+        });
     }
 
     @Override
@@ -397,7 +420,7 @@ public class SampleAppActivity extends FragmentActivity implements ActionBar.Tab
 
             AllJoynManager.sceneManager.applyScene(basicSceneID);
 
-            Toast.makeText(this, message, Toast.LENGTH_LONG).show();
+            showToast(message);
         }
     }
 
@@ -409,7 +432,7 @@ public class SampleAppActivity extends FragmentActivity implements ActionBar.Tab
 
             AllJoynManager.masterSceneManager.applyMasterScene(masterSceneID);
 
-            Toast.makeText(this, message, Toast.LENGTH_LONG).show();
+            showToast(message);
         }
     }
 
@@ -424,18 +447,20 @@ public class SampleAppActivity extends FragmentActivity implements ActionBar.Tab
                     postInForeground(new Runnable() {
                         @Override
                         public void run() {
+                            Log.d(SampleAppActivity.TAG_TRACE, "restarting AllJoyn");
+                            AllJoynManager.restart();
+
                             if (wifiDisconnectAlertDialog != null) {
-                                Log.d(SampleAppActivity.TAG, "starting AllJoyn");
-                                AllJoynManager.init(
-                                        getSupportFragmentManager(),
-                                        controllerClientCB,
-                                        lampManagerCB,
-                                        groupManagerCB,
-                                        presetManagerCB,
-                                        sceneManagerCB,
-                                        masterSceneManagerCB,
-                                        new AboutManager(activity, handler),
-                                        activity);
+//                                AllJoynManager.init(
+//                                        getSupportFragmentManager(),
+//                                        controllerClientCB,
+//                                        lampManagerCB,
+//                                        groupManagerCB,
+//                                        presetManagerCB,
+//                                        sceneManagerCB,
+//                                        masterSceneManagerCB,
+//                                        new AboutManager(activity, handler),
+//                                        activity);
 
                                 wifiDisconnectAlertDialog.dismiss();
                                 wifiDisconnectAlertDialog = null;
@@ -454,8 +479,9 @@ public class SampleAppActivity extends FragmentActivity implements ActionBar.Tab
                         @Override
                         public void run() {
                             if (wifiDisconnectAlertDialog == null) {
-                                Log.d(SampleAppActivity.TAG, "closing AllJoyn");
-                                AllJoynManager.destroy(getSupportFragmentManager());
+                                Log.d(SampleAppActivity.TAG, "stopping AllJoyn");
+                                AllJoynManager.stop();
+//                                AllJoynManager.destroy(getSupportFragmentManager());
 
                                 View view = activity.getLayoutInflater().inflate(R.layout.view_loading, null);
                                 ((TextView) view.findViewById(R.id.loadingText1)).setText(activity.getText(R.string.no_wifi_message));
@@ -558,12 +584,27 @@ public class SampleAppActivity extends FragmentActivity implements ActionBar.Tab
             BasicSceneDataModel basicSceneModel = basicSceneModels.get(basicSceneID);
 
             if (basicSceneModel != null) {
-                showConfirmDeleteDialog(R.string.menu_basic_scene_delete, R.string.label_basic_scene, basicSceneModel.getName(), new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int id) {
-                        Log.d(SampleAppActivity.TAG, "Delete basic scene ID: " + basicSceneID);
-                        AllJoynManager.sceneManager.deleteScene(basicSceneID);
-                    }});
+                List<String> parentSceneNames = new ArrayList<String>();
+
+                for (MasterSceneDataModel nextMasterSceneModel : masterSceneModels.values()) {
+                    if (nextMasterSceneModel.containsBasicScene(basicSceneID)) {
+                        parentSceneNames.add(nextMasterSceneModel.getName());
+                    }
+                }
+
+                if (parentSceneNames.size() == 0) {
+                    showConfirmDeleteDialog(R.string.menu_basic_scene_delete, R.string.label_basic_scene, basicSceneModel.getName(), new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int id) {
+                            Log.d(SampleAppActivity.TAG, "Delete basic scene ID: " + basicSceneID);
+                            AllJoynManager.sceneManager.deleteScene(basicSceneID);
+                        }});
+                } else {
+                    String memberNames =  MemberNamesString.format(this, parentSceneNames, MemberNamesOptions.en, 3, "");
+                    String message = String.format(getString(R.string.error_dependency_scene_text), basicSceneModel.getName(), memberNames);
+
+                    showPositiveErrorDialog(R.string.error_dependency_scene_title, message);
+                }
             }
         }
     }
@@ -596,12 +637,35 @@ public class SampleAppActivity extends FragmentActivity implements ActionBar.Tab
             GroupDataModel groupModel = groupModels.get(groupID);
 
             if (groupModel != null) {
-                showConfirmDeleteDialog(R.string.menu_group_delete, R.string.label_group, groupModel.getName(), new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int id) {
-                        Log.d(SampleAppActivity.TAG, "Delete group ID: " + groupID);
-                        AllJoynManager.groupManager.deleteLampGroup(groupID);
-                    }});
+                List<String> parentGroupNames = new ArrayList<String>();
+                List<String> parentSceneNames = new ArrayList<String>();
+
+                for (GroupDataModel nextGroupModel : groupModels.values()) {
+                    if (nextGroupModel.containsGroup(groupID)) {
+                        parentGroupNames.add(nextGroupModel.getName());
+                    }
+                }
+
+                for (BasicSceneDataModel nextBasicSceneModel : basicSceneModels.values()) {
+                    if (nextBasicSceneModel.containsGroup(groupID)) {
+                        parentSceneNames.add(nextBasicSceneModel.getName());
+                    }
+                }
+
+                if ((parentGroupNames.size() == 0) && (parentSceneNames.size() == 0)) {
+                    showConfirmDeleteDialog(R.string.menu_group_delete, R.string.label_group, groupModel.getName(), new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int id) {
+                            Log.d(SampleAppActivity.TAG, "Delete group ID: " + groupID);
+                            AllJoynManager.groupManager.deleteLampGroup(groupID);
+                        }
+                    });
+                } else {
+                    String memberNames =  MemberNamesString.format(this, parentGroupNames, parentSceneNames, MemberNamesOptions.en, 3, "");
+                    String message = String.format(getString(R.string.error_dependency_group_text), groupModel.getName(), memberNames);
+
+                    showPositiveErrorDialog(R.string.error_dependency_group_title, message);
+                }
             }
         }
     }
@@ -611,12 +675,27 @@ public class SampleAppActivity extends FragmentActivity implements ActionBar.Tab
             PresetDataModel presetModel = presetModels.get(presetID);
 
             if (presetModel != null) {
-                showConfirmDeleteDialog(R.string.menu_preset_delete, R.string.label_preset, presetModel.getName(), new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int id) {
-                        Log.d(SampleAppActivity.TAG, "Delete preset ID: " + presetID);
-                        AllJoynManager.presetManager.deletePreset(presetID);
-                    }});
+                List<String> parentSceneNames = new ArrayList<String>();
+
+                for (BasicSceneDataModel nextBasicSceneModel : basicSceneModels.values()) {
+                    if (nextBasicSceneModel.containsPreset(presetID)) {
+                        parentSceneNames.add(nextBasicSceneModel.getName());
+                    }
+                }
+
+                if (parentSceneNames.size() == 0) {
+                    showConfirmDeleteDialog(R.string.menu_preset_delete, R.string.label_preset, presetModel.getName(), new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int id) {
+                            Log.d(SampleAppActivity.TAG, "Delete preset ID: " + presetID);
+                            AllJoynManager.presetManager.deletePreset(presetID);
+                        }});
+                } else {
+                    String memberNames =  MemberNamesString.format(this, parentSceneNames, MemberNamesOptions.en, 3, "");
+                    String message = String.format(getString(R.string.error_dependency_preset_text), presetModel.getName(), memberNames);
+
+                    showPositiveErrorDialog(R.string.error_dependency_preset_title, message);
+                }
             }
         }
     }
@@ -641,6 +720,20 @@ public class SampleAppActivity extends FragmentActivity implements ActionBar.Tab
                 }})
             .create()
             .show();
+    }
+
+    private void showPositiveErrorDialog(int titleID, String message) {
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+
+        alertDialogBuilder.setTitle(titleID);
+        alertDialogBuilder.setMessage(message);
+        alertDialogBuilder.setPositiveButton(R.string.dialog_ok, new OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int id) {
+                dialog.cancel();
+            };
+        });
+        alertDialogBuilder.show();
     }
 
     private void showSceneInfo(boolean isMaster) {
@@ -804,7 +897,9 @@ public class SampleAppActivity extends FragmentActivity implements ActionBar.Tab
             if (!isMaster) {
                 // Create a dummy scene so that we can momentarily display the info fragment.
                 // This makes sure the info fragment is on the back stack so that we can more
-                // easily support the scene creation workflow.
+                // easily support the scene creation workflow. Note that if the user backs out
+                // of the scene creation process, we have to skip over the dummy info fragment
+                // (see ScenesPageFragment.onBackPressed())
                 pendingBasicSceneModel = new BasicSceneDataModel();
                 pendingBasicSceneElementMembers = new LampGroup();
                 pendingBasicSceneElementCapability = new CapabilityData(true, true, true);
@@ -1068,17 +1163,7 @@ public class SampleAppActivity extends FragmentActivity implements ActionBar.Tab
 
     public void createLostConnectionErrorDialog(String name) {
         pageFrameParent.clearBackStack();
-
-        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
-        alertDialogBuilder.setTitle(R.string.error_connection_lost_dialog_title);
-        alertDialogBuilder.setMessage(String.format(getString(R.string.error_connection_lost_dialog_text), name));
-        alertDialogBuilder.setPositiveButton(R.string.dialog_ok, new OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int id) {
-                dialog.cancel();
-            }
-        });
-        alertDialogBuilder.create().show();
+        showPositiveErrorDialog(R.string.error_connection_lost_dialog_text, String.format(getString(R.string.error_connection_lost_dialog_text), name));
     }
 
     public void setTabTitles() {
@@ -1103,5 +1188,21 @@ public class SampleAppActivity extends FragmentActivity implements ActionBar.Tab
         }
 
         return title;
+    }
+
+    public void showToast(int resId){
+
+    	toast.setText(resId);
+    	toast.show();
+    }
+
+    public void showToast(String text){
+
+    	toast.setText(text);
+    	toast.show();
+    }
+
+    public Toast getToast(){
+    	return toast;
     }
 }

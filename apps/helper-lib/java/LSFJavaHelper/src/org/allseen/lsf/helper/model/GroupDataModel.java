@@ -20,6 +20,10 @@ import java.util.Set;
 
 import org.allseen.lsf.LampGroup;
 
+/**
+ * <b>WARNING: This class is not intended to be used by clients, and its interface may change
+ * in subsequent releases of the SDK</b>.
+ */
 public class GroupDataModel extends ColorItemDataModel {
     public static final char TAG_PREFIX_GROUP = 'G';
 

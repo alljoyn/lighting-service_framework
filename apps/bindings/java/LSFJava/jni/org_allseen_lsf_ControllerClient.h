@@ -34,6 +34,22 @@ JNIEXPORT jstring JNICALL Java_org_allseen_lsf_ControllerClient_stringFromJNI
 
 /*
  * Class:     org_allseen_lsf_ControllerClient
+ * Method:    start
+ * Signature: ()Lorg/alljoyn/bus/Status;
+ */
+JNIEXPORT jobject JNICALL Java_org_allseen_lsf_ControllerClient_start
+  (JNIEnv *, jobject);
+
+/*
+ * Class:     org_allseen_lsf_ControllerClient
+ * Method:    stop
+ * Signature: ()Lorg/alljoyn/bus/Status;
+ */
+JNIEXPORT jobject JNICALL Java_org_allseen_lsf_ControllerClient_stop
+  (JNIEnv *, jobject);
+
+/*
+ * Class:     org_allseen_lsf_ControllerClient
  * Method:    createNativeObject
  * Signature: (Lorg/alljoyn/bus/BusAttachment;Lorg/allseen/lsf/ControllerClientCallback;)V
  */

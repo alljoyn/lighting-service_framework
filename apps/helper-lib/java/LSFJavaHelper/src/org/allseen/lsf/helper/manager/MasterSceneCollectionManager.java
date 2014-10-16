@@ -22,6 +22,10 @@ import org.allseen.lsf.helper.listener.LightingItemErrorEvent;
 import org.allseen.lsf.helper.listener.MasterSceneCollectionListener;
 import org.allseen.lsf.helper.model.MasterSceneDataModel;
 
+/**
+ * <b>WARNING: This class is not intended to be used by clients, and its interface may change
+ * in subsequent releases of the SDK</b>.
+ */
 public class MasterSceneCollectionManager extends LightingItemCollectionManager<MasterScene, MasterSceneCollectionListener, MasterSceneDataModel> {
 
     public MasterSceneCollectionManager(LightingSystemManager director) {

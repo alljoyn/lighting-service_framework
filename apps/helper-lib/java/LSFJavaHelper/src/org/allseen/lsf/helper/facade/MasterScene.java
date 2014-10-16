@@ -18,6 +18,12 @@ import org.allseen.lsf.helper.manager.AllJoynManager;
 import org.allseen.lsf.helper.model.LightingItemDataModel;
 import org.allseen.lsf.helper.model.MasterSceneDataModel;
 
+/**
+ * A MasterScene object represents a collection of scene definitions in a lighting system.
+ * <p>
+ * <b>WARNING: This class is not intended to be used by clients, and its interface may change
+ * in subsequent releases of the SDK</b>.
+ */
 public final class MasterScene extends LightingItem {
 
    protected MasterSceneDataModel masterModel;

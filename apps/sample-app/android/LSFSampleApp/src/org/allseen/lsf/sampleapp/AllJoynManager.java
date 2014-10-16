@@ -103,6 +103,39 @@ public class AllJoynManager {
         Log.d(AllJoynManager.TAG, "AllJoynManager.init() - thread started, resuming");
     }
 
+    public static void restart() {
+        Log.d(AllJoynManager.TAG, "AllJoynManager.restart()");
+
+        AllJoynManager.stop();
+        AllJoynManager.start();
+    }
+
+    public static void start() {
+        Log.d(AllJoynManager.TAG, "AllJoynManager.start()");
+
+        activity.handler.post(new Runnable() {
+            @Override
+            public void run() {
+                if (controllerClient != null) {
+                    controllerClient.start();
+                }
+            }
+        });
+    }
+
+    public static void stop() {
+        Log.d(AllJoynManager.TAG, "AllJoynManager.stop()");
+
+        activity.handler.post(new Runnable() {
+            @Override
+            public void run() {
+                if (controllerClient != null) {
+                    controllerClient.stop();
+                }
+            }
+        });
+    }
+
     public static void destroy(final FragmentManager fragmentManager) {
 
         // acquire lock on new thread to prevent deadlock
@@ -236,6 +269,9 @@ public class AllJoynManager {
             aboutManager.initializeClient(AllJoynManager.bus);
 
             AllJoynManager.alljoynSemaphore.release();
+
+            activity.onAllJoynManagerInitialized();
+
             Log.d(AllJoynManager.TAG, "AllJoynManager.init() - unlocked");
        }
     }

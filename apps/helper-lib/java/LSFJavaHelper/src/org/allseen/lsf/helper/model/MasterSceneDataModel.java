@@ -17,6 +17,10 @@ package org.allseen.lsf.helper.model;
 
 import org.allseen.lsf.MasterScene;
 
+/**
+ * <b>WARNING: This class is not intended to be used by clients, and its interface may change
+ * in subsequent releases of the SDK</b>.
+ */
 public class MasterSceneDataModel extends LightingItemDataModel {
     public static final char TAG_PREFIX_MASTER_SCENE = 'M';
 

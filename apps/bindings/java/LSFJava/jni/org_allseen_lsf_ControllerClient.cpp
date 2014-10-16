@@ -22,6 +22,7 @@
 
 #include "JControllerClientCallback.h"
 #include "JControllerClient.h"
+#include "JEnum.h"
 #include "NUtil.h"
 
 #include "org_allseen_lsf_ControllerClient.h"
@@ -30,6 +31,30 @@
 
 using namespace ajn;
 using namespace lsf;
+
+JNIEXPORT
+jobject JNICALL Java_org_allseen_lsf_ControllerClient_start(JNIEnv*env, jobject thiz)
+{
+    JControllerClient *xController = GetHandle<JControllerClient*>(thiz);
+    if (env->ExceptionCheck() || !xController) {
+        QCC_LogError(ER_FAIL, ("GetHandle() failed"));
+        return NULL;
+    }
+
+    return JEnum::jStatusCodeEnum->getObject((int)xController->Start());
+}
+
+JNIEXPORT
+jobject JNICALL Java_org_allseen_lsf_ControllerClient_stop(JNIEnv*env, jobject thiz)
+{
+    JControllerClient *xController = GetHandle<JControllerClient*>(thiz);
+    if (env->ExceptionCheck() || !xController) {
+        QCC_LogError(ER_FAIL, ("GetHandle() failed"));
+        return NULL;
+    }
+
+    return JEnum::jStatusCodeEnum->getObject((int)xController->Stop());
+}
 
 JNIEXPORT
 void JNICALL Java_org_allseen_lsf_ControllerClient_createNativeObject(JNIEnv *env, jobject thiz, jobject jbus, jobject jcallback)
@@ -46,7 +71,7 @@ void JNICALL Java_org_allseen_lsf_ControllerClient_createNativeObject(JNIEnv *en
         return;
     }
 
-    JControllerClient* xcontroller = new JControllerClient(thiz, *xbus, *xcallback);
+    JControllerClient *xcontroller = new JControllerClient(thiz, *xbus, *xcallback);
     if (!xcontroller) {
         QCC_LogError(ER_FAIL, ("JLampManager() failed"));
         return;

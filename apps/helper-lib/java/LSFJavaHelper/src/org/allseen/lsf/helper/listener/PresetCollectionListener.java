@@ -19,6 +19,10 @@ import java.util.Iterator;
 
 import org.allseen.lsf.helper.facade.Preset;
 
+/**
+ * <b>WARNING: This class is not intended to be used by clients, and its interface may change
+ * in subsequent releases of the SDK</b>.
+ */
 public interface PresetCollectionListener {
     public void onPresetsChanged(Iterator<Preset> presets, int count);
     public void onPresetsRemoved(Iterator<Preset> presets, int count);

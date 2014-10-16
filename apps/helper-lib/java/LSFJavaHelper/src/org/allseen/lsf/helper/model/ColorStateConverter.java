@@ -17,6 +17,10 @@ package org.allseen.lsf.helper.model;
 
 import org.allseen.lsf.LampState;
 
+/**
+ * <b>WARNING: This class is not intended to be used by clients, and its interface may change
+ * in subsequent releases of the SDK</b>.
+ */
 public class ColorStateConverter {
     public static final long UINT32_MAX = 0xffffffffL;
     public static final int VIEW_HUE_MIN = 0;

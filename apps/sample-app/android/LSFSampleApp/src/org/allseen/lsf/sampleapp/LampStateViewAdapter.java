@@ -20,7 +20,6 @@ import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
-import android.widget.Toast;
 
 public class LampStateViewAdapter implements OnSeekBarChangeListener, OnClickListener {
 
@@ -246,27 +245,30 @@ public class LampStateViewAdapter implements OnSeekBarChangeListener, OnClickLis
     @Override
     public void onClick(View v) {
         int viewID = v.getId();
-
+        
         if (viewID == R.id.stateControlBrightness) {
             if (capability.dimmable <= CapabilityData.NONE) {
-                Toast.makeText(parentFragment.getActivity(), R.string.no_support_dimmable, Toast.LENGTH_LONG).show();
+            	((SampleAppActivity)parentFragment.getActivity()).showToast(R.string.no_support_dimmable);
             }
         } else if (viewID == R.id.stateControlHue) {
             if (capability.color <= CapabilityData.NONE) {
-                Toast.makeText(parentFragment.getActivity(), R.string.no_support_color, Toast.LENGTH_SHORT).show();
+            	((SampleAppActivity)parentFragment.getActivity()).showToast(R.string.no_support_color);
             } else if (saturationSeekBar.getProgress() == 0) {
-                Toast.makeText(parentFragment.getActivity(), R.string.saturation_disable_hue, Toast.LENGTH_LONG).show();
+            	((SampleAppActivity)parentFragment.getActivity()).showToast(R.string.saturation_disable_hue);
             }
         } else if (viewID == R.id.stateControlSaturation) {
             if (capability.color <= CapabilityData.NONE) {
-                Toast.makeText(parentFragment.getActivity(), R.string.no_support_color, Toast.LENGTH_LONG).show();
+            	((SampleAppActivity)parentFragment.getActivity()).showToast(R.string.no_support_color);
             }
         } else if (viewID == R.id.stateControlColorTemp) {
             if (capability.temp <= CapabilityData.NONE) {
-                Toast.makeText(parentFragment.getActivity(), R.string.no_support_temp, Toast.LENGTH_LONG).show();
+            	((SampleAppActivity)parentFragment.getActivity()).showToast(R.string.no_support_temp);
             } else if (saturationSeekBar.getProgress() == saturationSeekBar.getMax()) {
-                Toast.makeText(parentFragment.getActivity(), R.string.saturation_disable_temp, Toast.LENGTH_LONG).show();
+            	((SampleAppActivity)parentFragment.getActivity()).showToast(R.string.saturation_disable_temp);
             }
         }
-    }
+    }  
 }
+
+  
+

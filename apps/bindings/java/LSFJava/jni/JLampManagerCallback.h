@@ -38,7 +38,7 @@ class JLampManagerCallback : public LampManagerCallback {
     virtual void GetLampNameReplyCB(const LSFResponseCode& responseCode, const LSFString& lampID, const LSFString& language, const LSFString& lampName) LSF_OVERRIDE;
     virtual void GetLampManufacturerReplyCB(const LSFResponseCode& responseCode, const LSFString& lampID, const LSFString& language, const LSFString& manufacturer) LSF_OVERRIDE;
     virtual void SetLampNameReplyCB(const LSFResponseCode& responseCode, const LSFString& lampID, const LSFString& language) LSF_OVERRIDE;
-    virtual void LampsNameChangedCB(const LSFStringList& lampIDs) LSF_OVERRIDE;
+    virtual void LampNameChangedCB(const LSFString& lampID, const LSFString& lampName) LSF_OVERRIDE;
     virtual void LampsFoundCB(const LSFStringList& lampIDs) LSF_OVERRIDE;
     virtual void LampsLostCB(const LSFStringList& lampIDs) LSF_OVERRIDE;
     virtual void GetLampDetailsReplyCB(const LSFResponseCode& responseCode, const LSFString& lampID, const LampDetails& lampDetails) LSF_OVERRIDE;
@@ -52,7 +52,7 @@ class JLampManagerCallback : public LampManagerCallback {
     virtual void GetLampStateBrightnessFieldReplyCB(const LSFResponseCode& responseCode, const LSFString& lampID, const uint32_t& brightness) LSF_OVERRIDE;
     virtual void GetLampStateColorTempFieldReplyCB(const LSFResponseCode& responseCode, const LSFString& lampID, const uint32_t& colorTemp) LSF_OVERRIDE;
     virtual void ResetLampStateReplyCB(const LSFResponseCode& responseCode, const LSFString& lampID) LSF_OVERRIDE;
-    virtual void LampsStateChangedCB(const LSFStringList& lampIDs) LSF_OVERRIDE;
+    virtual void LampStateChangedCB(const LSFString& lampID, const LampState& lampState) LSF_OVERRIDE;
     virtual void TransitionLampStateReplyCB(const LSFResponseCode& responseCode, const LSFString& lampID) LSF_OVERRIDE;
     virtual void PulseLampWithStateReplyCB(const LSFResponseCode& responseCode, const LSFString& lampID) LSF_OVERRIDE;
     virtual void PulseLampWithPresetReplyCB(const LSFResponseCode& responseCode, const LSFString& lampID) LSF_OVERRIDE;

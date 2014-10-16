@@ -29,6 +29,10 @@ import org.alljoyn.bus.Variant;
 import org.alljoyn.services.common.AnnouncementHandler;
 import org.alljoyn.services.common.BusObjectDescription;
 
+/**
+ * <b>WARNING: This class is not intended to be used by clients, and its interface may change
+ * in subsequent releases of the SDK</b>.
+ */
 public class AboutManager implements AnnouncementHandler {
     private AboutService aboutService;
     private final LightingSystemManager director;

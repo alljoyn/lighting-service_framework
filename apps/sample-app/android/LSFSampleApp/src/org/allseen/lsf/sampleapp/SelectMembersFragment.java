@@ -23,7 +23,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.allseen.lsf.LampGroup;
-
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
@@ -31,7 +30,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 
 public abstract class SelectMembersFragment extends SelectableItemTableFragment {
 
@@ -229,7 +227,7 @@ public abstract class SelectMembersFragment extends SelectableItemTableFragment 
             processSelection(activity, lampIDs, groupIDs, sceneIDs, capability);
         } else {
             String text = String.format(getResources().getString(R.string.toast_members_missing), getResources().getString(labelStringID));
-            Toast.makeText(activity, text, Toast.LENGTH_LONG).show();
+            activity.showToast(text);
         }
 
         return valid;

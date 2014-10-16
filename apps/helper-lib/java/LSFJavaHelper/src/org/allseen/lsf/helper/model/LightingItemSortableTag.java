@@ -25,6 +25,10 @@ import java.util.Locale;
  * Any external marker would therefore be left in the old state, and a
  * comparison would reveal that resorting is necessary.
  */
+/**
+ * <b>WARNING: This class is not intended to be used by clients, and its interface may change
+ * in subsequent releases of the SDK</b>.
+ */
 public class LightingItemSortableTag implements Comparable<LightingItemSortableTag> {
 
     public final String sortableName;

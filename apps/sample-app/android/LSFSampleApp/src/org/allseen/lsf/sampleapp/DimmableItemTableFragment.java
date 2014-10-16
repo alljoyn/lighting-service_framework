@@ -98,7 +98,7 @@ public abstract class DimmableItemTableFragment
             infoButton.setTag(itemID);
             infoButton.setOnClickListener(this);
             if (infoBG != 0) {
-                infoButton.setBackgroundColor(powerOn ? infoBG : Color.BLACK);
+                infoButton.setBackgroundColor(infoBG);
             }
 
             tableRow.setTag(itemID);
@@ -113,7 +113,7 @@ public abstract class DimmableItemTableFragment
             seekBar.setEnabled(isEnabled);
 
             if (infoBG != 0) {
-                ((ImageButton)tableRow.findViewById(R.id.dimmableItemButtonMore)).setBackgroundColor(powerOn ? infoBG : Color.BLACK);
+                ((ImageButton)tableRow.findViewById(R.id.dimmableItemButtonMore)).setBackgroundColor(infoBG);
             }
 
             TableSorter.updateSortedTableRow(table, tableRow, tag);
@@ -137,7 +137,7 @@ public abstract class DimmableItemTableFragment
             } else if (buttonID == R.id.dimmableItemButtonMore) {
                 ((SampleAppActivity)getActivity()).onItemButtonMore(parent, type, button, button.getTag().toString(), null);
             } else if (!((SeekBar)button.findViewById(R.id.dimmableItemRowSlider)).isEnabled()) {
-                Toast.makeText(getActivity(), R.string.no_support_dimmable, Toast.LENGTH_LONG).show();
+            	((SampleAppActivity)getActivity()).showToast(R.string.no_support_dimmable);
             }
         }
     }

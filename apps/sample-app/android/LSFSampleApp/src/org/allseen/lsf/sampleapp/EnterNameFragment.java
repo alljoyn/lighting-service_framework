@@ -25,7 +25,6 @@ import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
-import android.widget.Toast;
 
 public abstract class EnterNameFragment extends PageFrameChildFragment {
     protected int labelStringID;
@@ -106,7 +105,7 @@ public abstract class EnterNameFragment extends PageFrameChildFragment {
             }
         } else {
             String text = String.format(getResources().getString(R.string.toast_name_missing), getResources().getString(labelStringID));
-            Toast.makeText(getActivity(), text, Toast.LENGTH_LONG).show();
+            ((SampleAppActivity)getActivity()).showToast(text);
         }
     }
 

@@ -92,8 +92,10 @@ public class LampsTableFragment extends DimmableItemTableFragment {
         int viewHue = DimmableItemScaleConverter.convertHueModelToView(lampState.getHue());
         int viewSaturation = DimmableItemScaleConverter.convertSaturationModelToView(lampState.getSaturation());
         int viewBrightness = DimmableItemScaleConverter.convertBrightnessModelToView(lampState.getBrightness());
-
-        return Color.HSVToColor(new float[] { viewHue,
+        int viewColorTemp = DimmableItemScaleConverter.convertColorTempModelToView(lampState.getColorTemp());
+        
+        return DimmableItemScaleConverter.ColorTempToColorConverter.convert(viewColorTemp,
+        		new float[] { viewHue,
                 (float) (viewSaturation / 100.0),
                 (float) (viewBrightness / 100.0) });
     }

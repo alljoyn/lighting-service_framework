@@ -15,6 +15,10 @@
  */
 package org.allseen.lsf.helper.listener;
 
+/**
+ * <b>WARNING: This class is not intended to be used by clients, and its interface may change
+ * in subsequent releases of the SDK</b>.
+ */
 public interface WifiListener {
     public void onWifiConnected(WifiEvent wifiEvent);
     public void onWifiDisconnected(WifiEvent wifiEvent);

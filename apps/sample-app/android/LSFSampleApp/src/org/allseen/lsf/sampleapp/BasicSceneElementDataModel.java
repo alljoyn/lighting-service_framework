@@ -50,4 +50,21 @@ public class BasicSceneElementDataModel extends DimmableItemDataModel {
         this.type = other.type;
         this.members = new LampGroup(other.members);
     }
+
+    public boolean containsGroup(String groupID) {
+        String[] childIDs = members.getLampGroups();
+
+        for (String childID : childIDs) {
+            if (childID.equals(groupID)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public boolean containsPreset(String presetID) {
+        //TODO-FIX
+        return false;
+    }
 }

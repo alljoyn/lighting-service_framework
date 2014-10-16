@@ -25,6 +25,10 @@ import org.allseen.lsf.ResponseCode;
 import org.allseen.lsf.helper.callback.HelperGroupManagerCallback;
 import org.allseen.lsf.helper.model.AllLampsLampGroup;
 
+/**
+ * <b>WARNING: This class is not intended to be used by clients, and its interface may change
+ * in subsequent releases of the SDK</b>.
+ */
 public class SampleGroupManager extends LampGroupManager {
     public static final String ALL_LAMPS_GROUP_ID = "!!all_lamps!!";
     public static final String ALL_LAMPS_GROUP_NAME_DEFAULT= "All Lamps";

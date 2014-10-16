@@ -29,6 +29,10 @@ import org.allseen.lsf.helper.model.GroupDataModel;
 import org.allseen.lsf.helper.model.LampCapabilities;
 import org.allseen.lsf.helper.model.LampDataModel;
 
+/**
+ * <b>WARNING: This class is not intended to be used by clients, and its interface may change
+ * in subsequent releases of the SDK</b>.
+ */
 public class HelperGroupManagerCallback extends LampGroupManagerCallback {
     public LightingSystemManager director;
 

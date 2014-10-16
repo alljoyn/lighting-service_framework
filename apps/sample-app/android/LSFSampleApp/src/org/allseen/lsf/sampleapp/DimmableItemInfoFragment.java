@@ -120,11 +120,7 @@ public abstract class DimmableItemInfoFragment extends PageFrameChildFragment im
             // presets button
             updatePresetFields(itemModel);
 
-            if (itemModel.uniformity.brightness && itemModel.uniformity.hue && itemModel.uniformity.saturation && itemModel.uniformity.colorTemp) {
-                setColorIndicator(stateAdapter.stateView, itemModel.state);
-            } else {
-                setColorIndicator(stateAdapter.stateView, null);
-            }
+            setColorIndicator(stateAdapter.stateView, itemModel.state);
         }
     }
 
@@ -145,8 +141,10 @@ public abstract class DimmableItemInfoFragment extends PageFrameChildFragment im
             int viewHue = DimmableItemScaleConverter.convertHueModelToView(lampState.getHue());
             int viewSaturation = DimmableItemScaleConverter.convertSaturationModelToView(lampState.getSaturation());
             int viewBrightness = DimmableItemScaleConverter.convertBrightnessModelToView(lampState.getBrightness());
+            int viewColorTemp = DimmableItemScaleConverter.convertColorTempModelToView(lampState.getColorTemp());
 
-            return Color.HSVToColor(new float[] { viewHue,
+            return DimmableItemScaleConverter.ColorTempToColorConverter.convert(viewColorTemp,
+            		new float[] { viewHue,
                     (float) (viewSaturation / 100.0),
                     (float) (viewBrightness / 100.0) });
         } else {

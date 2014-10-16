@@ -33,6 +33,10 @@ import org.allseen.lsf.helper.model.ControllerDataModel;
 import android.os.Handler;
 import android.support.v4.app.FragmentManager;
 
+/**
+ * <b>WARNING: This class is not intended to be used by clients, and its interface may change
+ * in subsequent releases of the SDK</b>.
+ */
 public class LightingSystemManager {
     @SuppressWarnings("unused")
     private static final NativeLibraryLoader LIBS = NativeLibraryLoader.LIBS;

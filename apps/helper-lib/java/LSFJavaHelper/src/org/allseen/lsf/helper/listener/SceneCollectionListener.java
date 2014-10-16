@@ -19,6 +19,10 @@ import java.util.Iterator;
 
 import org.allseen.lsf.helper.facade.Scene;
 
+/**
+ * <b>WARNING: This class is not intended to be used by clients, and its interface may change
+ * in subsequent releases of the SDK</b>.
+ */
 public interface SceneCollectionListener {
     public void onScenesChanged(Iterator<Scene> scenes, int count);
     public void onScenesRemoved(Iterator<Scene> scenes, int count);

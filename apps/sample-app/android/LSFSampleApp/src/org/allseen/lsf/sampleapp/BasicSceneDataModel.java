@@ -55,6 +55,50 @@ public class BasicSceneDataModel extends ItemDataModel {
         this.pulseEffects = new ArrayList<PulseEffectDataModel>(other.pulseEffects);
     }
 
+    public boolean containsGroup(String groupID) {
+        for (NoEffectDataModel noEffect : noEffects) {
+            if (noEffect.containsGroup(groupID)) {
+                return true;
+            }
+        }
+
+        for (TransitionEffectDataModel transitionEffect : transitionEffects) {
+            if (transitionEffect.containsGroup(groupID)) {
+                return true;
+            }
+        }
+
+        for (PulseEffectDataModel pulseEffect : pulseEffects) {
+            if (pulseEffect.containsGroup(groupID)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public boolean containsPreset(String presetID) {
+        for (NoEffectDataModel noEffect : noEffects) {
+            if (noEffect.containsPreset(presetID)) {
+                return true;
+            }
+        }
+
+        for (TransitionEffectDataModel transitionEffect : transitionEffects) {
+            if (transitionEffect.containsPreset(presetID)) {
+                return true;
+            }
+        }
+
+        for (PulseEffectDataModel pulseEffect : pulseEffects) {
+            if (pulseEffect.containsPreset(presetID)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     public void updateNoEffect(NoEffectDataModel elementModel) {
         updateElement(noEffects, elementModel);
     }

@@ -20,6 +20,7 @@ import android.content.Context;
 import android.support.v4.view.ViewPager;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
+import android.widget.Toast;
 
 public class SampleAppViewPager extends ViewPager {
 
@@ -59,11 +60,17 @@ public class SampleAppViewPager extends ViewPager {
 
     @Override
     public boolean onInterceptTouchEvent(MotionEvent event) {
-        if ((activity != null) && (activity.isSwipeable())) {
-            return super.onInterceptTouchEvent(event);
-        } else {
-            return false;
-        }
+    	
+    	if(activity.getToast().getView().isShown()){
+			System.out.println("cancel the toast");
+			activity.getToast().cancel();
+		}
+    	
+    	if ((activity != null) && (activity.isSwipeable())) {    		
+    		return super.onInterceptTouchEvent(event);
+    	} else {
+    		return false;
+    	}
     }
 
     @Override
