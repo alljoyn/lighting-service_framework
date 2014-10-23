@@ -48,7 +48,6 @@
 
     //Load UI
     [self buildTableArray];
-    [self sortDataArray];
     [self.tableView reloadData];
 }
 

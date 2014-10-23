@@ -104,6 +104,22 @@ JNIEXPORT jlong JNICALL Java_org_allseen_lsf_LampState_getBrightness
 
 /*
  * Class:     org_allseen_lsf_LampState
+ * Method:    setNull
+ * Signature: (Z)V
+ */
+JNIEXPORT void JNICALL Java_org_allseen_lsf_LampState_setNull
+  (JNIEnv *, jobject, jboolean);
+
+/*
+ * Class:     org_allseen_lsf_LampState
+ * Method:    isNull
+ * Signature: ()Z
+ */
+JNIEXPORT jboolean JNICALL Java_org_allseen_lsf_LampState_isNull
+  (JNIEnv *, jobject);
+
+/*
+ * Class:     org_allseen_lsf_LampState
  * Method:    createNativeObject
  * Signature: ()V
  */

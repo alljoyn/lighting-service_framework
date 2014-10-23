@@ -20,8 +20,11 @@
 #import "LSFAllJoynManager.h"
 #import "LSFMasterSceneModelContainer.h"
 #import "LSFUtilityFunctions.h"
+#import "LSFEnums.h"
 
 @interface LSFMasterScenesEnterNameViewController ()
+
+-(void)controllerNotificationReceived: (NSNotification *)notification;
 
 @end
 
@@ -30,7 +33,7 @@
 @synthesize masterSceneModel = _masterSceneModel;
 @synthesize nameTextField = _nameTextField;
 
-- (void)viewDidLoad
+-(void)viewDidLoad
 {
     [super viewDidLoad];
 }
@@ -39,22 +42,38 @@
 {
     [super viewWillAppear: animated];
     [self.nameTextField becomeFirstResponder];
-
-    //Hide toolbar because it is not needed
     [self.navigationController.toolbar setHidden: YES];
+
+    //Set notification handler
+    [[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(controllerNotificationReceived:) name: @"ControllerNotification" object: nil];
 }
 
 -(void)viewWillDisappear: (BOOL)animated
 {
     [super viewWillDisappear: animated];
-
-    //Unhide toolbar because it is not needed
     [self.navigationController.toolbar setHidden: NO];
+
+    //Clear notification handler
+    [[NSNotificationCenter defaultCenter] removeObserver: self];
 }
 
-- (void)didReceiveMemoryWarning
+-(void)didReceiveMemoryWarning
 {
     [super didReceiveMemoryWarning];
+}
+
+/*
+ * ControllerNotification Handler
+ */
+-(void)controllerNotificationReceived: (NSNotification *)notification
+{
+    NSDictionary *userInfo = notification.userInfo;
+    NSNumber *controllerStatus = [userInfo valueForKey: @"status"];
+
+    if (controllerStatus.intValue == Disconnected)
+    {
+        [self dismissViewControllerAnimated: YES completion: nil];
+    }
 }
 
 /*
@@ -73,12 +92,12 @@
 {
     if (buttonIndex == 0)
     {
-        [alertView dismissWithClickedButtonIndex: 0 animated: YES];
+        [alertView dismissWithClickedButtonIndex: 0 animated: NO];
     }
 
     if (buttonIndex == 1)
     {
-        [alertView dismissWithClickedButtonIndex: 1 animated: YES];
+        [alertView dismissWithClickedButtonIndex: 1 animated: NO];
         [self.nameTextField resignFirstResponder];
         [self performSegueWithIdentifier: @"ChooseMasterSceneMembers" sender: self];
     }

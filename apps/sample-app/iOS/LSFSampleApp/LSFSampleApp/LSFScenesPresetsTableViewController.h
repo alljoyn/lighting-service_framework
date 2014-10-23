@@ -15,14 +15,14 @@
  ******************************************************************************/
 
 #import <UIKit/UIKit.h>
-#import "LSFReloadPresetsCallbackDelegate.h"
 #import "LSFLampState.h"
 #import "LSFEffectTableViewController.h"
 
-@interface LSFScenesPresetsTableViewController : UITableViewController <UITableViewDelegate, UITableViewDataSource, LSFReloadPresetsCallbackDelegate>
+@interface LSFScenesPresetsTableViewController : UITableViewController <UITableViewDelegate, UITableViewDataSource>
 
+@property (nonatomic, strong) NSString *sceneID;
 @property (nonatomic, strong) LSFLampState *lampState;
-@property (nonatomic) LSFEffectTableViewController* effectSender;
+@property (nonatomic) LSFEffectTableViewController *effectSender;
 @property (nonatomic) BOOL endStateFlag;
 
 @end

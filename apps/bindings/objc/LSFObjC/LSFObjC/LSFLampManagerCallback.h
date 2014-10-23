@@ -30,10 +30,9 @@ class LSFLampManagerCallback : public LampManagerCallback {
     void GetLampNameReplyCB(const LSFResponseCode& responseCode, const LSFString& lampID, const LSFString& language, const LSFString& lampName);
     void GetLampManufacturerReplyCB(const LSFResponseCode& responseCode, const LSFString& lampID, const LSFString& language, const LSFString& manufacturer);
     void SetLampNameReplyCB(const LSFResponseCode& responseCode, const LSFString& lampID, const LSFString& language);
-    void LampsNameChangedCB(const LSFStringList& lampIDs);
+    void LampNameChangedCB(const LSFString& lampID, const LSFString& lampName);
     void LampsFoundCB(const LSFStringList& lampIDs);
     void LampsLostCB(const LSFStringList& lampIDs);
-    //void PingLampReplyCB(const LSFResponseCode& responseCode, const LSFString& lampID);
     void GetLampDetailsReplyCB(const LSFResponseCode& responseCode, const LSFString& lampID, const LampDetails& lampDetails);
     void GetLampParametersReplyCB(const LSFResponseCode& responseCode, const LSFString& lampID, const LampParameters& lampParameters);
     void GetLampParametersEnergyUsageMilliwattsFieldReplyCB(const LSFResponseCode& responseCode, const LSFString& lampID, const uint32_t& energyUsageMilliwatts);
@@ -45,7 +44,7 @@ class LSFLampManagerCallback : public LampManagerCallback {
     void GetLampStateBrightnessFieldReplyCB(const LSFResponseCode& responseCode, const LSFString& lampID, const uint32_t& brightness);
     void GetLampStateColorTempFieldReplyCB(const LSFResponseCode& responseCode, const LSFString& lampID, const uint32_t& colorTemp);
     void ResetLampStateReplyCB(const LSFResponseCode& responseCode, const LSFString& lampID);
-    void LampsStateChangedCB(const LSFStringList& lampIDs);
+    void LampStateChangedCB(const LSFString& lampID, const LampState& lampState);
     void TransitionLampStateReplyCB(const LSFResponseCode& responseCode, const LSFString& lampID);
     void PulseLampWithStateReplyCB(const LSFResponseCode& responseCode, const LSFString& lampID);
     void PulseLampWithPresetReplyCB(const LSFResponseCode& responseCode, const LSFString& lampID);

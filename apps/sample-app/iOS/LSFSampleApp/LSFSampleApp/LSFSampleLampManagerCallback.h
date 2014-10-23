@@ -16,12 +16,9 @@
 
 #import <Foundation/Foundation.h>
 #import "LSFLampManagerCallbackDelegate.h"
-#import "LSFReloadLightsCallbackDelegate.h"
 #import "LSFAboutData.h"
 
 @interface LSFSampleLampManagerCallback : NSObject <LSFLampManagerCallbackDelegate>
-
-@property (nonatomic, weak) id<LSFReloadLightsCallbackDelegate> reloadLightsDelegate;
 
 -(id)init;
 -(void)postUpdateLampID: (NSString *)lampID withAboutData: (LSFAboutData *)aboutData;

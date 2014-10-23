@@ -23,6 +23,7 @@
 #import "LSFDispatchQueue.h"
 #import "LSFAllJoynManager.h"
 #import "LSFConstants.h"
+#import "LSFEnums.h"
 
 @interface LSFLightsPresetsTableViewController ()
 
@@ -30,7 +31,13 @@
 @property (nonatomic, strong) NSArray *presetData;
 @property (nonatomic, strong) NSMutableArray *presetDataSorted;
 
+-(void)controllerNotificationReceived: (NSNotification *)notification;
+-(void)lampNotificationReceived: (NSNotification *)notification;
+-(void)deleteLampWithID: (NSString *)lampID andName: (NSString *)lampName;
+-(void)presetNotificationReceived: (NSNotification *)notification;
+-(void)reloadPresets;
 -(BOOL)checkIfLampStateMatchesPreset: (LSFPresetModel *)data;
+-(void)sortPresetData;
 
 @end
 
@@ -50,10 +57,10 @@
     [super viewWillAppear: animated];
     self.navigationItem.rightBarButtonItem = self.editButtonItem;
 
-    dispatch_async(([LSFDispatchQueue getDispatchQueue]).queue, ^{
-        LSFAllJoynManager *ajManager = [LSFAllJoynManager getAllJoynManager];
-        [ajManager.spmc setReloadPresetsDelegate: self];
-    });
+    //Set notification handler
+    [[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(controllerNotificationReceived:) name: @"ControllerNotification" object: nil];
+    [[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(lampNotificationReceived:) name: @"LampNotification" object: nil];
+    [[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(presetNotificationReceived:) name: @"PresetNotification" object: nil];
     
     [self reloadPresets];
 }
@@ -62,10 +69,8 @@
 {
     [super viewWillDisappear: animated];
 
-    dispatch_async(([LSFDispatchQueue getDispatchQueue]).queue, ^{
-        LSFAllJoynManager *ajManager = [LSFAllJoynManager getAllJoynManager];
-        [ajManager.spmc setReloadPresetsDelegate: nil];
-    });
+    //Clear notification handler
+    [[NSNotificationCenter defaultCenter] removeObserver: self];
 }
 
 -(void)didReceiveMemoryWarning
@@ -74,8 +79,69 @@
 }
 
 /*
- * LSFReloadPresetsCallbackDelegate Implementation
+ * ControllerNotification Handler
  */
+-(void)controllerNotificationReceived: (NSNotification *)notification
+{
+    NSDictionary *userInfo = notification.userInfo;
+    NSNumber *controllerStatus = [userInfo valueForKey: @"status"];
+
+    if (controllerStatus.intValue == Disconnected)
+    {
+        [self.navigationController popToRootViewControllerAnimated: YES];
+    }
+}
+
+/*
+ * LampNotification Handler
+ */
+-(void)lampNotificationReceived: (NSNotification *)notification
+{
+    NSString *lampID = [notification.userInfo valueForKey: @"lampID"];
+    NSNumber *callbackOp = [notification.userInfo valueForKey: @"operation"];
+
+    if ([self.lampID isEqualToString: lampID])
+    {
+        switch (callbackOp.intValue)
+        {
+            case LampDeleted:
+                [self deleteLampWithID: lampID andName: [notification.userInfo valueForKey: @"lampName"]];
+                break;
+            case LampStateUpdated:
+                [self reloadPresets];
+                break;
+            default:
+                NSLog(@"Operation not found - Taking no action");
+                break;
+        }
+    }
+}
+
+-(void)deleteLampWithID: (NSString *)lampID andName: (NSString *)lampName
+{
+    if ([self.lampID isEqualToString: lampID])
+    {
+        [self.navigationController popToRootViewControllerAnimated: YES];
+
+        dispatch_async(dispatch_get_main_queue(), ^{
+            UIAlertView *alert = [[UIAlertView alloc] initWithTitle: @"Connection Lost"
+                                                            message: [NSString stringWithFormat: @"Unable to connect to \"%@\".", lampName]
+                                                           delegate: nil
+                                                  cancelButtonTitle: @"OK"
+                                                  otherButtonTitles: nil];
+            [alert show];
+        });
+    }
+}
+
+/*
+ * PresetNotification Handler
+ */
+-(void)presetNotificationReceived: (NSNotification *)notification
+{
+    [self reloadPresets];
+}
+
 -(void)reloadPresets
 {
     LSFLampModelContainer *lampsContainer = [LSFLampModelContainer getLampModelContainer];
@@ -150,10 +216,6 @@
         {
             [self.navigationController popViewControllerAnimated: YES];
         }
-    }
-    else
-    {
-        //NSLog(@"Cell is nil");
     }
 }
 
@@ -261,6 +323,7 @@
     {
         LSFLightsCreatePresetViewController *lcpvc = [segue destinationViewController];
         lcpvc.lampState = self.lampModel.state;
+        lcpvc.lampID = self.lampID;
     }
 }
 

@@ -15,9 +15,8 @@
  ******************************************************************************/
 
 #import <UIKit/UIKit.h>
-#import "LSFReloadScenesCallbackDelegate.h"
 
-@interface LSFSceneInfoTableViewController : UITableViewController <UITableViewDelegate, UITableViewDelegate, LSFReloadScenesCallbackDelegate>
+@interface LSFSceneInfoTableViewController : UITableViewController <UITableViewDelegate, UITableViewDelegate>
 
 @property (nonatomic, strong) NSString *sceneID;
 

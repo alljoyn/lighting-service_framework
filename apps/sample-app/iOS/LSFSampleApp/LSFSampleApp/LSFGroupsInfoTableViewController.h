@@ -16,10 +16,8 @@
 
 #import <UIKit/UIKit.h>
 #import "LSFGroupModel.h"
-#import "LSFReloadGroupsCallbackDelegate.h"
-#import "LSFReloadPresetsCallbackDelegate.h"
 
-@interface LSFGroupsInfoTableViewController : UITableViewController <LSFReloadGroupsCallbackDelegate, LSFReloadPresetsCallbackDelegate>
+@interface LSFGroupsInfoTableViewController : UITableViewController
 
 @property (nonatomic, strong) NSString *groupID;
 @property (nonatomic, weak) IBOutlet UILabel *nameLabel;

@@ -15,6 +15,9 @@
  ******************************************************************************/
 
 #import "LSFScenesCreatePresetViewController.h"
+#import "LSFNoEffectTableViewController.h"
+#import "LSFTransitionEffectTableViewController.h"
+#import "LSFPulseEffectTableViewController.h"
 #import "LSFPresetModelContainer.h"
 #import "LSFUtilityFunctions.h"
 #import "LSFDispatchQueue.h"
@@ -22,15 +25,21 @@
 #import "LSFPresetManager.h"
 #import "LSFAllJoynManager.h"
 #import "LSFPresetModel.h"
+#import "LSFEnums.h"
 
 @interface LSFScenesCreatePresetViewController ()
 
 @property (nonatomic) BOOL doneButtonPressed;
 
+-(void)controllerNotificationReceived: (NSNotification *)notification;
+-(void)sceneNotificationReceived: (NSNotification *)notification;
+-(void)deleteScenesWithIDs: (NSArray *)sceneIDs andNames: (NSArray *)sceneNames;
+
 @end
 
 @implementation LSFScenesCreatePresetViewController
 
+@synthesize sceneID = _sceneID;
 @synthesize lampState = _lampState;
 @synthesize presetNameTextField = _presetNameTextField;
 @synthesize doneButtonPressed = _doneButtonPressed;
@@ -42,6 +51,12 @@
 
 -(void)viewWillAppear: (BOOL)animated
 {
+    [super viewWillAppear: animated];
+
+    //Set notification handler
+    [[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(controllerNotificationReceived:) name: @"ControllerNotification" object: nil];
+    [[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(sceneNotificationReceived:) name: @"SceneNotification" object: nil];
+
     LSFPresetModelContainer *container = [LSFPresetModelContainer getPresetModelContainer];
     int numPresets = [container.presetContainer count];
 
@@ -50,9 +65,72 @@
     self.doneButtonPressed = NO;
 }
 
+-(void)viewWillDisappear: (BOOL)animated
+{
+    [super viewWillDisappear: animated];
+
+    //Clear notification handler
+    [[NSNotificationCenter defaultCenter] removeObserver: self];
+}
+
 -(void)didReceiveMemoryWarning
 {
     [super didReceiveMemoryWarning];
+}
+
+/*
+ * ControllerNotification Handler
+ */
+-(void)controllerNotificationReceived: (NSNotification *)notification
+{
+    NSDictionary *userInfo = notification.userInfo;
+    NSNumber *controllerStatus = [userInfo valueForKey: @"status"];
+
+    if (controllerStatus.intValue == Disconnected)
+    {
+        [self dismissViewControllerAnimated: NO completion: nil];
+    }
+}
+
+/*
+ * SceneNotification Handler
+ */
+-(void)sceneNotificationReceived: (NSNotification *)notification
+{
+    NSNumber *callbackOp = [notification.userInfo valueForKey: @"operation"];
+    NSArray *sceneIDs = [notification.userInfo valueForKey: @"sceneIDs"];
+    NSArray *sceneNames = [notification.userInfo valueForKey: @"sceneNames"];
+
+    if ([sceneIDs containsObject: self.sceneID])
+    {
+        switch (callbackOp.intValue)
+        {
+            case SceneDeleted:
+                [self deleteScenesWithIDs: sceneIDs andNames: sceneNames];
+                break;
+            default:
+                break;
+        }
+    }
+}
+
+-(void)deleteScenesWithIDs: (NSArray *)sceneIDs andNames: (NSArray *)sceneNames
+{
+    if ([sceneIDs containsObject: self.sceneID])
+    {
+        int index = [sceneIDs indexOfObject: self.sceneID];
+
+        [self dismissViewControllerAnimated: NO completion: nil];
+
+        dispatch_async(dispatch_get_main_queue(), ^{
+            UIAlertView *alert = [[UIAlertView alloc] initWithTitle: @"Scene Not Found"
+                                                            message: [NSString stringWithFormat: @"The scene \"%@\" no longer exists.", [sceneNames objectAtIndex: index]]
+                                                           delegate: nil
+                                                  cancelButtonTitle: @"OK"
+                                                  otherButtonTitles: nil];
+            [alert show];
+        });
+    }
 }
 
 /*
@@ -95,7 +173,23 @@
 {
     if (self.doneButtonPressed)
     {
-        [self.navigationController popViewControllerAnimated: YES];
+        //[self.navigationController popViewControllerAnimated: YES];
+
+        for (UIViewController *vc in self.navigationController.viewControllers)
+        {
+            if ([vc isKindOfClass: [LSFNoEffectTableViewController class]])
+            {
+                [self.navigationController popToViewController: (LSFNoEffectTableViewController *)vc animated: YES];
+            }
+            else if ([vc isKindOfClass: [LSFTransitionEffectTableViewController class]])
+            {
+                [self.navigationController popToViewController: (LSFTransitionEffectTableViewController *)vc animated: YES];
+            }
+            else if ([vc isKindOfClass: [LSFPulseEffectTableViewController class]])
+            {
+                [self.navigationController popToViewController: (LSFPulseEffectTableViewController *)vc animated: YES];
+            }
+        }
     }
 }
 
@@ -106,12 +200,12 @@
 {
     if (buttonIndex == 0)
     {
-        [alertView dismissWithClickedButtonIndex: 0 animated: YES];
+        [alertView dismissWithClickedButtonIndex: 0 animated: NO];
     }
 
     if (buttonIndex == 1)
     {
-        [alertView dismissWithClickedButtonIndex: 1 animated: YES];
+        [alertView dismissWithClickedButtonIndex: 1 animated: NO];
 
         self.doneButtonPressed = YES;
         [self.presetNameTextField resignFirstResponder];

@@ -1,4 +1,4 @@
-/******************************************************************************
+/*
  * Copyright (c) 2014, AllSeen Alliance. All rights reserved.
  *
  *    Permission to use, copy, modify, and/or distribute this software for any
@@ -12,12 +12,19 @@
  *    WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
  *    ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  *    OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
- ******************************************************************************/
+ */
+package org.allseen.lsf;
 
-#import <Foundation/Foundation.h>
+public class ControllerServiceManager extends BaseNativeClassWrapper {
+    public ControllerServiceManager(ControllerClient controller, ControllerServiceManagerCallback callback) {
+        createNativeObject(controller, callback);
+    }
 
-@protocol LSFReloadControllerCallbackDelegate <NSObject>
+    public native ControllerClientStatus getControllerServiceVersion();
+    public native ControllerClientStatus lightingResetControllerService();
 
--(void)reloadControllerData;
+    protected native void createNativeObject(ControllerClient controller, ControllerServiceManagerCallback callback);
 
-@end
+    @Override
+    protected native void destroyNativeObject();
+}

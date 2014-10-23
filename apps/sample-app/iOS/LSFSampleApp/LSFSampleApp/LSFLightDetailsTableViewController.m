@@ -20,6 +20,7 @@
 #import "LSFLampModelContainer.h"
 #import "LSFLampModel.h"
 #import "LSFAllJoynManager.h"
+#import "LSFEnums.h"
 
 @interface LSFLightDetailsTableViewController ()
 
@@ -28,6 +29,10 @@
 @property (nonatomic, strong) NSArray *detailsFields;
 @property (nonatomic, strong) NSArray *aboutFields;
 @property (strong, atomic) UIAlertView *loadingAV;
+
+-(void)controllerNotificationReceived: (NSNotification *)notification;
+-(void)lampNotificationReceived: (NSNotification *)notification;
+-(void)deleteLampWithID: (NSString *)lampID andName: (NSString *)lampName;
 
 @end
 
@@ -39,39 +44,104 @@
 @synthesize detailsFields = _detailsFields;
 @synthesize aboutFields = _aboutFields;
 
-- (void)viewDidLoad
+-(void)viewDidLoad
 {
     [super viewDidLoad];
 
-    LSFLampModelContainer *container = [LSFLampModelContainer getLampModelContainer];
-    NSMutableDictionary *lamps = container.lampContainer;
-    self.lampModel = [lamps valueForKey: self.lampID];
-    
     LSFConstants *constants = [LSFConstants getConstants];
     self.detailsFields = constants.lampDetailsFields;
     self.aboutFields = constants.aboutFields;
     self.data = [[NSArray alloc] initWithObjects: self.detailsFields, self.aboutFields, nil];
+}
+
+-(void)viewWillAppear: (BOOL)animated
+{
+    [super viewWillAppear: animated];
+
+    //Set notification handler
+    [[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(controllerNotificationReceived:) name: @"ControllerNotification" object: nil];
+    [[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(lampNotificationReceived:) name: @"LampNotification" object: nil];
 
     [self showLoadingAlert:@"Fetching lamp details..."];
 
     [[LSFAllJoynManager getAllJoynManager] getAboutDataForLampID: self.lampID];
-
+    LSFLampModelContainer *container = [LSFLampModelContainer getLampModelContainer];
+    NSMutableDictionary *lamps = container.lampContainer;
+    self.lampModel = [lamps valueForKey: self.lampID];
     [self.tableView reloadData];
+
     [self dismissLoadingAlert];
 }
 
 -(void)viewWillDisappear: (BOOL)animated
 {
     [super viewWillDisappear: animated];
+
+    //Clear notification handler
+    [[NSNotificationCenter defaultCenter] removeObserver: self];
 }
 
-- (void)didReceiveMemoryWarning
+-(void)didReceiveMemoryWarning
 {
     [super didReceiveMemoryWarning];
-    // Dispose of any resources that can be recreated.
 }
 
-#pragma mark - Table view data source
+/*
+ * ControllerNotification Handler
+ */
+-(void)controllerNotificationReceived: (NSNotification *)notification
+{
+    NSDictionary *userInfo = notification.userInfo;
+    NSNumber *controllerStatus = [userInfo valueForKey: @"status"];
+
+    if (controllerStatus.intValue == Disconnected)
+    {
+        [self.navigationController popToRootViewControllerAnimated: YES];
+    }
+}
+
+/*
+ * LampNotification Handler
+ */
+-(void)lampNotificationReceived: (NSNotification *)notification
+{
+    NSString *lampID = [notification.userInfo valueForKey: @"lampID"];
+    NSNumber *callbackOp = [notification.userInfo valueForKey: @"operation"];
+
+    if ([self.lampID isEqualToString: lampID])
+    {
+        switch (callbackOp.intValue)
+        {
+            case LampDeleted:
+                [self deleteLampWithID: lampID andName: [notification.userInfo valueForKey: @"lampName"]];
+                break;
+            default:
+                NSLog(@"Operation not found - Taking no action");
+                break;
+        }
+    }
+}
+
+-(void)deleteLampWithID: (NSString *)lampID andName: (NSString *)lampName
+{
+    if ([self.lampID isEqualToString: lampID])
+    {
+        [self.navigationController popToRootViewControllerAnimated: YES];
+
+        dispatch_async(dispatch_get_main_queue(), ^{
+            UIAlertView *alert = [[UIAlertView alloc] initWithTitle: @"Connection Lost"
+                                                            message: [NSString stringWithFormat: @"Unable to connect to \"%@\".", lampName]
+                                                           delegate: nil
+                                                  cancelButtonTitle: @"OK"
+                                                  otherButtonTitles: nil];
+            [alert show];
+        });
+    }
+}
+
+/*
+ * UITableViewDataSource Implementation
+ */
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
 {
     return [self.data count];

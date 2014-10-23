@@ -19,6 +19,8 @@
 #import "LSFAllJoynManager.h"
 #import "LSFMasterSceneModelContainer.h"
 #import "LSFMasterSceneDataModel.h"
+#import "LSFTabManager.h"
+#import "LSFEnums.h"
 
 @interface LSFSampleMasterSceneManagerCallback()
 
@@ -29,13 +31,12 @@
 -(void)postUpdateMasterScene: (NSString *)masterSceneID withName: (NSString *)masterSceneName;
 -(void)postDeleteMasterScenes: (NSArray *)masterSceneIDs;
 -(void)postUpdateMasterScene: (NSString *)masterSceneID withMasterScene: (LSFMasterScene *)masterScene;
--(void)updateMasterSceneWithID: (NSString *)masterSceneID;
+-(void)updateMasterSceneWithID: (NSString *)masterSceneID andCallbackOperation: (MasterSceneCallbackOperation)callbackOp;
 
 @end
 
 @implementation LSFSampleMasterSceneManagerCallback
 
-@synthesize reloadMasterScenesDelegate = _reloadMasterScenesDelegate;
 @synthesize queue = _queue;
 
 -(id)init
@@ -259,9 +260,14 @@
 
         masterSceneModel = [[LSFMasterSceneDataModel alloc] initWithID: masterSceneID];
         [container.masterScenesContainer setValue: masterSceneModel forKey: masterSceneID];
+
+        dispatch_async(self.queue, ^{
+            LSFTabManager *tabManager = [LSFTabManager getTabManager];
+            [tabManager updateScenesTab];
+        });
     }
 
-    [self updateMasterSceneWithID: masterSceneID];
+    [self updateMasterSceneWithID: masterSceneID andCallbackOperation: MasterSceneCreated];
 }
 
 -(void)postUpdateMasterScene: (NSString *)masterSceneID withName: (NSString *)masterSceneName
@@ -276,7 +282,7 @@
         masterSceneModel.name = masterSceneName;
     }
 
-    [self updateMasterSceneWithID: masterSceneID];
+    [self updateMasterSceneWithID: masterSceneID andCallbackOperation: MasterSceneNameUpdated];
 }
 
 -(void)postUpdateMasterScene: (NSString *)masterSceneID withMasterScene: (LSFMasterScene *)masterScene
@@ -291,7 +297,7 @@
         masterSceneModel.masterScene = masterScene;
     }
 
-    [self updateMasterSceneWithID: masterSceneID];
+    [self updateMasterSceneWithID: masterSceneID andCallbackOperation: MasterSceneUpdated];
 }
 
 -(void)postDeleteMasterScenes: (NSArray *)masterSceneIDs
@@ -308,23 +314,26 @@
 
         [masterSceneNames insertObject: model.name atIndex: i];
         [masterScenes removeObjectForKey: masterSceneID];
+
+        dispatch_async(self.queue, ^{
+            LSFTabManager *tabManager = [LSFTabManager getTabManager];
+            [tabManager updateScenesTab];
+        });
     }
 
     dispatch_async(dispatch_get_main_queue(), ^{
-        if (self.reloadMasterScenesDelegate != nil)
-        {
-            [self.reloadMasterScenesDelegate deleteMasterScenesWithIDs: masterSceneIDs andNames: masterSceneNames];
-        }
+        NSNumber *masterSceneOp = [[NSNumber alloc] initWithInt: MasterSceneDeleted];
+        NSDictionary *userInfoDict = [[NSDictionary alloc] initWithObjects: [[NSArray alloc] initWithObjects: masterSceneOp, masterSceneIDs, [NSArray arrayWithArray: masterSceneNames], nil] forKeys: [[NSArray alloc] initWithObjects: @"operation", @"masterSceneIDs", @"masterSceneNames", nil]];
+        [[NSNotificationCenter defaultCenter] postNotificationName: @"MasterSceneNotification" object: self userInfo: userInfoDict];
     });
 }
 
--(void)updateMasterSceneWithID: (NSString *)masterSceneID;
+-(void)updateMasterSceneWithID: (NSString *)masterSceneID andCallbackOperation: (MasterSceneCallbackOperation)callbackOp
 {
     dispatch_async(dispatch_get_main_queue(), ^{
-        if (self.reloadMasterScenesDelegate != nil)
-        {
-            [self.reloadMasterScenesDelegate reloadMasterSceneWithID: masterSceneID];
-        }
+        NSNumber *masterSceneOp = [[NSNumber alloc] initWithInt: callbackOp];
+        NSDictionary *userInfoDict = [[NSDictionary alloc] initWithObjects: [[NSArray alloc] initWithObjects: masterSceneOp, masterSceneID, nil] forKeys: [[NSArray alloc] initWithObjects: @"operation", @"masterSceneID", nil]];
+        [[NSNotificationCenter defaultCenter] postNotificationName: @"MasterSceneNotification" object: self userInfo: userInfoDict];
     });
 }
 

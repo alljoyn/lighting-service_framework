@@ -17,10 +17,14 @@
 #import "LSFSampleControllerClientCallback.h"
 #import "LSFAllJoynManager.h"
 #import "LSFDispatchQueue.h"
-#import "LSFControllerMaintenance.h"
-#import "LSFLampMaintenance.h"
 #import "LSFControllerModel.h"
 #import "LSFEnums.h"
+#import "LSFLampModelContainer.h"
+#import "LSFGroupModelContainer.h"
+#import "LSFSceneModelContainer.h"
+#import "LSFMasterSceneModelContainer.h"
+#import "LSFPresetModelContainer.h"
+#import "LSFTabManager.h"
 
 @interface LSFSampleControllerClientCallback()
 
@@ -32,12 +36,12 @@
 -(void)postGetAllPresetIDs;
 -(void)postGetAllSceneIDs;
 -(void)postGetAllMasterSceneIDs;
+-(void)clearModels;
 
 @end
 
 @implementation LSFSampleControllerClientCallback
 
-@synthesize cscDelegate = _cscDelegate;
 @synthesize queue = _queue;
 
 -(id)init
@@ -61,17 +65,12 @@
 
     LSFAllJoynManager *ajManager = [LSFAllJoynManager getAllJoynManager];
     ajManager.isConnectedToController = YES;
-    
-    dispatch_async(dispatch_get_main_queue(), ^{
-        if (self.cscDelegate != nil)
-        {
-            [self.cscDelegate connectedToControllerService];
-        }
-    });
 
-    NSNumber *controllerStatus = [[NSNumber alloc] initWithInt: Connected];
-    NSDictionary *userInfoDict = [[NSDictionary alloc] initWithObjects: [[NSArray alloc] initWithObjects: controllerStatus, nil] forKeys: [[NSArray alloc] initWithObjects: @"status", nil]];
-    [[NSNotificationCenter defaultCenter] postNotificationName: @"ControllerNotification" object: self userInfo: userInfoDict];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        NSNumber *controllerStatus = [[NSNumber alloc] initWithInt: Connected];
+        NSDictionary *userInfoDict = [[NSDictionary alloc] initWithObjects: [[NSArray alloc] initWithObjects: controllerStatus, nil] forKeys: [[NSArray alloc] initWithObjects: @"status", nil]];
+        [[NSNotificationCenter defaultCenter] postNotificationName: @"ControllerNotification" object: self userInfo: userInfoDict];
+    });
     
     dispatch_async(self.queue, ^{
         [self postUpdateControllerID: controllerServiceID controllerName: controllerServiceName];
@@ -80,12 +79,6 @@
         [self postGetAllPresetIDs];
         [self postGetAllSceneIDs];
         [self postGetAllMasterSceneIDs];
-
-//        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.5 * NSEC_PER_SEC)), self.queue, ^{
-//            //[[LSFControllerMaintenance alloc] init];
-//            LSFLampMaintenance *lm = [LSFLampMaintenance getLampMaintenance];
-//            [lm start];
-//        });
     });
 }
 
@@ -93,13 +86,6 @@
 {
     NSLog(@"Connect to Controller Service with name: %@ and ID: %@ failed", controllerServiceName, controllerServiceID);
     ([LSFAllJoynManager getAllJoynManager]).isConnectedToController = NO;
-
-    dispatch_async(dispatch_get_main_queue(), ^{
-        if (self.cscDelegate != nil)
-        {
-            [self.cscDelegate disconnectedFromControllerService];
-        }
-    });
 }
 
 -(void)disconnectedFromControllerServiceWithID: (NSString *)controllerServiceID andName: (NSString *)controllerServiceName
@@ -107,16 +93,13 @@
     NSLog(@"Disconnected from Controller Service with name: %@ and ID: %@", controllerServiceName, controllerServiceID);
     ([LSFAllJoynManager getAllJoynManager]).isConnectedToController = NO;
 
-    dispatch_async(dispatch_get_main_queue(), ^{
-        if (self.cscDelegate != nil)
-        {
-            [self.cscDelegate disconnectedFromControllerService];
-        }
-    });
+    [self clearModels];
 
-    NSNumber *controllerStatus = [[NSNumber alloc] initWithInt: Disconnected];
-    NSDictionary *userInfoDict = [[NSDictionary alloc] initWithObjects: [[NSArray alloc] initWithObjects: controllerStatus, nil] forKeys: [[NSArray alloc] initWithObjects: @"status", nil]];
-    [[NSNotificationCenter defaultCenter] postNotificationName: @"ControllerNotification" object: self userInfo: userInfoDict];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        NSNumber *controllerStatus = [[NSNumber alloc] initWithInt: Disconnected];
+        NSDictionary *userInfoDict = [[NSDictionary alloc] initWithObjects: [[NSArray alloc] initWithObjects: controllerStatus, nil] forKeys: [[NSArray alloc] initWithObjects: @"status", nil]];
+        [[NSNotificationCenter defaultCenter] postNotificationName: @"ControllerNotification" object: self userInfo: userInfoDict];
+    });
 }
 
 -(void)controllerClientError: (NSArray *)ec
@@ -178,6 +161,26 @@
         LSFAllJoynManager *ajManager = [LSFAllJoynManager getAllJoynManager];
         [ajManager.lsfMasterSceneManager getAllMasterSceneIDs];
     });
+}
+
+-(void)clearModels
+{
+    LSFLampModelContainer *lampContainer = [LSFLampModelContainer getLampModelContainer];
+    LSFGroupModelContainer *groupContainer = [LSFGroupModelContainer getGroupModelContainer];
+    LSFSceneModelContainer *sceneContainer = [LSFSceneModelContainer getSceneModelContainer];
+    LSFMasterSceneModelContainer *masterSceneContainer = [LSFMasterSceneModelContainer getMasterSceneModelContainer];
+    LSFPresetModelContainer *presetContainer = [LSFPresetModelContainer getPresetModelContainer];
+
+    [lampContainer.lampContainer removeAllObjects];
+    [groupContainer.groupContainer removeAllObjects];
+    [sceneContainer.sceneContainer removeAllObjects];
+    [masterSceneContainer.masterScenesContainer removeAllObjects];
+    [presetContainer.presetContainer removeAllObjects];
+
+    LSFTabManager *tabManager = [LSFTabManager getTabManager];
+    [tabManager updateLampsTab];
+    [tabManager updateGroupsTab];
+    [tabManager updateScenesTab];
 }
 
 @end

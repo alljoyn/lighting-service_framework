@@ -16,8 +16,15 @@
 
 #import <Foundation/Foundation.h>
 
-@protocol LSFReloadPresetsCallbackDelegate <NSObject>
+@interface LSFLampStateUniformity : NSObject
 
--(void)reloadPresets;
+@property (nonatomic) BOOL power;
+@property (nonatomic) BOOL brightness;
+@property (nonatomic) BOOL hue;
+@property (nonatomic) BOOL saturation;
+@property (nonatomic) BOOL colorTemp;
+
+-(id)init;
+-(id)initWithPower: (BOOL)power brightness: (BOOL)brightness hue: (BOOL)hue saturation: (BOOL)saturation andColorTemp: (BOOL)colorTemp;
 
 @end

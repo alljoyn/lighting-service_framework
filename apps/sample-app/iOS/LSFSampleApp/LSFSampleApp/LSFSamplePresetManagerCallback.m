@@ -37,7 +37,6 @@
 @implementation LSFSamplePresetManagerCallback
 
 @synthesize queue = _queue;
-@synthesize reloadPresetsDelegate = _reloadPresetsDelegate;
 
 -(id)init
 {
@@ -220,12 +219,6 @@
         presetModel = [[LSFPresetModel alloc] initWithPresetID: presetID];
         [presets setValue: presetModel forKey: presetID];
     }
-    else
-    {
-        //NSLog(@"updatePresetID - Found PresetModel for preset ID");
-    }
-    
-    [self updateUI];
 }
 
 -(void)updatePresetName: (NSString *)name forPresetID: (NSString *)presetID
@@ -282,10 +275,7 @@
 -(void)updateUI
 {
     dispatch_async(dispatch_get_main_queue(), ^{
-        if (self.reloadPresetsDelegate != nil)
-        {
-            [self.reloadPresetsDelegate reloadPresets];
-        }
+        [[NSNotificationCenter defaultCenter] postNotificationName: @"PresetNotification" object: self userInfo: nil];
     });
 }
 

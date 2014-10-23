@@ -15,10 +15,20 @@
  ******************************************************************************/
 
 #import <Foundation/Foundation.h>
+#import <SystemConfiguration/SystemConfiguration.h>
 
-@protocol LSFReloadMasterScenesCallbackDelegate <NSObject>
+typedef enum {
+	NotReachable = 0,
+	ReachableViaWiFi
+} NetworkConnectionStatus;
 
--(void)reloadMasterSceneWithID: (NSString *)masterSceneID;
--(void)deleteMasterScenesWithIDs: (NSArray *)masterSceneIDs andNames: (NSArray *)masterSceneNames;
+@interface LSFWifiMonitor : NSObject
+
+@property (nonatomic) BOOL isWifiConnected;
+
++(id)getWifiMonitor;
+-(BOOL)startMonitoringWifi;
+-(void)stopMonitoringWifi;
+-(void)checkCurrentStatus;
 
 @end

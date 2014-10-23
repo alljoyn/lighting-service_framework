@@ -22,6 +22,7 @@
 
 @property (nonatomic, strong) LSFSceneDataModel *sceneModel;
 @property (nonatomic, strong) LSFNoEffectDataModel *nedm;
+@property (nonatomic) BOOL shouldUpdateSceneAndDismiss;
 @property (weak, nonatomic) IBOutlet UIImageView *colorIndicatorImage;
 
 -(IBAction)doneButtonPressed: (id)sender;

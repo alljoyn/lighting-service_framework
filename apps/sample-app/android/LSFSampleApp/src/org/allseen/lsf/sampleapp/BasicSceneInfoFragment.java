@@ -82,6 +82,7 @@ public class BasicSceneInfoFragment extends PageFrameChildFragment implements Vi
 
         if (activity.pendingBasicSceneModel.id != null && !activity.pendingBasicSceneModel.id.isEmpty()) {
             AllJoynManager.sceneManager.updateScene(activity.pendingBasicSceneModel.id, activity.pendingBasicSceneModel.toScene());
+            activity.basicSceneModels.put(activity.pendingBasicSceneModel.id, activity.pendingBasicSceneModel);
         } else {
             AllJoynManager.sceneManager.createScene(activity.pendingBasicSceneModel.toScene(), activity.pendingBasicSceneModel.getName(), SampleAppActivity.LANGUAGE);
         }

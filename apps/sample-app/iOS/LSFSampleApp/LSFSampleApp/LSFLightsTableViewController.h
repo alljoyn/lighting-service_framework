@@ -15,9 +15,8 @@
  ******************************************************************************/
 
 #import <UIKit/UIKit.h>
-#import "LSFReloadLightsCallbackDelegate.h"
 #import "LSFRootTableViewController.h"
 
-@interface LSFLightsTableViewController : LSFRootTableViewController <UITableViewDelegate, UITableViewDataSource, LSFReloadLightsCallbackDelegate>
+@interface LSFLightsTableViewController : LSFRootTableViewController <UITableViewDelegate, UITableViewDataSource>
 
 @end

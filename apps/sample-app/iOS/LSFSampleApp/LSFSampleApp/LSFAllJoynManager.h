@@ -20,8 +20,6 @@
 #import "LSFLampManager.h"
 #import "LSFPresetManager.h"
 #import "AJNBusAttachment.h"
-#import "LSFReloadUIDelegate.h"
-#import "LSFControllerServiceConnectedDelegate.h"
 #import "LSFLampGroupManager.h"
 #import "LSFSceneManager.h"
 #import "LSFMasterSceneManager.h"
@@ -33,6 +31,7 @@
 #import "LSFSampleSceneManagerCallback.h"
 #import "LSFSampleMasterSceneManagerCallback.h"
 #import "LSFLampAnnouncementData.h"
+#import "LSFAboutManager.h"
 
 @interface LSFAllJoynManager : NSObject
 
@@ -51,11 +50,11 @@
 @property (nonatomic, strong) LSFSamplePresetManagerCallback *spmc;
 @property (nonatomic, strong) LSFSampleSceneManagerCallback *ssmc;
 @property (nonatomic, strong) LSFSampleMasterSceneManagerCallback *smsmc;
+@property (nonatomic, strong) LSFAboutManager *aboutManager;
 @property (nonatomic) BOOL isConnectedToController;
 
 +(LSFAllJoynManager *)getAllJoynManager;
--(void)setReloadUIDelegate: (id<LSFReloadUIDelegate>)reloadUIDelegate;
--(void)setControllerServiceConnectedDelegate: (id<LSFControllerServiceConnectedDelegate>)delegate;
 -(void)addNewLamp: (NSString*)lampID lampAnnouncementData:(LSFLampAnnouncementData*)lampAnnData;
 -(void)getAboutDataForLampID: (NSString*)lampID;
+
 @end

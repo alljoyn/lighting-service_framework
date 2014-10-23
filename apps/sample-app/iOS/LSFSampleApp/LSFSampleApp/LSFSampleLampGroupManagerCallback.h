@@ -16,11 +16,8 @@
 
 #import <Foundation/Foundation.h>
 #import "LSFLampGroupManagerCallbackDelegate.h"
-#import "LSFReloadGroupsCallbackDelegate.h"
 
 @interface LSFSampleLampGroupManagerCallback : NSObject <LSFLampGroupManagerCallbackDelegate>
-
-@property (nonatomic, weak) id<LSFReloadGroupsCallbackDelegate> reloadGroupsDelegate;
 
 -(id)init;
 -(void)refreshAllLampGroupIDs;

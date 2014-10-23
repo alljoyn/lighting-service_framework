@@ -42,7 +42,10 @@
 @property (nonatomic, strong) NSArray *effectImages;
 @property (nonatomic) unsigned int pollingDelaySeconds;
 @property (nonatomic) unsigned int lampExperationMilliseconds;
-@property (nonatomic) unsigned int RETRY_INTERVAL;
+@property (nonatomic) double RETRY_INTERVAL;
+@property (nonatomic, strong) UIColor *uniformPowerGreen;
+@property (nonatomic, strong) UIColor *midstatePowerOrange;
+@property (nonatomic) unsigned int UI_DELAY;
 
 +(LSFConstants *)getConstants;
 -(unsigned int)scaleLampStateValue: (unsigned int)value withMax: (unsigned int)max;

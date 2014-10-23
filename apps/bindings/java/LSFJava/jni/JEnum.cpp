@@ -34,13 +34,13 @@ namespace lsf {
 // change, then you should get compilation errors in the typedef statements
 // below. In that case, to fix the errors you should update the corresponding
 // Java enum class, and then update the expected last value here.
-#define HAS_LAST_VALUE_CHANGED_IN_LAMP_MAKE                             (MAKE_OEM1                       ==  2)
-#define HAS_LAST_VALUE_CHANGED_IN_LAMP_MODEL                            (MODEL_LED                       ==  1)
-#define HAS_LAST_VALUE_CHANGED_IN_DEVICE_TYPE                           (TYPE_SWITCH                     ==  4)
-#define HAS_LAST_VALUE_CHANGED_IN_LAMP_TYPE                             (LAMPTYPE_ST18                   == 91)
-#define HAS_LAST_VALUE_CHANGED_IN_BASE_TYPE                             (BASETYPE_E39                    == 10)
-#define HAS_LAST_VALUE_CHANGED_IN_ERROR_CODE                            (ERROR_CONTROLLER_CLIENT_EXITING ==  6)
-#define HAS_LAST_VALUE_CHANGED_IN_CONTROLLER_CLIENT_STATUS              (CONTROLLER_CLIENT_ERR_FAILURE   ==  2)
+#define HAS_LAST_VALUE_CHANGED_IN_LAMP_MAKE                             (MAKE_LASTVALUE                  ==  3)
+#define HAS_LAST_VALUE_CHANGED_IN_LAMP_MODEL                            (MODEL_LASTVALUE                 ==  2)
+#define HAS_LAST_VALUE_CHANGED_IN_DEVICE_TYPE                           (TYPE_LASTVALUE                  ==  5)
+#define HAS_LAST_VALUE_CHANGED_IN_LAMP_TYPE                             (LAMPTYPE_LASTVALUE              == 92)
+#define HAS_LAST_VALUE_CHANGED_IN_BASE_TYPE                             (BASETYPE_LASTVALUE              == 11)
+#define HAS_LAST_VALUE_CHANGED_IN_ERROR_CODE                            (ERROR_LAST_VALUE                ==  7)
+#define HAS_LAST_VALUE_CHANGED_IN_CONTROLLER_CLIENT_STATUS              (CONTROLLER_CLIENT_LAST_VALUE    ==  4)
 #define HAS_LAST_VALUE_CHANGED_IN_RESPONSE_CODE                         (LSF_RESPONSE_CODE_LAST          == 19)
 
 // You should get compilation failures here if the enums in LampValues.h,

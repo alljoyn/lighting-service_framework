@@ -157,6 +157,30 @@ jlong JNICALL Java_org_allseen_lsf_LampState_getBrightness(JNIEnv *env, jobject 
 }
 
 JNIEXPORT
+void JNICALL Java_org_allseen_lsf_LampState_setNull(JNIEnv *env, jobject thiz, jboolean jIsNull)
+{
+    JLampState* xLampState = GetHandle<JLampState*>(thiz);
+    if (env->ExceptionCheck() || !xLampState) {
+        QCC_LogError(ER_FAIL, ("GetHandle() failed"));
+        return;
+    }
+
+    xLampState->nullState = (bool)jIsNull;
+}
+
+JNIEXPORT
+jboolean JNICALL Java_org_allseen_lsf_LampState_isNull(JNIEnv *env, jobject thiz)
+{
+    JLampState* xLampState = GetHandle<JLampState*>(thiz);
+    if (env->ExceptionCheck() || !xLampState) {
+        QCC_LogError(ER_FAIL, ("GetHandle() failed"));
+        return 0;
+    }
+
+    return (jboolean)xLampState->nullState;
+}
+
+JNIEXPORT
 void JNICALL Java_org_allseen_lsf_LampState_createNativeObject(JNIEnv *env, jobject thiz)
 {
     CreateHandle<JLampState>(thiz);

@@ -24,6 +24,7 @@ public class BasicSceneElementDataModel extends DimmableItemDataModel {
 
     public final EffectType type;
     public LampGroup members;
+    public String presetID;
 
     public BasicSceneElementDataModel() {
         this(null, "");
@@ -49,6 +50,7 @@ public class BasicSceneElementDataModel extends DimmableItemDataModel {
 
         this.type = other.type;
         this.members = new LampGroup(other.members);
+        this.presetID = other.presetID;
     }
 
     public boolean containsGroup(String groupID) {

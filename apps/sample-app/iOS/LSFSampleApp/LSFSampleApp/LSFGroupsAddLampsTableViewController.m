@@ -22,19 +22,21 @@
 #import "LSFLampModel.h"
 #import "LSFGroupModel.h"
 #import "LSFCapabilityData.h"
+#import "LSFEnums.h"
 
 @interface LSFGroupsAddLampsTableViewController ()
 
 @property (nonatomic, strong) LSFLampGroup *lampGroup;
 @property (nonatomic, strong) NSMutableArray *lampsGroupsArray;
-@property (nonatomic, strong) NSMutableArray *lampsGroupsArraySorted;
 @property (nonatomic, strong) NSMutableArray *selectedRows;
 
+-(void)controllerNotificationReceived: (NSNotification *)notification;
 -(void)buildTableArray;
 -(void)modifyAllRows: (BOOL)isSelected;
 -(void)processSelectedRows;
 -(void)checkGroupCapability: (LSFCapabilityData *)capability;
 -(void)createLampGroup;
+-(NSArray *)sortLampsGroupsData: (NSArray *)data;
 
 @end
 
@@ -43,7 +45,6 @@
 @synthesize groupName = _groupName;
 @synthesize lampGroup = _lampGroup;
 @synthesize lampsGroupsArray = _lampsGroupsArray;
-@synthesize lampsGroupsArraySorted = _lampsGroupsArraySorted;
 @synthesize selectedRows = _selectedRows;
 
 -(void)viewDidLoad
@@ -54,14 +55,24 @@
 -(void)viewWillAppear: (BOOL)animated
 {
     [super viewWillAppear: animated];
+
+    //Set notification handler
+    [[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(controllerNotificationReceived:) name: @"ControllerNotification" object: nil];
     
     //Initialize selected rows array
     self.selectedRows = [[NSMutableArray alloc] init];
     
     //Load UI
     [self buildTableArray];
-    [self sortLampsGroupsData];
     [self.tableView reloadData];
+}
+
+-(void)viewWillDisappear: (BOOL)animated
+{
+    [super viewWillDisappear: animated];
+
+    //Clear notification handler
+    [[NSNotificationCenter defaultCenter] removeObserver: self];
 }
 
 -(void)didReceiveMemoryWarning
@@ -70,16 +81,30 @@
 }
 
 /*
- * UITableViewDatasource Protocol Implementation
+ * ControllerNotification Handler
  */
-- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
+-(void)controllerNotificationReceived: (NSNotification *)notification
 {
-    return [self.lampsGroupsArraySorted count];
+    NSDictionary *userInfo = notification.userInfo;
+    NSNumber *controllerStatus = [userInfo valueForKey: @"status"];
+
+    if (controllerStatus.intValue == Disconnected)
+    {
+        [self dismissViewControllerAnimated: YES completion: nil];
+    }
 }
 
-- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
+/*
+ * UITableViewDatasource Protocol Implementation
+ */
+-(NSInteger)tableView: (UITableView *)tableView numberOfRowsInSection: (NSInteger)section
 {
-    id model = [self.lampsGroupsArraySorted objectAtIndex: [indexPath row]];
+    return [self.lampsGroupsArray count];
+}
+
+-(UITableViewCell *)tableView: (UITableView *)tableView cellForRowAtIndexPath: (NSIndexPath *)indexPath
+{
+    id model = [self.lampsGroupsArray objectAtIndex: [indexPath row]];
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier: @"AddLampsGroup" forIndexPath:indexPath];
     
     if ([model isKindOfClass: [LSFGroupModel class]])
@@ -98,7 +123,7 @@
     return cell;
 }
 
--(void)tableView:(UITableView *)tableView didSelectRowAtIndexPath: (NSIndexPath *)indexPath
+-(void)tableView: (UITableView *)tableView didSelectRowAtIndexPath: (NSIndexPath *)indexPath
 {
     UITableViewCell *cell = [tableView cellForRowAtIndexPath:indexPath];
     
@@ -114,6 +139,11 @@
     }
     
     [self.tableView deselectRowAtIndexPath: indexPath animated: YES];
+}
+
+-(NSString *)tableView: (UITableView *)tableView titleForHeaderInSection: (NSInteger)section
+{
+    return @"Select the lamps in this group";
 }
 
 /*
@@ -168,8 +198,8 @@
     NSMutableDictionary *lamps = lampsContainer.lampContainer;
     NSMutableArray *lampsArray = [NSMutableArray arrayWithArray: [lamps allValues]];
     
-    self.lampsGroupsArray = [NSMutableArray arrayWithArray: groupsArray];
-    [self.lampsGroupsArray addObjectsFromArray: lampsArray];
+    self.lampsGroupsArray = [NSMutableArray arrayWithArray: [self sortLampsGroupsData: groupsArray]];
+    [self.lampsGroupsArray addObjectsFromArray: [self sortLampsGroupsData: lampsArray]];
 }
 
 -(void)modifyAllRows: (BOOL)isSelected
@@ -206,7 +236,7 @@
     
     for (NSIndexPath *indexPath in self.selectedRows)
     {
-        id model = [self.lampsGroupsArraySorted objectAtIndex: indexPath.row];
+        id model = [self.lampsGroupsArray objectAtIndex: indexPath.row];
         
         if ([model isKindOfClass: [LSFGroupModel class]])
         {
@@ -254,6 +284,16 @@
     [self dismissViewControllerAnimated: YES completion: nil];
 }
 
+-(NSArray *)sortLampsGroupsData: (NSArray *)data
+{
+    NSSortDescriptor *sortDesc = [NSSortDescriptor sortDescriptorWithKey:@"name" ascending:YES comparator:^NSComparisonResult(id obj1, id obj2) {
+        return [(NSString *)obj1 compare:(NSString *)obj2 options:NSCaseInsensitiveSearch];
+    }];
+
+
+    return [data sortedArrayUsingDescriptors:[NSArray arrayWithObject:sortDesc]];
+}
+
 /*
  * UIAlertViewDelegate implementation
  */
@@ -261,22 +301,14 @@
 {
     if (buttonIndex == 0)
     {
-        [alertView dismissWithClickedButtonIndex: 0 animated: YES];
+        [alertView dismissWithClickedButtonIndex: 0 animated: NO];
     }
     
     if (buttonIndex == 1)
     {
-        [alertView dismissWithClickedButtonIndex: 1 animated: YES];
+        [alertView dismissWithClickedButtonIndex: 1 animated: NO];
         [self createLampGroup];
     }
-}
-
--(void)sortLampsGroupsData
-{
-    NSSortDescriptor *sortDesc = [NSSortDescriptor sortDescriptorWithKey:@"name" ascending:YES comparator:^NSComparisonResult(id obj1, id obj2) {
-        return [(NSString *)obj1 compare:(NSString *)obj2 options:NSCaseInsensitiveSearch];
-    }];
-    self.lampsGroupsArraySorted = [[NSMutableArray alloc] initWithArray: [self.lampsGroupsArray sortedArrayUsingDescriptors:[NSArray arrayWithObject:sortDesc]]];
 }
 
 @end

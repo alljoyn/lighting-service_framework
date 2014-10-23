@@ -20,6 +20,7 @@
 
 @synthesize state = _state;
 @synthesize capability = _capability;
+@synthesize uniformity = _uniformity;
 
 -(id)initWithID: (NSString *)theID andName: (NSString *)name
 {
@@ -29,6 +30,7 @@
     {
         self.state = [[LSFLampState alloc] initWithOnOff: NO brightness: 0 hue: 0 saturation: 0 colorTemp: 2700];
         self.capability = [[LSFCapabilityData alloc] init];
+        self.uniformity = [[LSFLampStateUniformity alloc] init];
     }
 
     return self;

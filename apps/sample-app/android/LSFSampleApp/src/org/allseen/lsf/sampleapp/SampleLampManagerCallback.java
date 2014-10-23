@@ -141,7 +141,7 @@ public class SampleLampManagerCallback extends LampManagerCallback {
     @Override
     public void getLampStateReplyCB(ResponseCode responseCode, String lampID, LampState lampState) {
         if (responseCode.equals(ResponseCode.OK)) {
-            Log.d(SampleAppActivity.TAG, "Got lamp state reply " + lampID + ": " +  lampState);
+            Log.d(SampleAppActivity.TAG, "Got lamp state reply " + lampID);
             postUpdateLampState(lampID, lampState);
             postGetLampParameters(lampID, 0);
         } else {
@@ -347,7 +347,7 @@ public class SampleLampManagerCallback extends LampManagerCallback {
             }
         }, delay);
 
-        postUpdateDimmableItemTask(lampID);
+        postUpdateLampUI(lampID);
     }
 
     public void postRemoveLampID(final String lampID) {
@@ -390,7 +390,7 @@ public class SampleLampManagerCallback extends LampManagerCallback {
     }
 
     protected void postUpdateLampState(final String lampID, final LampState lampState) {
-        Log.d(SampleAppActivity.TAG, "Updating lamp state " + lampID + ": " +  lampState);
+        Log.d(SampleAppActivity.TAG, "Updating lamp state " + lampID);
         handler.post(new Runnable() {
             @Override
             public void run() {
@@ -402,7 +402,7 @@ public class SampleLampManagerCallback extends LampManagerCallback {
             }
         });
 
-        postUpdateDimmableItemTask(lampID);
+        postUpdateLampUI(lampID);
     }
 
     protected void postGetLampState(final String lampID, int delay) {
@@ -429,7 +429,7 @@ public class SampleLampManagerCallback extends LampManagerCallback {
             }
         });
 
-        postUpdateDimmableItemTask(lampID);
+        postUpdateLampUI(lampID);
     }
 
     protected void postGetLampParameters(final String lampID, int delay) {
@@ -456,7 +456,7 @@ public class SampleLampManagerCallback extends LampManagerCallback {
             }
         });
 
-        postUpdateDimmableItemTask(lampID);
+        postUpdateLampUI(lampID);
     }
 
     protected void postGetLampDetails(final String lampID, final int delay) {
@@ -483,7 +483,7 @@ public class SampleLampManagerCallback extends LampManagerCallback {
             }
         });
 
-        postUpdateDimmableItemTask(lampID);
+        postUpdateLampUI(lampID);
     }
 
     protected void postUpdateLampStateOnOff(final String lampID, final boolean onOff) {
@@ -499,7 +499,7 @@ public class SampleLampManagerCallback extends LampManagerCallback {
             }
         });
 
-        postUpdateDimmableItemTask(lampID);
+        postUpdateLampUI(lampID);
     }
 
     protected void postGetLampStateOnOffField(final String lampID, int delay) {
@@ -526,7 +526,7 @@ public class SampleLampManagerCallback extends LampManagerCallback {
             }
         });
 
-        postUpdateDimmableItemTask(lampID);
+        postUpdateLampUI(lampID);
     }
 
     protected void postGetLampStateHueField(final String lampID, int delay) {
@@ -553,7 +553,7 @@ public class SampleLampManagerCallback extends LampManagerCallback {
             }
         });
 
-        postUpdateDimmableItemTask(lampID);
+        postUpdateLampUI(lampID);
     }
 
     protected void postGetLampStateSaturationField(final String lampID, int delay) {
@@ -580,7 +580,7 @@ public class SampleLampManagerCallback extends LampManagerCallback {
             }
         });
 
-        postUpdateDimmableItemTask(lampID);
+        postUpdateLampUI(lampID);
     }
 
     protected void postGetLampStateBrightnessField(final String lampID, int delay) {
@@ -607,7 +607,7 @@ public class SampleLampManagerCallback extends LampManagerCallback {
             }
         });
 
-        postUpdateDimmableItemTask(lampID);
+        postUpdateLampUI(lampID);
     }
 
     protected void postGetLampStateColorTempField(final String lampID, int delay) {
@@ -621,8 +621,8 @@ public class SampleLampManagerCallback extends LampManagerCallback {
         }, delay);
     }
 
-    protected void postUpdateDimmableItemTask(final String lampID) {
-        Log.d(SampleAppActivity.TAG, "Updating row " + lampID);
+    protected void postUpdateLampUI(final String lampID) {
+        Log.d(SampleAppActivity.TAG, "postUpdateLampUI() " + lampID);
         handler.post(new Runnable() {
             @Override
             public void run() {
@@ -645,7 +645,7 @@ public class SampleLampManagerCallback extends LampManagerCallback {
                         }
                     }
 
-                    activity.groupManagerCB.refreshAllLampGroupIDs();
+                    activity.groupManagerCB.postUpdateDependentLampGroups(lampID);
                     activity.sceneManagerCB.refreshScene(null);
                 }
             }

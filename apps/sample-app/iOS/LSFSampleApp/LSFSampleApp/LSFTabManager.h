@@ -15,14 +15,12 @@
  ******************************************************************************/
 
 #import <Foundation/Foundation.h>
-#import "LSFReloadLightsCallbackDelegate.h"
 
-@interface LSFGarbageCollector : NSObject
+@interface LSFTabManager : NSObject
 
-@property (nonatomic, weak) id<LSFReloadLightsCallbackDelegate> reloadLightsDelegate;
-
-+(LSFGarbageCollector *)getGarbageCollector;
--(void)start;
--(BOOL)isLampExpired: (NSString *)lampID;
++(id)getTabManager;
+-(void)updateLampsTab;
+-(void)updateGroupsTab;
+-(void)updateScenesTab;
 
 @end

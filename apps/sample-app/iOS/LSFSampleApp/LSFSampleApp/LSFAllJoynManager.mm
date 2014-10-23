@@ -17,14 +17,11 @@
 #import "LSFAllJoynManager.h"
 #import "AJNPasswordManager.h"
 #import "LSFSampleLampGroupManager.h"
-#import "LSFAboutManager.h"
 #import "LSFDispatchQueue.h"
-#import "LSFGarbageCollector.h"
 
 @interface LSFAllJoynManager()
 
 @property (nonatomic, strong) dispatch_queue_t backgroundQueue;
-@property (nonatomic, strong) LSFAboutManager *aboutManager;
 @property (nonatomic, strong) NSMutableDictionary *lampsAnnouncementData;
 
 @end
@@ -130,33 +127,9 @@
         self.lsfMasterSceneManager = [[LSFMasterSceneManager alloc] initWithControllerClient: self.lsfControllerClient andMasterSceneManagerCallbackDelegate: self.smsmc];
         self.aboutManager = [[LSFAboutManager alloc] initWithBusAttachment: self.bus];
         self.lampsAnnouncementData = [[NSMutableDictionary alloc] init];
-
-        //Background task to monitor lamp timeout
-//        LSFGarbageCollector *garbageCollector = [LSFGarbageCollector getGarbageCollector];
-//        [garbageCollector start];
     }
     
     return self;
-}
-
--(void)setReloadUIDelegate: (id<LSFReloadUIDelegate>)reloadUIDelegate
-{
-    //self.sccc.reloadUIDelegate = reloadUIDelegate;
-    //self.slmc.reloadUIDelegate = reloadUIDelegate;
-    //self.slgmc.reloadUIDelegate = reloadUIDelegate;
-    //self.spmc.reloadUIDelegate = reloadUIDelegate;
-    //self.ssmc.reloadUIDelegate = reloadUIDelegate;
-    //self.smsmc.reloadUIDelegate = reloadUIDelegate;
-}
-
--(void)setControllerServiceConnectedDelegate: (id<LSFControllerServiceConnectedDelegate>)delegate
-{
-    //self.sccc.cscDelegate = delegate;
-    //self.slmc.cscDelegate = delegate;
-    //self.slgmc.cscDelegate = delegate;
-    //self.spmc.cscDelegate = delegate;
-    //self.ssmc.cscDelegate = delegate;
-    //self.smsmc.cscDelegate = delegate;
 }
 
 -(void)addNewLamp: (NSString*)lampID lampAnnouncementData: (LSFLampAnnouncementData*)lampAnnData

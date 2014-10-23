@@ -30,6 +30,7 @@
 #import "LSFPulseEffectDataModel.h"
 #import "LSFAllJoynManager.h"
 #import "LSFDispatchQueue.h"
+#import "LSFEnums.h"
 
 @interface LSFSceneInfoTableViewController ()
 
@@ -37,6 +38,10 @@
 @property (nonatomic, strong) NSMutableArray *dataArray;
 @property (nonatomic, strong) UIBarButtonItem *addButton;
 
+-(void)controllerNotificationReceived: (NSNotification *)notification;
+-(void)sceneNotificationReceived: (NSNotification *)notification;
+-(void)reloadSceneWithID: (NSString *)sceneID;
+-(void)deleteScenesWithIDs: (NSArray *)sceneIDs andNames: (NSArray *)sceneNames;
 -(NSString *)buildMemberString: (LSFSceneElementDataModel *)sceneElement;
 -(void)plusButtonPressed;
 
@@ -68,10 +73,16 @@
 {
     [super viewWillAppear: animated];
 
-    dispatch_async(([LSFDispatchQueue getDispatchQueue]).queue, ^{
-        LSFAllJoynManager *ajManager = [LSFAllJoynManager getAllJoynManager];
-        [ajManager.ssmc setReloadScenesDelegate: self];
-    });
+    LSFAllJoynManager *ajManager = [LSFAllJoynManager getAllJoynManager];
+
+    if (!ajManager.isConnectedToController)
+    {
+        [self.navigationController popToRootViewControllerAnimated: YES];
+    }
+
+    //Set notification handler
+    [[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(controllerNotificationReceived:) name: @"ControllerNotification" object: nil];
+    [[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(sceneNotificationReceived:) name: @"SceneNotification" object: nil];
 
     [self reloadSceneWithID: self.sceneID];
 }
@@ -80,10 +91,8 @@
 {
     [super viewWillDisappear: animated];
 
-    dispatch_async(([LSFDispatchQueue getDispatchQueue]).queue, ^{
-        LSFAllJoynManager *ajManager = [LSFAllJoynManager getAllJoynManager];
-        [ajManager.ssmc setReloadScenesDelegate: nil];
-    });
+    //Clear notification handler
+    [[NSNotificationCenter defaultCenter] removeObserver: self];
 }
 
 -(void)didReceiveMemoryWarning
@@ -92,8 +101,46 @@
 }
 
 /*
- * LSFReloadScenesCallbackDelegate Implementation
+ * ControllerNotification Handler
  */
+-(void)controllerNotificationReceived: (NSNotification *)notification
+{
+    NSDictionary *userInfo = notification.userInfo;
+    NSNumber *controllerStatus = [userInfo valueForKey: @"status"];
+
+    if (controllerStatus.intValue == Disconnected)
+    {
+        [self.navigationController popToRootViewControllerAnimated: YES];
+    }
+}
+
+/*
+ * SceneNotification Handler
+ */
+-(void)sceneNotificationReceived: (NSNotification *)notification
+{
+    NSString *sceneID = [notification.userInfo valueForKey: @"sceneID"];
+    NSNumber *callbackOp = [notification.userInfo valueForKey: @"operation"];
+    NSArray *sceneIDs = [notification.userInfo valueForKey: @"sceneIDs"];
+    NSArray *sceneNames = [notification.userInfo valueForKey: @"sceneNames"];
+
+    if ([self.sceneID isEqualToString: sceneID] || [sceneIDs containsObject: self.sceneID])
+    {
+        switch (callbackOp.intValue)
+        {
+            case SceneNameUpdated:
+            case SceneUpdated:
+                [self reloadSceneWithID: sceneID];
+                break;
+            case SceneDeleted:
+                [self deleteScenesWithIDs: sceneIDs andNames: sceneNames];
+                break;
+            default:
+                break;
+        }
+    }
+}
+
 -(void)reloadSceneWithID: (NSString *)sceneID
 {
     if ([self.sceneID isEqualToString: sceneID])
@@ -112,7 +159,7 @@
         }
         else
         {
-            [self.navigationController popViewControllerAnimated: YES];
+            [self.navigationController popToRootViewControllerAnimated: YES];
         }
         
         [self.tableView reloadData];

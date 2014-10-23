@@ -12,14 +12,35 @@
  *    WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
  *    ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  *    OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ *
  ******************************************************************************/
 
-#import <Foundation/Foundation.h>
-#import "LSFControllerServiceConnectedDelegate.h"
+#include <jni.h>
 
-@interface LSFControllerMaintenance : NSObject
+#include "XCppDelegator.h"
+#include "XControllerServiceManagerCallback.h"
 
--(id)init;
--(void)pollController;
+#include "org_allseen_lsf_ControllerServiceManagerCallback.h"
 
-@end
+using namespace lsf;
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+JNIEXPORT
+void JNICALL Java_org_allseen_lsf_ControllerServiceManagerCallback_createNativeObject(JNIEnv *env, jobject thiz)
+{
+    CreateHandle<XControllerServiceManagerCallback>(thiz);
+}
+
+JNIEXPORT
+void JNICALL Java_org_allseen_lsf_ControllerServiceManagerCallback_destroyNativeObject(JNIEnv *env, jobject thiz)
+{
+    DestroyHandle<XControllerServiceManagerCallback>(thiz);
+}
+
+#ifdef __cplusplus
+}
+#endif
+

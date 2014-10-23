@@ -27,6 +27,7 @@
 #import "LSFPresetModelContainer.h"
 #import "LSFPresetModel.h"
 #import "LSFUtilityFunctions.h"
+#import "LSFEnums.h"
 
 @interface LSFGroupsInfoTableViewController ()
 
@@ -34,13 +35,22 @@
 @property (nonatomic) BOOL isDimmable;
 @property (nonatomic) BOOL hasColor;
 @property (nonatomic) BOOL hasVariableColorTemp;
+@property (nonatomic) long long timestamp;
+@property (nonatomic) unsigned int delay;
 
+-(void)controllerNotificationReceived: (NSNotification *)notification;
+-(void)groupNotificationReceived: (NSNotification *)notification;
+-(void)reloadGroupWithID: (NSString *)groupID;
+-(void)deleteGroupsWithIDs: (NSArray *)groupIDs andNames: (NSArray *)groupNames;
+-(void)presetNotificationReceived: (NSNotification *)notification;
 -(void)brightnessSliderTapped: (UIGestureRecognizer *)gr;
 -(void)hueSliderTapped: (UIGestureRecognizer *)gr;
 -(void)saturationSliderTapped: (UIGestureRecognizer *)gr;
 -(void)colorTempSliderTapped: (UIGestureRecognizer *)gr;
 -(BOOL)checkIfLampState: (LSFLampState *) state matchesPreset: (LSFPresetModel *)data;
 -(void)showAlertDialog;
+-(void)setTimestampAndDelay;
+-(void)postDelayedGroupRefresh;
 
 @end
 
@@ -62,32 +72,52 @@
 @synthesize isDimmable = _isDimmable;
 @synthesize hasColor = _hasColor;
 @synthesize hasVariableColorTemp = _hasVariableColorTemp;
+@synthesize timestamp = _timestamp;
+@synthesize delay = _delay;
 
-- (void)viewDidLoad
+-(void)viewDidLoad
 {
     [super viewDidLoad];
-    // Do any additional setup after loading the view from its nib.
     
     UITapGestureRecognizer *brightnessTGR = [[UITapGestureRecognizer alloc] initWithTarget: self action: @selector(brightnessSliderTapped:)];
     [self.brightnessSlider addGestureRecognizer: brightnessTGR];
+    [self.brightnessSlider setThumbImage: [UIImage imageNamed: @"power_slider_normal_icon.png"] forState: UIControlStateNormal];
+    [self.brightnessSlider setThumbImage: [UIImage imageNamed: @"power_slider_pressed_icon.png"] forState: UIControlStateHighlighted];
+
     UITapGestureRecognizer *hueTGR = [[UITapGestureRecognizer alloc] initWithTarget: self action: @selector(hueSliderTapped:)];
     [self.hueSlider addGestureRecognizer: hueTGR];
+    [self.hueSlider setThumbImage: [UIImage imageNamed: @"power_slider_normal_icon.png"] forState: UIControlStateNormal];
+    [self.hueSlider setThumbImage: [UIImage imageNamed: @"power_slider_pressed_icon.png"] forState: UIControlStateHighlighted];
+
     UITapGestureRecognizer *saturationTGR = [[UITapGestureRecognizer alloc] initWithTarget: self action: @selector(saturationSliderTapped:)];
     [self.saturationSlider addGestureRecognizer: saturationTGR];
+    [self.saturationSlider setThumbImage: [UIImage imageNamed: @"power_slider_normal_icon.png"] forState: UIControlStateNormal];
+    [self.saturationSlider setThumbImage: [UIImage imageNamed: @"power_slider_pressed_icon.png"] forState: UIControlStateHighlighted];
+
     UITapGestureRecognizer *colorTempTGR = [[UITapGestureRecognizer alloc] initWithTarget: self action: @selector(colorTempSliderTapped:)];
     [self.colorTempSlider addGestureRecognizer: colorTempTGR];
+    [self.colorTempSlider setThumbImage: [UIImage imageNamed: @"power_slider_normal_icon.png"] forState: UIControlStateNormal];
+    [self.colorTempSlider setThumbImage: [UIImage imageNamed: @"power_slider_pressed_icon.png"] forState: UIControlStateHighlighted];
+
+    self.colorIndicatorImage.layer.rasterizationScale = [UIScreen mainScreen].scale;
+    self.colorIndicatorImage.layer.shouldRasterize = YES;
 }
 
 -(void)viewWillAppear: (BOOL)animated
 {
     [super viewWillAppear: animated];
 
-    //Set groups callback delegate
-    dispatch_async(([LSFDispatchQueue getDispatchQueue]).queue, ^{
-        LSFAllJoynManager *ajManager = [LSFAllJoynManager getAllJoynManager];
-        [ajManager.slgmc setReloadGroupsDelegate: self];
-        [ajManager.spmc setReloadPresetsDelegate: self];
-    });
+    LSFAllJoynManager *ajManager = [LSFAllJoynManager getAllJoynManager];
+
+    if (!ajManager.isConnectedToController)
+    {
+        [self.navigationController popToRootViewControllerAnimated: YES];
+    }
+
+    //Set notification handler
+    [[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(controllerNotificationReceived:) name: @"ControllerNotification" object: nil];
+    [[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(groupNotificationReceived:) name: @"GroupNotification" object: nil];
+    [[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(presetNotificationReceived:) name: @"PresetNotification" object: nil];
     
     //Reload the table
     [self reloadGroupWithID: self.groupID];
@@ -97,170 +127,295 @@
 {
     [super viewWillDisappear: animated];
 
-    //Clear groups callback delegate
-    dispatch_async(([LSFDispatchQueue getDispatchQueue]).queue, ^{
-        LSFAllJoynManager *ajManager = [LSFAllJoynManager getAllJoynManager];
-        [ajManager.slgmc setReloadGroupsDelegate: nil];
-        [ajManager.spmc setReloadPresetsDelegate: nil];
-    });
+    //Clear notification handler
+    [[NSNotificationCenter defaultCenter] removeObserver: self];
 }
 
-- (void)didReceiveMemoryWarning
+-(void)didReceiveMemoryWarning
 {
     [super didReceiveMemoryWarning];
 }
 
 /*
- * LSFReloadGroupsCallbackDelegate Implementation
+ * ControllerNotification Handler
  */
+-(void)controllerNotificationReceived: (NSNotification *)notification
+{
+    NSDictionary *userInfo = notification.userInfo;
+    NSNumber *controllerStatus = [userInfo valueForKey: @"status"];
+
+    if (controllerStatus.intValue == Disconnected)
+    {
+        [self.navigationController popToRootViewControllerAnimated: YES];
+    }
+}
+
+/*
+ * GroupNotification Handler
+ */
+-(void)groupNotificationReceived: (NSNotification *)notification
+{
+    NSString *groupID = [notification.userInfo valueForKey: @"groupID"];
+    NSNumber *callbackOp = [notification.userInfo valueForKey: @"operation"];
+    NSArray *groupIDs = [notification.userInfo valueForKey: @"groupIDs"];
+    NSArray *groupNames = [notification.userInfo valueForKey: @"groupNames"];
+
+    if ([self.groupID isEqualToString: groupID] || [groupIDs containsObject: self.groupID])
+    {
+        long long currentTmestamp = (long long)([[NSDate date] timeIntervalSince1970] * 1000);
+
+        if ((self.timestamp + self.delay) <= currentTmestamp)
+        {
+            NSLog(@"Current timestamp has exceeded delay. Allowing UI to update.");
+
+            switch (callbackOp.intValue)
+            {
+                case GroupNameUpdated:
+                case GroupStateUpdated:
+                    [self reloadGroupWithID: groupID];
+                    break;
+                case GroupDeleted:
+                    [self deleteGroupsWithIDs: groupIDs andNames: groupNames];
+                    break;
+                default:
+                    NSLog(@"Operation not found - Taking no action");
+                    break;
+            }
+        }
+        else
+        {
+            NSLog(@"Current timestamp has not exceeded delay. Not allowing UI to update.");
+        }
+    }
+}
+
 -(void)reloadGroupWithID: (NSString *)groupID
 {
-    if ([self.groupID isEqualToString: groupID])
+    LSFConstants *constants = [LSFConstants getConstants];
+
+    LSFGroupModelContainer *groupContainer = [LSFGroupModelContainer getGroupModelContainer];
+    NSMutableDictionary *groups = groupContainer.groupContainer;
+    self.groupModel = [groups valueForKey: self.groupID];
+
+    if (self.groupModel == nil)
     {
-        LSFGroupModelContainer *groupContainer = [LSFGroupModelContainer getGroupModelContainer];
-        NSMutableDictionary *groups = groupContainer.groupContainer;
-        self.groupModel = [groups valueForKey: self.groupID];
+        [self.navigationController popToRootViewControllerAnimated: NO];
+    }
 
-        self.nameLabel.text = self.groupModel.name;
-        self.powerSwitch.on = self.groupModel.state.onOff;
+    self.nameLabel.text = self.groupModel.name;
+    self.powerSwitch.on = self.groupModel.state.onOff;
 
-        if (self.groupModel.capability.dimmable >= SOME)
+    if (self.groupModel.state)
+    {
+        if (self.groupModel.uniformity.power)
         {
-            if (self.groupModel.state.onOff && self.groupModel.state.brightness == 0)
-            {
-                dispatch_async(([LSFDispatchQueue getDispatchQueue]).queue, ^{
-                    LSFLampGroupManager *lampGroupManager = ([LSFAllJoynManager getAllJoynManager]).lsfLampGroupManager;
-                    [lampGroupManager transitionLampGroupID: self.groupModel.theID onOffField: NO];
-                });
-            }
-
-            self.brightnessSlider.enabled = YES;
-            self.brightnessSlider.value = self.groupModel.state.brightness;
-            self.brightnessLabel.text = [NSString stringWithFormat: @"%i%%", self.groupModel.state.brightness];
-            self.brightnessSliderButton.enabled = NO;
-            self.isDimmable = YES;
-
-            if (self.groupModel.capability.dimmable == SOME)
-            {
-                self.brightnessAsterisk.hidden = NO;
-                [self performSelectorOnMainThread:@selector(updateNotSupportedLabel) withObject:nil waitUntilDone:NO];
-            }
+            self.powerSwitch.onTintColor = constants.uniformPowerGreen;
         }
         else
         {
-            self.brightnessSlider.value = 0;
-            self.brightnessSlider.enabled = NO;
-            self.brightnessLabel.text = @"N/A";
-            self.brightnessSliderButton.enabled = YES;
-            self.isDimmable = NO;
-            self.brightnessAsterisk.hidden = YES;
+            self.powerSwitch.onTintColor = constants.midstatePowerOrange;
+        }
+    }
+
+    if (self.groupModel.capability.dimmable >= SOME)
+    {
+        if (self.groupModel.state.onOff && self.groupModel.state.brightness == 0)
+        {
+            dispatch_async(([LSFDispatchQueue getDispatchQueue]).queue, ^{
+                LSFLampGroupManager *lampGroupManager = ([LSFAllJoynManager getAllJoynManager]).lsfLampGroupManager;
+                [lampGroupManager transitionLampGroupID: self.groupModel.theID onOffField: NO];
+            });
         }
 
-        if (self.groupModel.capability.color >= SOME)
+        self.brightnessSlider.enabled = YES;
+        self.brightnessSlider.value = self.groupModel.state.brightness;
+        self.brightnessLabel.text = [NSString stringWithFormat: @"%i%%", self.groupModel.state.brightness];
+        self.brightnessSliderButton.enabled = NO;
+        self.isDimmable = YES;
+
+        if (self.groupModel.uniformity.brightness)
         {
-            if (self.groupModel.state.saturation == 0)
-            {
-                self.hueSlider.value = self.groupModel.state.hue;
-                self.hueSlider.enabled = NO;
-                self.hueLabel.text = @"N/A";
-                self.hueSliderButton.enabled = YES;
-            }
-            else
-            {
-                self.hueSlider.value = self.groupModel.state.hue;
-                self.hueSlider.enabled = YES;
-                self.hueLabel.text = [NSString stringWithFormat: @"%i°", self.groupModel.state.hue];
-                self.hueSliderButton.enabled = NO;
-            }
-
-            if (self.groupModel.capability.color == SOME)
-            {
-                self.hueAsterisk.hidden = NO;
-                self.saturationAsterisk.hidden = NO;
-                [self performSelectorOnMainThread:@selector(updateNotSupportedLabel) withObject:nil waitUntilDone:NO];
-            }
-
-            self.saturationSlider.enabled = YES;
-            self.saturationSlider.value = self.groupModel.state.saturation;
-            self.saturationLabel.text = [NSString stringWithFormat: @"%i%%", self.groupModel.state.saturation];
-            self.saturationSliderButton.enabled = NO;
-            self.hasColor = YES;
+            [self.brightnessSlider setThumbImage: [UIImage imageNamed: @"power_slider_normal_icon.png"] forState: UIControlStateNormal];
+            [self.brightnessSlider setThumbImage: [UIImage imageNamed: @"power_slider_pressed_icon.png"] forState: UIControlStateHighlighted];
         }
         else
         {
-            self.hueSlider.value = 0;
+            [self.brightnessSlider setThumbImage: [UIImage imageNamed: @"power_slider_midstate_icon.png"] forState: UIControlStateNormal];
+            [self.brightnessSlider setThumbImage: [UIImage imageNamed: @"power_slider_pressed_icon.png"] forState: UIControlStateHighlighted];
+        }
+
+        if (self.groupModel.capability.dimmable == SOME)
+        {
+            self.brightnessAsterisk.hidden = NO;
+            [self performSelectorOnMainThread:@selector(updateNotSupportedLabel) withObject:nil waitUntilDone:NO];
+        }
+    }
+    else
+    {
+        self.brightnessSlider.value = 0;
+        self.brightnessSlider.enabled = NO;
+        self.brightnessLabel.text = @"N/A";
+        self.brightnessSliderButton.enabled = YES;
+        self.isDimmable = NO;
+        self.brightnessAsterisk.hidden = YES;
+    }
+
+    if (self.groupModel.capability.color >= SOME)
+    {
+        if (self.groupModel.state.saturation == 0)
+        {
+            self.hueSlider.value = self.groupModel.state.hue;
             self.hueSlider.enabled = NO;
             self.hueLabel.text = @"N/A";
             self.hueSliderButton.enabled = YES;
-
-            self.saturationSlider.value = 0;
-            self.saturationSlider.enabled = NO;
-            self.saturationLabel.text = @"N/A";
-            self.saturationSliderButton.enabled = YES;
-
-            self.hasColor = NO;
-            self.hueAsterisk.hidden = YES;
-            self.saturationAsterisk.hidden = YES;
-        }
-
-        if (self.groupModel.capability.temp >= SOME)
-        {
-            if (self.groupModel.state.saturation == 100)
-            {
-                self.colorTempSlider.value = self.groupModel.state.colorTemp;
-                self.colorTempSlider.enabled = NO;
-                self.colorTempLabel.text = @"N/A";
-                self.colorTempSliderButton.enabled = YES;
-            }
-            else
-            {
-                self.colorTempSlider.value = self.groupModel.state.colorTemp;
-                self.colorTempSlider.enabled = YES;
-                self.colorTempLabel.text = [NSString stringWithFormat: @"%iK", self.groupModel.state.colorTemp];
-                self.colorTempSliderButton.enabled = NO;
-            }
-
-            if (self.groupModel.capability.temp == SOME)
-            {
-                self.colorTempAsterisk.hidden = NO;
-                [self performSelectorOnMainThread:@selector(updateNotSupportedLabel) withObject:nil waitUntilDone:NO];
-            }
-
-            self.hasVariableColorTemp = YES;
         }
         else
         {
-            self.colorTempSlider.value = 0;
+            self.hueSlider.value = self.groupModel.state.hue;
+            self.hueSlider.enabled = YES;
+            self.hueLabel.text = [NSString stringWithFormat: @"%i°", self.groupModel.state.hue];
+            self.hueSliderButton.enabled = NO;
+        }
+
+        if (self.groupModel.capability.color == SOME)
+        {
+            self.hueAsterisk.hidden = NO;
+            self.saturationAsterisk.hidden = NO;
+            [self performSelectorOnMainThread:@selector(updateNotSupportedLabel) withObject:nil waitUntilDone:NO];
+        }
+
+        self.saturationSlider.enabled = YES;
+        self.saturationSlider.value = self.groupModel.state.saturation;
+        self.saturationLabel.text = [NSString stringWithFormat: @"%i%%", self.groupModel.state.saturation];
+        self.saturationSliderButton.enabled = NO;
+        self.hasColor = YES;
+
+        if (self.groupModel.uniformity.hue)
+        {
+            [self.hueSlider setThumbImage: [UIImage imageNamed: @"power_slider_normal_icon.png"] forState: UIControlStateNormal];
+            [self.hueSlider setThumbImage: [UIImage imageNamed: @"power_slider_pressed_icon.png"] forState: UIControlStateHighlighted];
+        }
+        else
+        {
+            [self.hueSlider setThumbImage: [UIImage imageNamed: @"power_slider_midstate_icon.png"] forState: UIControlStateNormal];
+            [self.hueSlider setThumbImage: [UIImage imageNamed: @"power_slider_pressed_icon.png"] forState: UIControlStateHighlighted];
+        }
+
+        if (self.groupModel.uniformity.saturation)
+        {
+            [self.saturationSlider setThumbImage: [UIImage imageNamed: @"power_slider_normal_icon.png"] forState: UIControlStateNormal];
+            [self.saturationSlider setThumbImage: [UIImage imageNamed: @"power_slider_pressed_icon.png"] forState: UIControlStateHighlighted];
+        }
+        else
+        {
+            [self.saturationSlider setThumbImage: [UIImage imageNamed: @"power_slider_midstate_icon.png"] forState: UIControlStateNormal];
+            [self.saturationSlider setThumbImage: [UIImage imageNamed: @"power_slider_pressed_icon.png"] forState: UIControlStateHighlighted];
+        }
+    }
+    else
+    {
+        self.hueSlider.value = 0;
+        self.hueSlider.enabled = NO;
+        self.hueLabel.text = @"N/A";
+        self.hueSliderButton.enabled = YES;
+
+        self.saturationSlider.value = 0;
+        self.saturationSlider.enabled = NO;
+        self.saturationLabel.text = @"N/A";
+        self.saturationSliderButton.enabled = YES;
+
+        self.hasColor = NO;
+        self.hueAsterisk.hidden = YES;
+        self.saturationAsterisk.hidden = YES;
+    }
+
+    if (self.groupModel.capability.temp >= SOME)
+    {
+        if (self.groupModel.state.saturation == 100)
+        {
+            self.colorTempSlider.value = self.groupModel.state.colorTemp;
             self.colorTempSlider.enabled = NO;
             self.colorTempLabel.text = @"N/A";
             self.colorTempSliderButton.enabled = YES;
-            self.hasVariableColorTemp = NO;
-            self.colorTempAsterisk.hidden = YES;
         }
+        else
+        {
+            self.colorTempSlider.value = self.groupModel.state.colorTemp;
+            self.colorTempSlider.enabled = YES;
+            self.colorTempLabel.text = [NSString stringWithFormat: @"%iK", self.groupModel.state.colorTemp];
+            self.colorTempSliderButton.enabled = NO;
+        }
+
+        if (self.groupModel.uniformity.colorTemp)
+        {
+            [self.colorTempSlider setThumbImage: [UIImage imageNamed: @"power_slider_normal_icon.png"] forState: UIControlStateNormal];
+            [self.colorTempSlider setThumbImage: [UIImage imageNamed: @"power_slider_pressed_icon.png"] forState: UIControlStateHighlighted];
+        }
+        else
+        {
+            [self.colorTempSlider setThumbImage: [UIImage imageNamed: @"power_slider_midstate_icon.png"] forState: UIControlStateNormal];
+            [self.colorTempSlider setThumbImage: [UIImage imageNamed: @"power_slider_pressed_icon.png"] forState: UIControlStateHighlighted];
+        }
+
+        if (self.groupModel.capability.temp == SOME)
+        {
+            self.colorTempAsterisk.hidden = NO;
+            [self performSelectorOnMainThread:@selector(updateNotSupportedLabel) withObject:nil waitUntilDone:NO];
+        }
+
+        self.hasVariableColorTemp = YES;
+    }
+    else
+    {
+        self.colorTempSlider.value = 0;
+        self.colorTempSlider.enabled = NO;
+        self.colorTempLabel.text = @"N/A";
+        self.colorTempSliderButton.enabled = YES;
+        self.hasVariableColorTemp = NO;
+        self.colorTempAsterisk.hidden = YES;
+    }
+
+    if (!self.isDimmable && !self.hasColor && !self.hasVariableColorTemp)
+    {
+        [self.presetButton setTitle: @"Save New Preset" forState: UIControlStateNormal];
+        self.presetButton.enabled = NO;
+    }
+    else
+    {
+        self.presetButton.enabled = YES;
 
         LSFPresetModelContainer *presetContainer = [LSFPresetModelContainer getPresetModelContainer];
         NSArray *presets = [presetContainer.presetContainer allValues];
 
+        NSMutableArray *presetsArray = [[NSMutableArray alloc] init];
         BOOL presetMatched = NO;
         for (LSFPresetModel *data in presets)
         {
             BOOL matchesPreset = [self checkIfLampState: self.groupModel.state matchesPreset: data];
-            
+
             if (matchesPreset)
             {
-                [self.presetButton setTitle: data.name forState: UIControlStateNormal];
+                [presetsArray addObject: data.name];
                 presetMatched = YES;
             }
         }
-        
-        if (!presetMatched)
+
+        if (presetMatched)
+        {
+            NSArray *sortedArray = [presetsArray sortedArrayUsingSelector: @selector(localizedCaseInsensitiveCompare:)];
+            NSMutableString *presetsMatched = [[NSMutableString alloc] init];
+
+            for (NSString *presetName in sortedArray)
+            {
+                [presetsMatched appendString: [NSString stringWithFormat:@"%@, ", presetName]];
+            }
+
+            [presetsMatched deleteCharactersInRange: NSMakeRange(presetsMatched.length - 2, 2)];
+            [self.presetButton setTitle: presetsMatched forState: UIControlStateNormal];
+        }
+        else
         {
             [self.presetButton setTitle: @"Save New Preset" forState: UIControlStateNormal];
-        }
-        
-        if (!self.isDimmable && !self.hasColor && !self.hasVariableColorTemp)
-        {
-            self.presetButton.enabled = NO;
         }
     }
 
@@ -269,27 +424,22 @@
 
 -(void)deleteGroupsWithIDs: (NSArray *)groupIDs andNames: (NSArray *)groupNames
 {
-    if ([groupIDs containsObject: self.groupID])
-    {
-        int index = [groupIDs indexOfObject: self.groupID];
+    int index = [groupIDs indexOfObject: self.groupID];
 
-        [self.navigationController popToRootViewControllerAnimated: YES];
+    UIAlertView *alert = [[UIAlertView alloc] initWithTitle: @"Group Not Found"
+                                                    message: [NSString stringWithFormat: @"The group \"%@\" no longer exists.", [groupNames objectAtIndex: index]]
+                                                   delegate: nil
+                                          cancelButtonTitle: @"OK"
+                                          otherButtonTitles: nil];
+    [alert show];
 
-        dispatch_async(dispatch_get_main_queue(), ^{
-            UIAlertView *alert = [[UIAlertView alloc] initWithTitle: @"Group Not Found"
-                                                            message: [NSString stringWithFormat: @"The group \"%@\" no longer exists.", [groupNames objectAtIndex: index]]
-                                                           delegate: nil
-                                                  cancelButtonTitle: @"OK"
-                                                  otherButtonTitles: nil];
-            [alert show];
-        });
-    }
+    [self.navigationController popToRootViewControllerAnimated: YES];
 }
 
 /*
- * LSFReloadPresetsCallbackDelegate Implementation
+ * PresetNotification Handler
  */
--(void)reloadPresets
+-(void)presetNotificationReceived: (NSNotification *)notification
 {
     //Reload the table
     [self reloadGroupWithID: self.groupID];
@@ -525,6 +675,9 @@
     CGFloat percentage = pt.x / s.bounds.size.width;
     CGFloat delta = percentage * (s.maximumValue - s.minimumValue);
     CGFloat value = round(s.minimumValue + delta);
+
+    //Update timestamp and delay
+    [self setTimestampAndDelay];
     
     dispatch_async(([LSFDispatchQueue getDispatchQueue]).queue, ^{
         LSFConstants *constants = [LSFConstants getConstants];
@@ -536,6 +689,10 @@
         }
         [lampGroupManager transitionLampGroupID: self.groupModel.theID brightnessField: scaledBrightness];
     });
+
+    //Post delayed task to refresh group
+    [self postDelayedGroupRefresh];
+
 }
 
 -(void)hueSliderTapped: (UIGestureRecognizer *)gr
@@ -552,6 +709,9 @@
     CGFloat percentage = pt.x / s.bounds.size.width;
     CGFloat delta = percentage * (s.maximumValue - s.minimumValue);
     CGFloat value = round(s.minimumValue + delta);
+
+    //Update timestamp and delay
+    [self setTimestampAndDelay];
     
     dispatch_async(([LSFDispatchQueue getDispatchQueue]).queue, ^{
         LSFConstants *constants = [LSFConstants getConstants];
@@ -559,6 +719,9 @@
         unsigned int scaledHue = [constants scaleLampStateValue: (uint32_t)value withMax: 360];
         [lampGroupManager transitionLampGroupID: self.groupModel.theID hueField: scaledHue];
     });
+
+    //Post delayed task to refresh group
+    [self postDelayedGroupRefresh];
 }
 
 -(void)saturationSliderTapped: (UIGestureRecognizer *)gr
@@ -575,6 +738,9 @@
     CGFloat percentage = pt.x / s.bounds.size.width;
     CGFloat delta = percentage * (s.maximumValue - s.minimumValue);
     CGFloat value = round(s.minimumValue + delta);
+
+    //Update timestamp and delay
+    [self setTimestampAndDelay];
     
     dispatch_async(([LSFDispatchQueue getDispatchQueue]).queue, ^{
         LSFConstants *constants = [LSFConstants getConstants];
@@ -582,6 +748,9 @@
         unsigned int scaledSaturation = [constants scaleLampStateValue: (uint32_t)value withMax: 100];
         [lampGroupManager transitionLampGroupID: self.groupModel.theID saturationField: scaledSaturation];
     });
+
+    //Post delayed task to refresh group
+    [self postDelayedGroupRefresh];
 }
 
 -(void)colorTempSliderTapped: (UIGestureRecognizer *)gr
@@ -598,6 +767,9 @@
     CGFloat percentage = pt.x / s.bounds.size.width;
     CGFloat delta = percentage * (s.maximumValue - s.minimumValue);
     CGFloat value = round(s.minimumValue + delta);
+
+    //Update timestamp and delay
+    [self setTimestampAndDelay];
     
     dispatch_async(([LSFDispatchQueue getDispatchQueue]).queue, ^{
         LSFConstants *constants = [LSFConstants getConstants];
@@ -605,6 +777,9 @@
         unsigned int scaledColorTemp = [constants scaleColorTemp: (uint32_t)value];
         [lampGroupManager transitionLampGroupID: self.groupModel.theID colorTempField: scaledColorTemp];
     });
+
+    //Post delayed task to refresh group
+    [self postDelayedGroupRefresh];
 }
 
 -(BOOL)checkIfLampState: (LSFLampState *) state matchesPreset: (LSFPresetModel *)data
@@ -637,6 +812,9 @@
 
 -(void)updateBrightnessValue:(id)sender
 {
+    //Update timestamp and delay
+    [self setTimestampAndDelay];
+
     LSFConstants *constants = [LSFConstants getConstants];
 
     dispatch_async(([LSFDispatchQueue getDispatchQueue]).queue, ^{
@@ -648,10 +826,16 @@
         }
         [lampGroupManager transitionLampGroupID: self.groupModel.theID brightnessField: scaledBrightness];
     });
+
+    //Post delayed task to refresh group
+    [self postDelayedGroupRefresh];
 }
 
 -(void)updateHueValue:(id)sender
 {
+    //Update timestamp and delay
+    [self setTimestampAndDelay];
+
     LSFConstants *constants = [LSFConstants getConstants];
 
     dispatch_async(([LSFDispatchQueue getDispatchQueue]).queue, ^{
@@ -659,10 +843,16 @@
         unsigned int scaledHue = [constants scaleLampStateValue: (uint32_t)((UISlider *)sender).value withMax: 360];
         [lampGroupManager transitionLampGroupID: self.groupModel.theID hueField: scaledHue];
     });
+
+    //Post delayed task to refresh group
+    [self postDelayedGroupRefresh];
 }
 
 -(void)updateSaturationValue:(id)sender
 {
+    //Update timestamp and delay
+    [self setTimestampAndDelay];
+
     LSFConstants *constants = [LSFConstants getConstants];
 
     dispatch_async(([LSFDispatchQueue getDispatchQueue]).queue, ^{
@@ -670,10 +860,16 @@
         unsigned int scaledSaturation = [constants scaleLampStateValue: (uint32_t)((UISlider *)sender).value withMax: 100];
         [lampGroupManager transitionLampGroupID: self.groupModel.theID saturationField: scaledSaturation];
     });
+
+    //Post delayed task to refresh group
+    [self postDelayedGroupRefresh];
 }
 
 -(void)updateColorValue:(id)sender
 {
+    //Update timestamp and delay
+    [self setTimestampAndDelay];
+
     LSFConstants *constants = [LSFConstants getConstants];
 
     dispatch_async(([LSFDispatchQueue getDispatchQueue]).queue, ^{
@@ -681,11 +877,32 @@
         unsigned int scaledColorTemp = [constants scaleColorTemp: (uint32_t)((UISlider *)sender).value];
         [lampGroupManager transitionLampGroupID: self.groupModel.theID colorTempField: scaledColorTemp];
     });
+
+    //Post delayed task to refresh group
+    [self postDelayedGroupRefresh];
 }
 
 -(void)updateNotSupportedLabel
 {
     [self.tableView footerViewForSection:1].textLabel.text = @"* Not supported by some lamps in this group";
+}
+
+-(void)setTimestampAndDelay
+{
+    LSFConstants *constants = [LSFConstants getConstants];
+
+    self.timestamp = (long long)([[NSDate date] timeIntervalSince1970] * 1000);
+
+    unsigned int proposedDelay = (constants.UI_DELAY + (self.groupModel.lamps.count * 50));
+    self.delay = proposedDelay > 1000 ? 1000 : proposedDelay;
+}
+
+-(void)postDelayedGroupRefresh
+{
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(((double)self.delay / 1000.0) * NSEC_PER_SEC)), ([LSFDispatchQueue getDispatchQueue]).queue, ^{
+        LSFAllJoynManager *ajManager = [LSFAllJoynManager getAllJoynManager];
+        [ajManager.slgmc refreshAllLampGroupIDs];
+    });
 }
 
 @end

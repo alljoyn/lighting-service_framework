@@ -22,14 +22,20 @@
 #import "LSFGroupModel.h"
 #import "LSFSceneElementDataModel.h"
 #import "LSFNoEffectTableViewController.h"
+#import "LSFEnums.h"
 
 @interface LSFScenesMembersTableViewController ()
 
 @property (nonatomic, strong) LSFSceneElementDataModel *sceneElement;
 @property (nonatomic, strong) UIBarButtonItem *cancelButton;
 
+-(void)controllerNotificationReceived: (NSNotification *)notification;
+-(void)sceneNotificationReceived: (NSNotification *)notification;
+-(void)deleteScenesWithIDs: (NSArray *)sceneIDs andNames: (NSArray *)sceneNames;
 -(void)cancelButtonPressed;
 -(BOOL)checkIfEffectsAreSupported;
+-(NSArray *)sortLampsGroupsData: (NSArray *)data;
+
 
 @end
 
@@ -49,6 +55,10 @@
 {
     [super viewWillAppear: animated];
 
+    //Set notification handler
+    [[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(controllerNotificationReceived:) name: @"ControllerNotification" object: nil];
+    [[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(sceneNotificationReceived:) name: @"SceneNotification" object: nil];
+
     if (self.usesCancel)
     {
         [self.navigationItem setHidesBackButton:YES];
@@ -62,9 +72,72 @@
     }
 }
 
+-(void)viewWillDisappear: (BOOL)animated
+{
+    [super viewWillDisappear: animated];
+
+    //Clear notification handler
+    [[NSNotificationCenter defaultCenter] removeObserver: self];
+}
+
 -(void)didReceiveMemoryWarning
 {
     [super didReceiveMemoryWarning];
+}
+
+/*
+ * ControllerNotification Handler
+ */
+-(void)controllerNotificationReceived: (NSNotification *)notification
+{
+    NSDictionary *userInfo = notification.userInfo;
+    NSNumber *controllerStatus = [userInfo valueForKey: @"status"];
+
+    if (controllerStatus.intValue == Disconnected)
+    {
+        [self dismissViewControllerAnimated: NO completion: nil];
+    }
+}
+
+/*
+ * SceneNotification Handler
+ */
+-(void)sceneNotificationReceived: (NSNotification *)notification
+{
+    NSNumber *callbackOp = [notification.userInfo valueForKey: @"operation"];
+    NSArray *sceneIDs = [notification.userInfo valueForKey: @"sceneIDs"];
+    NSArray *sceneNames = [notification.userInfo valueForKey: @"sceneNames"];
+
+    if ([sceneIDs containsObject: self.sceneModel.theID])
+    {
+        switch (callbackOp.intValue)
+        {
+            case SceneDeleted:
+                [self deleteScenesWithIDs: sceneIDs andNames: sceneNames];
+                break;
+            default:
+                break;
+        }
+    }
+}
+
+-(void)deleteScenesWithIDs: (NSArray *)sceneIDs andNames: (NSArray *)sceneNames
+{
+    if ([sceneIDs containsObject: self.sceneModel.theID])
+    {
+        int index = [sceneIDs indexOfObject: self.sceneModel.theID];
+
+        [self dismissViewControllerAnimated: NO completion: nil];
+
+        dispatch_async(dispatch_get_main_queue(), ^{
+            UIAlertView *alert = [[UIAlertView alloc] initWithTitle: @"Scene Not Found"
+                                                            message: [NSString stringWithFormat: @"The scene \"%@\" no longer exists.", [sceneNames objectAtIndex: index]]
+                                                           delegate: nil
+                                                  cancelButtonTitle: @"OK"
+                                                  otherButtonTitles: nil];
+            [alert show];
+        });
+    }
 }
 
 /*
@@ -93,7 +166,7 @@
 
 -(NSString *)tableView: (UITableView *)tableView titleForHeaderInSection: (NSInteger)section
 {
-    return @"Select one or more lamps or groups to be in this scene";
+    return @"Select one or more lamps or groups to be in this scene element";
 }
 
 /*
@@ -118,8 +191,8 @@
     NSMutableDictionary *lamps = lampsContainer.lampContainer;
     NSMutableArray *lampsArray = [NSMutableArray arrayWithArray: [lamps allValues]];
 
-    self.dataArray = [NSMutableArray arrayWithArray: groupsArray];
-    [self.dataArray addObjectsFromArray: lampsArray];
+    self.dataArray = [NSMutableArray arrayWithArray: [self sortLampsGroupsData: groupsArray]];
+    [self.dataArray addObjectsFromArray: [self sortLampsGroupsData: lampsArray]];
 }
 
 -(void)processSelectedRows
@@ -160,17 +233,26 @@
  */
 -(IBAction)nextButtonPressed: (UIBarButtonItem *)sender
 {
-    NSLog(@"LSFScenesMembersTableViewController - nextButtonPressed() executing");
+    if ([self.selectedRows count] == 0)
+    {
+        UIAlertView *alert = [[UIAlertView alloc] initWithTitle: @"Error"
+                                                        message: @"You must select at least one lamp or group to create a scene element."
+                                                       delegate: nil
+                                              cancelButtonTitle: @"OK"
+                                              otherButtonTitles: nil];
+        [alert show];
+        return;
+    }
 
     [self processSelectedRows];
 
     if ([self checkIfEffectsAreSupported])
     {
-        [self performSegueWithIdentifier: @"ChooseSceneEffect" sender: nil];
+        [self performSegueWithIdentifier: @"ChooseSceneEffect" sender: self];
     }
     else
     {
-        [self performSegueWithIdentifier: @"JumpToNoEffect" sender: nil];
+        [self performSegueWithIdentifier: @"JumpToNoEffect" sender: self];
     }
 }
 
@@ -221,26 +303,19 @@
     return NO;
 }
 
+-(NSArray *)sortLampsGroupsData: (NSArray *)data
+{
+    NSSortDescriptor *sortDesc = [NSSortDescriptor sortDescriptorWithKey:@"name" ascending:YES comparator:^NSComparisonResult(id obj1, id obj2) {
+        return [(NSString *)obj1 compare:(NSString *)obj2 options:NSCaseInsensitiveSearch];
+    }];
+
+
+    return [data sortedArrayUsingDescriptors:[NSArray arrayWithObject:sortDesc]];
+}
+
 /*
  * Segue functions
  */
--(BOOL)shouldPerformSegueWithIdentifier: (NSString *)identifier sender: (id)sender
-{
-    if ([self.selectedRows count] == 0)
-    {
-        UIAlertView *alert = [[UIAlertView alloc] initWithTitle: @"Error"
-                                                        message: @"You must select at least one lamp or group to create a scene element."
-                                                       delegate: nil
-                                              cancelButtonTitle: @"OK"
-                                              otherButtonTitles: nil];
-        [alert show];
-
-        return NO;
-    }
-
-    return YES;
-}
-
 -(void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender
 {
     if ([segue.identifier isEqualToString: @"ChooseSceneEffect"])

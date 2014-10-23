@@ -15,9 +15,8 @@
  ******************************************************************************/
 
 #import <UIKit/UIKit.h>
-#import "LSFReloadGroupsCallbackDelegate.h"
 #import "LSFRootTableViewController.h"
 
-@interface LSFGroupsTableViewController : LSFRootTableViewController <UITableViewDelegate, UITableViewDataSource, LSFReloadGroupsCallbackDelegate>
+@interface LSFGroupsTableViewController : LSFRootTableViewController <UITableViewDelegate, UITableViewDataSource>
 
 @end

@@ -16,16 +16,29 @@
 
 #import "LSFAppDelegate.h"
 #import "LSFLampModelContainer.h"
+#import "LSFGroupModelContainer.h"
+#import "LSFPresetModelContainer.h"
+#import "LSFMasterSceneModelContainer.h"
+#import "LSFSceneModelContainer.h"
 #import "LSFDispatchQueue.h"
 #import "LSFConstants.h"
+#import "LSFWifiMonitor.h"
+#import "LSFTabManager.h"
+#import "LSFAllJoynManager.h"
 
 @implementation LSFAppDelegate
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
+    [LSFAllJoynManager getAllJoynManager];
     [LSFLampModelContainer getLampModelContainer];
+    [LSFGroupModelContainer getGroupModelContainer];
+    [LSFPresetModelContainer getPresetModelContainer];
+    [LSFMasterSceneModelContainer getMasterSceneModelContainer];
+    [LSFSceneModelContainer getSceneModelContainer];
     [LSFDispatchQueue getDispatchQueue];
     [LSFConstants getConstants];
+    [LSFWifiMonitor getWifiMonitor];
     
     return YES;
 }

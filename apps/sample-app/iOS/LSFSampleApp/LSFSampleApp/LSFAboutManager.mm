@@ -53,33 +53,81 @@
     
     if (self)
     {
-        LSFConstants *constants = [LSFConstants getConstants];
-        
         self.bus = bus;
         [self.bus enableConcurrentCallbacks];
         [self.bus addMatchRule: @"sessionless='t',type='error'"];
-        
-        const char* lampInterfaces[] = { [constants.lampStateInterfaceName UTF8String], [constants.lampDetailsInterfaceName UTF8String], [constants.lampParametersInterfaceName UTF8String],
-            [constants.lampServiceInterfaceName UTF8String]};
-
-        const char* controllerInterfaces[] =
-        {
-            [constants.controllerServiceInterfaceName UTF8String],
-            [constants.controllerServiceLampInterfaceName UTF8String],
-            [constants.controllerServiceLampGroupInterfaceName UTF8String],
-            [constants.controllerServicePresetInterfaceName UTF8String],
-            [constants.controllerServiceSceneInterfaceName UTF8String],
-            [constants.controllerServiceMasterSceneInterfaceName UTF8String],
-            [constants.configServiceInterfaceName UTF8String],
-            [constants.aboutInterfaceName UTF8String]
-        };
-        
-        self.announcementReceiver = [[AJNAnnouncementReceiver alloc] initWithAnnouncementListener: self andBus: self.bus];
-        [self.announcementReceiver registerAnnouncementReceiverForInterfaces: lampInterfaces withNumberOfInterfaces: 4];
-        [self.announcementReceiver registerAnnouncementReceiverForInterfaces: controllerInterfaces withNumberOfInterfaces: 8];
     }
     
     return self;
+}
+
+-(void)registerAnnouncementHandler
+{
+    NSLog(@"LSFAboutManager - registerAnnouncementHandler() executing");
+
+    LSFConstants *constants = [LSFConstants getConstants];
+
+    const char* lampInterfaces[] = { [constants.lampStateInterfaceName UTF8String], [constants.lampDetailsInterfaceName UTF8String], [constants.lampParametersInterfaceName UTF8String],
+        [constants.lampServiceInterfaceName UTF8String] };
+
+    const char* controllerInterfaces[] =
+    {
+        [constants.controllerServiceInterfaceName UTF8String],
+        [constants.controllerServiceLampInterfaceName UTF8String],
+        [constants.controllerServiceLampGroupInterfaceName UTF8String],
+        [constants.controllerServicePresetInterfaceName UTF8String],
+        [constants.controllerServiceSceneInterfaceName UTF8String],
+        [constants.controllerServiceMasterSceneInterfaceName UTF8String],
+        [constants.configServiceInterfaceName UTF8String],
+        [constants.aboutInterfaceName UTF8String]
+    };
+
+    self.announcementReceiver = [[AJNAnnouncementReceiver alloc] initWithAnnouncementListener: self andBus: self.bus];
+    QStatus status = [self.announcementReceiver registerAnnouncementReceiverForInterfaces: lampInterfaces withNumberOfInterfaces: 4];
+    if (status != ER_OK)
+    {
+        NSLog(@"Error registering announcement interfaces for lamps");
+    }
+
+    status = [self.announcementReceiver registerAnnouncementReceiverForInterfaces: controllerInterfaces withNumberOfInterfaces: 8];
+    if (status != ER_OK)
+    {
+        NSLog(@"Error registering announcement interfaces for controllers");
+    }
+}
+
+-(void)unregisterAnnouncementHandler
+{
+    NSLog(@"LSFAboutManager - unregisterAnnouncementHandler() executing");
+
+    LSFConstants *constants = [LSFConstants getConstants];
+
+    const char* lampInterfaces[] = { [constants.lampStateInterfaceName UTF8String], [constants.lampDetailsInterfaceName UTF8String], [constants.lampParametersInterfaceName UTF8String],
+        [constants.lampServiceInterfaceName UTF8String] };
+
+    const char* controllerInterfaces[] =
+    {
+        [constants.controllerServiceInterfaceName UTF8String],
+        [constants.controllerServiceLampInterfaceName UTF8String],
+        [constants.controllerServiceLampGroupInterfaceName UTF8String],
+        [constants.controllerServicePresetInterfaceName UTF8String],
+        [constants.controllerServiceSceneInterfaceName UTF8String],
+        [constants.controllerServiceMasterSceneInterfaceName UTF8String],
+        [constants.configServiceInterfaceName UTF8String],
+        [constants.aboutInterfaceName UTF8String]
+    };
+
+    QStatus status = [self.announcementReceiver unRegisterAnnouncementReceiverForInterfaces: lampInterfaces withNumberOfInterfaces: 4];
+    if (status != ER_OK)
+    {
+        NSLog(@"Error unregistering announcement interfaces for lamps");
+    }
+
+    status = [self.announcementReceiver unRegisterAnnouncementReceiverForInterfaces: controllerInterfaces withNumberOfInterfaces: 8];
+    if (status != ER_OK)
+    {
+        NSLog(@"Error unregistering announcement interfaces for lamps");
+    }
 }
 
 - (void)announceWithVersion: (uint16_t)version port: (uint16_t)port busName: (NSString *)busName objectDescriptions: (NSMutableDictionary *)objectDescs aboutData: (NSMutableDictionary **)aboutData;
@@ -244,11 +292,8 @@
     msgArg = [aboutData valueForKey: @"SupportUrl"];
     myAboutData.supportURL = [self extractNSStringFromAJNMessageArgument: msgArg];
 
-
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.2 * NSEC_PER_SEC)), ([LSFDispatchQueue getDispatchQueue]).queue, ^{
-        LSFAllJoynManager *ajManager = [LSFAllJoynManager getAllJoynManager];
-        [ajManager.slmc postUpdateLampID: myAboutData.deviceID withAboutData: myAboutData];
-    });
+    LSFAllJoynManager *ajManager = [LSFAllJoynManager getAllJoynManager];
+    [ajManager.slmc postUpdateLampID: myAboutData.deviceID withAboutData: myAboutData];
 }
 
 -(NSString *)extractNSStringFromAJNMessageArgument: (AJNMessageArgument *)msgArg

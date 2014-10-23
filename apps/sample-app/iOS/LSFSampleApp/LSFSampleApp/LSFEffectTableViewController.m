@@ -27,6 +27,7 @@
 @property (nonatomic) BOOL hasColor;
 @property (nonatomic) BOOL hasVariableColorTemp;
 
+-(void)presetNotificationReceived: (NSNotification *)notification;
 -(void)brightnessSliderTapped: (UIGestureRecognizer *)gr;
 -(void)hueSliderTapped: (UIGestureRecognizer *)gr;
 -(void)saturationSliderTapped: (UIGestureRecognizer *)gr;
@@ -59,21 +60,59 @@
 
     UITapGestureRecognizer *brightnessTGR = [[UITapGestureRecognizer alloc] initWithTarget: self action: @selector(brightnessSliderTapped:)];
     [self.brightnessSlider addGestureRecognizer: brightnessTGR];
+    [self.brightnessSlider setThumbImage: [UIImage imageNamed: @"power_slider_normal_icon.png"] forState: UIControlStateNormal];
+    [self.brightnessSlider setThumbImage: [UIImage imageNamed: @"power_slider_pressed_icon.png"] forState: UIControlStateHighlighted];
+
     UITapGestureRecognizer *hueTGR = [[UITapGestureRecognizer alloc] initWithTarget: self action: @selector(hueSliderTapped:)];
     [self.hueSlider addGestureRecognizer: hueTGR];
+    [self.hueSlider setThumbImage: [UIImage imageNamed: @"power_slider_normal_icon.png"] forState: UIControlStateNormal];
+    [self.hueSlider setThumbImage: [UIImage imageNamed: @"power_slider_pressed_icon.png"] forState: UIControlStateHighlighted];
+
     UITapGestureRecognizer *saturationTGR = [[UITapGestureRecognizer alloc] initWithTarget: self action: @selector(saturationSliderTapped:)];
     [self.saturationSlider addGestureRecognizer: saturationTGR];
+    [self.saturationSlider setThumbImage: [UIImage imageNamed: @"power_slider_normal_icon.png"] forState: UIControlStateNormal];
+    [self.saturationSlider setThumbImage: [UIImage imageNamed: @"power_slider_pressed_icon.png"] forState: UIControlStateHighlighted];
+
     UITapGestureRecognizer *colorTempTGR = [[UITapGestureRecognizer alloc] initWithTarget: self action: @selector(colorTempSliderTapped:)];
     [self.colorTempSlider addGestureRecognizer: colorTempTGR];
+    [self.colorTempSlider setThumbImage: [UIImage imageNamed: @"power_slider_normal_icon.png"] forState: UIControlStateNormal];
+    [self.colorTempSlider setThumbImage: [UIImage imageNamed: @"power_slider_pressed_icon.png"] forState: UIControlStateHighlighted];
+
+    self.colorIndicatorImage.layer.rasterizationScale = [UIScreen mainScreen].scale;
+    self.colorIndicatorImage.layer.shouldRasterize = YES;
 
     [self updateColorIndicator];
     [self updatePresetButtonTitle: self.presetButton];
     [self checkSaturationValue];
 }
 
+-(void)viewWillAppear: (BOOL)animated
+{
+    [super viewWillAppear: animated];
+
+    //Set presets notification handler
+    [[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(presetNotificationReceived:) name: @"PresetNotification" object: nil];
+}
+
+-(void)viewWillDisappear: (BOOL)animated
+{
+    [super viewWillDisappear: animated];
+
+    //Clear groups notification handler
+    [[NSNotificationCenter defaultCenter] removeObserver: self];
+}
+
 -(void)didReceiveMemoryWarning
 {
     [super didReceiveMemoryWarning];
+}
+
+/*
+ * PresetNotification Handler
+ */
+-(void)presetNotificationReceived: (NSNotification *)notification
+{
+    [self updatePresetButtonTitle: self.presetButton];
 }
 
 /*
@@ -296,7 +335,7 @@
     [self updatePresetButtonTitle: self.presetButton];
 }
 
--(void)updatePresetButtonTitle:(UIButton*) presetButton
+-(void)updatePresetButtonTitle: (UIButton*)presetButton
 {
     LSFConstants *constants = [LSFConstants getConstants];
     unsigned int scaledBrightness = [constants scaleLampStateValue: (uint32_t)self.brightnessSlider.value withMax: 100];
@@ -309,6 +348,7 @@
     LSFPresetModelContainer *container = [LSFPresetModelContainer getPresetModelContainer];
     NSArray *presets = [container.presetContainer allValues];
 
+    NSMutableArray *presetsArray = [[NSMutableArray alloc] init];
     BOOL presetMatched = NO;
     for (LSFPresetModel *data in presets)
     {
@@ -316,14 +356,27 @@
 
         if (matchesPreset)
         {
-            [presetButton setTitle: data.name forState: UIControlStateNormal];
+            [presetsArray addObject: data.name];
             presetMatched = YES;
         }
     }
 
-    if (!presetMatched)
+    if (presetMatched)
     {
-        [presetButton setTitle: @"Save New Preset" forState: UIControlStateNormal];
+        NSArray *sortedArray = [presetsArray sortedArrayUsingSelector: @selector(localizedCaseInsensitiveCompare:)];
+        NSMutableString *presetsMatched = [[NSMutableString alloc] init];
+
+        for (NSString *presetName in sortedArray)
+        {
+            [presetsMatched appendString: [NSString stringWithFormat:@"%@, ", presetName]];
+        }
+
+        [presetsMatched deleteCharactersInRange: NSMakeRange(presetsMatched.length - 2, 2)];
+        [self.presetButton setTitle: presetsMatched forState: UIControlStateNormal];
+    }
+    else
+    {
+        [self.presetButton setTitle: @"Save New Preset" forState: UIControlStateNormal];
     }
 }
 
@@ -331,7 +384,7 @@
 {
     BOOL returnValue = NO;
 
-    if ((state.brightness == data.state.brightness) && (state.hue == data.state.hue) && (state.saturation == data.state.saturation) && (state.colorTemp == data.state.colorTemp)) // not checking state.onOff
+    if ((state.brightness == data.state.brightness) && (state.hue == data.state.hue) && (state.saturation == data.state.saturation) && (state.colorTemp == data.state.colorTemp))
     {
         returnValue = YES;
     }

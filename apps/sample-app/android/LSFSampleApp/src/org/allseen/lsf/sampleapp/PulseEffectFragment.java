@@ -16,15 +16,19 @@
 package org.allseen.lsf.sampleapp;
 
 import org.allseen.lsf.LampState;
+import org.allseen.lsf.PresetPulseEffect;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.CompoundButton;
+import android.widget.CompoundButton.OnCheckedChangeListener;
+import android.widget.SeekBar;
 import android.widget.TextView;
 
-public class PulseEffectFragment extends BasicSceneElementInfoFragment {
+public class PulseEffectFragment extends BasicSceneElementInfoFragment implements OnCheckedChangeListener {
     public static final String STATE2_ITEM_TAG = "STATE2";
 
     protected LampStateViewAdapter stateAdapter2;
@@ -32,6 +36,18 @@ public class PulseEffectFragment extends BasicSceneElementInfoFragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = super.onCreateView(inflater, container, savedInstanceState);
+        SampleAppActivity activity = (SampleAppActivity)getActivity();
+        PulseEffectDataModel pulseEffectModel = activity.pendingPulseEffectModel;
+
+        if (pulseEffectModel.endPresetID != null && !pulseEffectModel.endPresetID.equals(PresetPulseEffect.PRESET_ID_CURRENT_STATE)) {
+            PresetDataModel presetModel = activity.presetModels.get(pulseEffectModel.endPresetID);
+
+            if (presetModel != null) {
+                pulseEffectModel.endState = presetModel.state;
+            } else {
+                pulseEffectModel.endPresetID = null;
+            }
+        }
 
         setTextViewValue(view.findViewById(R.id.infoStatusRow), R.id.statusLabelName, getString(R.string.label_effect_name), 0);
 
@@ -81,9 +97,17 @@ public class PulseEffectFragment extends BasicSceneElementInfoFragment {
         // state adapter
         stateAdapter2 = new LampStateViewAdapter(view.findViewById(R.id.infoStateRow2), STATE2_ITEM_TAG, this);
 
-        PulseEffectDataModel pulseEffectModel = ((SampleAppActivity)getActivity()).pendingPulseEffectModel;
         setColorIndicator(view.findViewById(R.id.infoStateRow2), pulseEffectModel.endState);
         updateInfoFields(pulseEffectModel);
+
+        View currentStateRow = view.findViewById(R.id.infoStateRow).findViewById(R.id.startWithCurrentStateRow);
+        currentStateRow.setVisibility(View.VISIBLE);
+
+        CompoundButton currentStateRowTick = (CompoundButton) currentStateRow.findViewById(R.id.startWithCurrentStateTick);
+        currentStateRowTick.setClickable(true);
+        currentStateRowTick.setOnClickListener(this);
+        currentStateRowTick.setOnCheckedChangeListener(this);
+        currentStateRowTick.setChecked(pulseEffectModel.startWithCurrent);
 
         return view;
     }
@@ -126,6 +150,15 @@ public class PulseEffectFragment extends BasicSceneElementInfoFragment {
     public void updatePresetFields(DimmableItemDataModel itemModel) {
         super.updatePresetFields(itemModel);
         updatePresetFields(((PulseEffectDataModel)itemModel).endState, stateAdapter2);
+    }
+
+    @Override
+    protected void updatePresetID(String presetID, Object viewTag) {
+        if (viewTag != STATE2_ITEM_TAG) {
+            super.updatePresetID(presetID, viewTag);
+        } else {
+            ((PulseEffectDataModel)getPendingSceneElementDataModel()).endPresetID = presetID;
+        }
     }
 
     protected void updatePulseEffectInfoFields(SampleAppActivity activity, PulseEffectDataModel elementModel) {
@@ -186,5 +219,17 @@ public class PulseEffectFragment extends BasicSceneElementInfoFragment {
     public void updatePendingSceneElement() {
         SampleAppActivity activity = (SampleAppActivity)getActivity();
         activity.pendingBasicSceneModel.updatePulseEffect(activity.pendingPulseEffectModel);
+    }
+
+    @Override
+    public void onCheckedChanged(CompoundButton stateRowTick, boolean checked) {
+        PulseEffectDataModel pulseEffectModel = ((SampleAppActivity)getActivity()).pendingPulseEffectModel;
+        pulseEffectModel.startWithCurrent = checked;
+
+        ((SeekBar)view.findViewById(R.id.stateSliderBrightness)).setEnabled(!checked);
+        ((SeekBar)view.findViewById(R.id.stateSliderHue)).setEnabled(!checked);
+        ((SeekBar)view.findViewById(R.id.stateSliderSaturation)).setEnabled(!checked);
+        ((SeekBar)view.findViewById(R.id.stateSliderColorTemp)).setEnabled(!checked);
+        ((Button)view.findViewById(R.id.stateButton)).setClickable(!checked);
     }
 }

@@ -14,53 +14,78 @@
  *    OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  ******************************************************************************/
 
-#import "LSFControllerMaintenance.h"
-#import "LSFDispatchQueue.h"
-#import "LSFAllJoynManager.h"
-#import "LSFLampModelContainer.h"
-#import "LSFLampModel.h"
-#import "LSFConstants.h"
+#import "LSFColorAverager.h"
 
-@interface LSFControllerMaintenance()
+@interface LSFColorAverager()
 
-@property (nonatomic) unsigned int pollingDelay;
+@property (nonatomic) long long sum;
+@property (nonatomic) long long count;
+@property (nonatomic) long long initial;
+@property (nonatomic) BOOL uniform;
 
 @end
 
-@implementation LSFControllerMaintenance
+@implementation LSFColorAverager
 
-@synthesize pollingDelay = _pollingDelay;
+@synthesize sum = _sum;
+@synthesize count = _count;
+@synthesize initial = _initial;
+@synthesize uniform = _uniform;
 
 -(id)init
 {
     self = [super init];
-    
+
     if (self)
     {
-        LSFConstants *constants = [LSFConstants getConstants];
-
-        self.pollingDelay = constants.pollingDelaySeconds;
-        [self pollController];
+        [self reset];
     }
-    
+
     return self;
 }
 
--(void)pollController
+-(void)reset
 {
-    //NSLog(@"LSFControllerMaintenance - pollController() executing");
+    self.sum = 0;
+    self.count = 0;
+    self.initial = -1;
+    self.uniform = YES;
+}
 
-    dispatch_async(([LSFDispatchQueue getDispatchQueue]).queue, ^{
-        LSFAllJoynManager *ajManager = [LSFAllJoynManager getAllJoynManager];
-        if (ajManager.lsfLampManager != nil)
-        {
-            [ajManager.lsfLampManager getAllLampIDs];
-        }
-    });
-    
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, self.pollingDelay * NSEC_PER_SEC), ([LSFDispatchQueue getDispatchQueue]).queue, ^{
-        [self pollController];
-    });
+-(void)add: (long long)value
+{
+    self.sum += value;
+    self.count++;
+
+    if (self.initial < 0)
+    {
+        self.initial = value;
+    }
+    else if (self.uniform)
+    {
+        self.uniform = (value == self.initial);
+    }
+}
+
+-(long long)getSum
+{
+    return self.sum;
+}
+
+-(long long)getCount
+{
+    return self.count;
+}
+
+-(long long)getAverage
+{
+    double divisor = self.count > 0 ? self.count : 1.0;
+    return round((double)self.sum / divisor);
+}
+
+-(BOOL)isUniform
+{
+    return self.uniform;
 }
 
 @end

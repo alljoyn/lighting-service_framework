@@ -22,6 +22,7 @@
 #import "LSFLampModel.h"
 #import "LSFGroupModel.h"
 #import "LSFCapabilityData.h"
+#import "LSFEnums.h"
 
 @interface LSFGroupsMembersTableViewController ()
 
@@ -30,11 +31,17 @@
 @property (nonatomic, strong) NSMutableArray *lampsGroupsArray;
 @property (nonatomic, strong) NSMutableArray *selectedRows;
 
+-(void)controllerNotificationReceived: (NSNotification *)notification;
+-(void)groupNotificationReceived: (NSNotification *)notification;
+-(void)reloadGroupWithID: (NSString *)groupID;
+-(void)deleteGroupsWithIDs: (NSArray *)groupIDs andNames: (NSArray *)groupNames;
 -(void)buildTableArray;
 -(void)modifyAllRows: (BOOL)isSelected;
 -(void)processSelectedRows;
 -(void)checkGroupCapability: (LSFCapabilityData *)capability;
 -(void)createLampGroup;
+-(BOOL)isParentGroup: (LSFGroupModel *)groupModel;
+-(NSArray *)sortLampsGroupsData: (NSArray *)data;
 
 @end
 
@@ -58,10 +65,9 @@
     //Initialize selected rows array
     self.selectedRows = [[NSMutableArray alloc] init];
     
-    dispatch_async(([LSFDispatchQueue getDispatchQueue]).queue, ^{
-        LSFAllJoynManager *ajManager = [LSFAllJoynManager getAllJoynManager];
-        [ajManager.slgmc setReloadGroupsDelegate: self];
-    });
+    //Set notification handler
+    [[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(controllerNotificationReceived:) name: @"ControllerNotification" object: nil];
+    [[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(groupNotificationReceived:) name: @"GroupNotification" object: nil];
     
     //Grab the group model using the passed in group ID
     LSFGroupModelContainer *container = [LSFGroupModelContainer getGroupModelContainer];
@@ -77,10 +83,8 @@
 {
     [super viewWillDisappear: animated];
 
-    dispatch_async(([LSFDispatchQueue getDispatchQueue]).queue, ^{
-        LSFAllJoynManager *ajManager = [LSFAllJoynManager getAllJoynManager];
-        [ajManager.slgmc setReloadGroupsDelegate: nil];
-    });
+    //Clear notification handler
+    [[NSNotificationCenter defaultCenter] removeObserver: self];
 }
 
 -(void)didReceiveMemoryWarning
@@ -89,8 +93,48 @@
 }
 
 /*
- * LSFReloadGroupsCallbackDelegate Implementation
+ * ControllerNotification Handler
  */
+-(void)controllerNotificationReceived: (NSNotification *)notification
+{
+    NSDictionary *userInfo = notification.userInfo;
+    NSNumber *controllerStatus = [userInfo valueForKey: @"status"];
+
+    if (controllerStatus.intValue == Disconnected)
+    {
+        [self dismissViewControllerAnimated: NO completion: nil];
+    }
+}
+
+/*
+ * GroupNotification Handler
+ */
+-(void)groupNotificationReceived: (NSNotification *)notification
+{
+    NSString *groupID = [notification.userInfo valueForKey: @"groupID"];
+    NSNumber *callbackOp = [notification.userInfo valueForKey: @"operation"];
+    NSArray *groupIDs = [notification.userInfo valueForKey: @"groupIDs"];
+    NSArray *groupNames = [notification.userInfo valueForKey: @"groupNames"];
+
+    if ([self.groupID isEqualToString: groupID] || [groupIDs containsObject: self.groupID])
+    {
+        switch (callbackOp.intValue)
+        {
+            case GroupCreated:
+            case GroupNameUpdated:
+            case GroupStateUpdated:
+                [self reloadGroupWithID: groupID];
+                break;
+            case GroupDeleted:
+                [self deleteGroupsWithIDs: groupIDs andNames: groupNames];
+                break;
+            default:
+                NSLog(@"Operation not found - Taking no action");
+                break;
+        }
+    }
+}
+
 -(void)reloadGroupWithID: (NSString *)groupID
 {
     if ([self.groupID isEqualToString: groupID])
@@ -112,7 +156,7 @@
     {
         int index = [groupIDs indexOfObject: self.groupID];
 
-        [self.navigationController popToRootViewControllerAnimated: YES];
+        [self dismissViewControllerAnimated: YES completion: nil];
 
         dispatch_async(dispatch_get_main_queue(), ^{
             UIAlertView *alert = [[UIAlertView alloc] initWithTitle: @"Group Not Found"
@@ -192,6 +236,11 @@
     [self.tableView deselectRowAtIndexPath: indexPath animated: YES];
 }
 
+-(NSString *)tableView: (UITableView *)tableView titleForHeaderInSection: (NSInteger)section
+{
+    return @"Select the lamps in this group";
+}
+
 /*
  * Button Event Handlers
  */
@@ -248,8 +297,8 @@
     NSMutableDictionary *lamps = lampsContainer.lampContainer;
     NSMutableArray *lampsArray = [NSMutableArray arrayWithArray: [lamps allValues]];
     
-    self.lampsGroupsArray = [NSMutableArray arrayWithArray: groupsArray];
-    [self.lampsGroupsArray addObjectsFromArray: lampsArray];
+    self.lampsGroupsArray = [NSMutableArray arrayWithArray: [self sortLampsGroupsData: groupsArray]];
+    [self.lampsGroupsArray addObjectsFromArray: [self sortLampsGroupsData: lampsArray]];
 }
 
 -(void)modifyAllRows: (BOOL)isSelected
@@ -326,16 +375,6 @@
 
 -(void)createLampGroup
 {
-//    NSLog(@"Printing lamp and group IDs that the user checked");
-//    for (NSString *lampID in self.lampGroup.lamps)
-//    {
-//        NSLog(@"%@", lampID);
-//    }
-//    for (NSString *groupID in self.lampGroup.lampGroups)
-//    {
-//        NSLog(@"%@", groupID);
-//    }
-
     dispatch_async(([LSFDispatchQueue getDispatchQueue]).queue, ^{
         LSFLampGroupManager *groupManager = ([LSFAllJoynManager getAllJoynManager]).lsfLampGroupManager;
         [groupManager updateLampGroupWithID: self.groupID andLampGroup: self.lampGroup];
@@ -354,6 +393,16 @@
     return NO;
 }
 
+-(NSArray *)sortLampsGroupsData: (NSArray *)data
+{
+    NSSortDescriptor *sortDesc = [NSSortDescriptor sortDescriptorWithKey:@"name" ascending:YES comparator:^NSComparisonResult(id obj1, id obj2) {
+        return [(NSString *)obj1 compare:(NSString *)obj2 options:NSCaseInsensitiveSearch];
+    }];
+
+
+    return [data sortedArrayUsingDescriptors:[NSArray arrayWithObject:sortDesc]];
+}
+
 /*
  * UIAlertViewDelegate implementation
  */
@@ -361,12 +410,12 @@
 {
     if (buttonIndex == 0)
     {
-        [alertView dismissWithClickedButtonIndex: 0 animated: YES];
+        [alertView dismissWithClickedButtonIndex: 0 animated: NO];
     }
     
     if (buttonIndex == 1)
     {
-        [alertView dismissWithClickedButtonIndex: 1 animated: YES];
+        [alertView dismissWithClickedButtonIndex: 1 animated: NO];
         [self createLampGroup];
     }
 }

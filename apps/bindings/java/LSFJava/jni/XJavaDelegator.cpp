@@ -33,6 +33,36 @@ namespace lsf {
 // non-templated code from being visible there.
 #ifndef LSF_JNI_XJAVADELEGATOR_H_INCLUDE_TEMPLATE_METHODS
 
+void XJavaDelegator::Call_Void(const jweak jdelegate, char const *func)
+{
+    // Get the JNIEnv for the current native thread
+    JScopedEnv env;
+
+    Call_Void_Variadic(env, jdelegate, func, "()V");
+}
+
+void XJavaDelegator::Call_Void_UInt32(const jweak jdelegate, char const *func, const uint32_t &uint32Value)
+{
+    // Get the JNIEnv for the current native thread
+    JScopedEnv env;
+
+    Call_Void_Variadic(env, jdelegate, func, "(J)V", (jlong)uint32Value);
+}
+
+void XJavaDelegator::Call_Void_ResponseCode(const jweak jdelegate, char const *func, const LSFResponseCode &responseCode)
+{
+    // Get the JNIEnv for the current native thread
+    JScopedEnv env;
+
+    jobject jresponseCode = JEnum::jResponseCodeEnum->getObject(responseCode);
+    if (env->ExceptionCheck() || !jresponseCode) {
+        QCC_LogError(ER_FAIL, ("getObject() failed"));
+        return;
+    }
+
+    Call_Void_Variadic(env, jdelegate, func, "(Lorg/allseen/lsf/ResponseCode;)V", jresponseCode);
+}
+
 void XJavaDelegator::Call_Void_EnumList(const jweak jdelegate, char const *func, const jobjectArray &jEnumList, char const *enumClass)
 {
     // Get the JNIEnv for the current native thread
@@ -42,7 +72,6 @@ void XJavaDelegator::Call_Void_EnumList(const jweak jdelegate, char const *func,
     snprintf(sig, sizeof(sig), "([L%s;)V", enumClass);
 
     Call_Void_Variadic(env, jdelegate, func, sig, jEnumList);
-
 }
 
 void XJavaDelegator::Call_Void_StringList(const jweak jdelegate, char const *func, const LSFStringList &strList)

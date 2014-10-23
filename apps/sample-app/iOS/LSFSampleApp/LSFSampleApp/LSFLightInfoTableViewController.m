@@ -24,8 +24,9 @@
 #import "LSFPresetModel.h"
 #import "LSFPresetModelContainer.h"
 #import "LSFLampModelContainer.h"
-#import "LSFGarbageCollector.h"
 #import "LSFUtilityFunctions.h"
+#import "LSFEnums.h"
+#import "LSFLampModel.h"
 
 @interface LSFLightInfoTableViewController ()
 
@@ -34,6 +35,11 @@
 @property (nonatomic) BOOL hasColor;
 @property (nonatomic) BOOL hasVariableColorTemp;
 
+-(void)controllerNotificationReceived: (NSNotification *)notification;
+-(void)lampNotificationReceived: (NSNotification *)notification;
+-(void)reloadLampWithID: (NSString *)lampID;
+-(void)deleteLampWithID: (NSString *)lampID andName: (NSString *)lampName;
+-(void)presetNotificationReceived: (NSNotification *)notification;
 -(void)brightnessSliderTapped: (UIGestureRecognizer *)gr;
 -(void)hueSliderTapped: (UIGestureRecognizer *)gr;
 -(void)saturationSliderTapped: (UIGestureRecognizer *)gr;
@@ -72,27 +78,36 @@
     
     UITapGestureRecognizer *brightnessTGR = [[UITapGestureRecognizer alloc] initWithTarget: self action: @selector(brightnessSliderTapped:)];
     [self.brightnessSlider addGestureRecognizer: brightnessTGR];
+    [self.brightnessSlider setThumbImage: [UIImage imageNamed: @"power_slider_normal_icon.png"] forState: UIControlStateNormal];
+    [self.brightnessSlider setThumbImage: [UIImage imageNamed: @"power_slider_pressed_icon.png"] forState: UIControlStateHighlighted];
+
     UITapGestureRecognizer *hueTGR = [[UITapGestureRecognizer alloc] initWithTarget: self action: @selector(hueSliderTapped:)];
     [self.hueSlider addGestureRecognizer: hueTGR];
+    [self.hueSlider setThumbImage: [UIImage imageNamed: @"power_slider_normal_icon.png"] forState: UIControlStateNormal];
+    [self.hueSlider setThumbImage: [UIImage imageNamed: @"power_slider_pressed_icon.png"] forState: UIControlStateHighlighted];
+
     UITapGestureRecognizer *saturationTGR = [[UITapGestureRecognizer alloc] initWithTarget: self action: @selector(saturationSliderTapped:)];
     [self.saturationSlider addGestureRecognizer: saturationTGR];
+    [self.saturationSlider setThumbImage: [UIImage imageNamed: @"power_slider_normal_icon.png"] forState: UIControlStateNormal];
+    [self.saturationSlider setThumbImage: [UIImage imageNamed: @"power_slider_pressed_icon.png"] forState: UIControlStateHighlighted];
+
     UITapGestureRecognizer *colorTempTGR = [[UITapGestureRecognizer alloc] initWithTarget: self action: @selector(colorTempSliderTapped:)];
     [self.colorTempSlider addGestureRecognizer: colorTempTGR];
+    [self.colorTempSlider setThumbImage: [UIImage imageNamed: @"power_slider_normal_icon.png"] forState: UIControlStateNormal];
+    [self.colorTempSlider setThumbImage: [UIImage imageNamed: @"power_slider_pressed_icon.png"] forState: UIControlStateHighlighted];
+
+    self.colorIndicatorImage.layer.rasterizationScale = [UIScreen mainScreen].scale;
+    self.colorIndicatorImage.layer.shouldRasterize = YES;
 }
 
 -(void)viewWillAppear: (BOOL)animated
 {
     [super viewWillAppear: animated];
 
-    //Set lamps callback delegate
-    dispatch_async(([LSFDispatchQueue getDispatchQueue]).queue, ^{
-        LSFAllJoynManager *ajManager = [LSFAllJoynManager getAllJoynManager];
-        [ajManager.slmc setReloadLightsDelegate: self];
-        [ajManager.spmc setReloadPresetsDelegate: self];
-
-        LSFGarbageCollector *garbageCollector = [LSFGarbageCollector getGarbageCollector];
-        [garbageCollector setReloadLightsDelegate: self];
-    });
+    //Set notification handler
+    [[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(controllerNotificationReceived:) name: @"ControllerNotification" object: nil];
+    [[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(lampNotificationReceived:) name: @"LampNotification" object: nil];
+    [[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(presetNotificationReceived:) name: @"PresetNotification" object: nil];
     
     //Reload the table
     [self reloadLampWithID: self.lampID];
@@ -102,15 +117,8 @@
 {
     [super viewWillDisappear: animated];
 
-    //Clear lamps callback delegate
-    dispatch_async(([LSFDispatchQueue getDispatchQueue]).queue, ^{
-        LSFAllJoynManager *ajManager = [LSFAllJoynManager getAllJoynManager];
-        [ajManager.slmc setReloadLightsDelegate: nil];
-        [ajManager.spmc setReloadPresetsDelegate: nil];
-
-        LSFGarbageCollector *garbageCollector = [LSFGarbageCollector getGarbageCollector];
-        [garbageCollector setReloadLightsDelegate: nil];
-    });
+    //Clear notification handler
+    [[NSNotificationCenter defaultCenter] removeObserver: self];
 }
 
 -(void)didReceiveMemoryWarning
@@ -119,113 +127,160 @@
 }
 
 /*
- * LSFReloadLightsCallbackDelegate Implementation
+ * ControllerNotification Handler
  */
--(void)reloadLampWithID: (NSString *)lampID
+-(void)controllerNotificationReceived: (NSNotification *)notification
 {
+    NSDictionary *userInfo = notification.userInfo;
+    NSNumber *controllerStatus = [userInfo valueForKey: @"status"];
+
+    if (controllerStatus.intValue == Disconnected)
+    {
+        [self.navigationController popToRootViewControllerAnimated: YES];
+    }
+}
+
+/*
+ * LampNotification Handler
+ */
+-(void)lampNotificationReceived: (NSNotification *)notification
+{
+    NSString *lampID = [notification.userInfo valueForKey: @"lampID"];
+    NSNumber *callbackOp = [notification.userInfo valueForKey: @"operation"];
+
     if ([self.lampID isEqualToString: lampID])
     {
-        LSFLampModelContainer *lampsContainer = [LSFLampModelContainer getLampModelContainer];
-        NSMutableDictionary *lamps = lampsContainer.lampContainer;
-        self.lampModel = [lamps valueForKey: self.lampID];
-
-        self.nameLabel.text = self.lampModel.name;
-        self.powerSwitch.on = self.lampModel.state.onOff;
-
-        if (self.lampModel.lampDetails.dimmable)
+        switch (callbackOp.intValue)
         {
-            if (self.lampModel.state.onOff && self.lampModel.state.brightness == 0)
-            {
-                dispatch_async(([LSFDispatchQueue getDispatchQueue]).queue, ^{
-                    LSFLampManager *lampManager = ([LSFAllJoynManager getAllJoynManager]).lsfLampManager;
-                    [lampManager transitionLampID: self.lampID onOffField: NO];
-                });
-            }
-
-            self.brightnessSlider.enabled = YES;
-            self.brightnessSlider.value = self.lampModel.state.brightness;
-            self.brightnessLabel.text = [NSString stringWithFormat: @"%i%%", self.lampModel.state.brightness];
-            self.brightnessSliderButton.enabled = NO;
-            self.isDimmable = YES;
+            case LampDeleted:
+                [self deleteLampWithID: lampID andName: [notification.userInfo valueForKey: @"lampName"]];
+                break;
+            case LampNameUpdated:
+            case LampDetailsUpdated:
+            case LampStateUpdated:
+            case LampParametersUpdated:
+                [self reloadLampWithID: lampID];
+                break;
+            default:
+                NSLog(@"Operation not found - Taking no action");
+                break;
         }
-        else
+    }
+}
+
+-(void)reloadLampWithID: (NSString *)lampID
+{
+    LSFLampModelContainer *lampsContainer = [LSFLampModelContainer getLampModelContainer];
+    NSMutableDictionary *lamps = lampsContainer.lampContainer;
+    self.lampModel = [lamps valueForKey: self.lampID];
+
+    self.nameLabel.text = self.lampModel.name;
+    self.powerSwitch.on = self.lampModel.state.onOff;
+
+    if (self.lampModel.lampDetails.dimmable)
+    {
+        if (self.lampModel.state.onOff && self.lampModel.state.brightness == 0)
         {
-            self.brightnessSlider.value = 0;
-            self.brightnessSlider.enabled = NO;
-            self.brightnessLabel.text = @"N/A";
-            self.brightnessSliderButton.enabled = YES;
-            self.isDimmable = NO;
+            dispatch_async(([LSFDispatchQueue getDispatchQueue]).queue, ^{
+                LSFLampManager *lampManager = ([LSFAllJoynManager getAllJoynManager]).lsfLampManager;
+                [lampManager transitionLampID: self.lampID onOffField: NO];
+            });
         }
 
-        if (self.lampModel.lampDetails.color)
-        {
-            if (self.lampModel.state.saturation == 0)
-            {
-                self.hueSlider.value = self.lampModel.state.hue;
-                self.hueSlider.enabled = NO;
-                self.hueLabel.text = @"N/A";
-                self.hueSliderButton.enabled = YES;
-            }
-            else
-            {
-                self.hueSlider.value = self.lampModel.state.hue;
-                self.hueSlider.enabled = YES;
-                self.hueLabel.text = [NSString stringWithFormat: @"%i°", self.lampModel.state.hue];
-                self.hueSliderButton.enabled = NO;
-            }
+        self.brightnessSlider.enabled = YES;
+        self.brightnessSlider.value = self.lampModel.state.brightness;
+        self.brightnessLabel.text = [NSString stringWithFormat: @"%i%%", self.lampModel.state.brightness];
+        self.brightnessSliderButton.enabled = NO;
+        self.isDimmable = YES;
+    }
+    else
+    {
+        self.brightnessSlider.value = 0;
+        self.brightnessSlider.enabled = NO;
+        self.brightnessLabel.text = @"N/A";
+        self.brightnessSliderButton.enabled = YES;
+        self.isDimmable = NO;
+    }
 
-            self.saturationSlider.enabled = YES;
-            self.saturationSlider.value = self.lampModel.state.saturation;
-            self.saturationLabel.text = [NSString stringWithFormat: @"%i%%", self.lampModel.state.saturation];
-            self.saturationSliderButton.enabled = NO;
-            self.hasColor = YES;
-        }
-        else
+    if (self.lampModel.lampDetails.color)
+    {
+        if (self.lampModel.state.saturation == 0)
         {
-            self.hueSlider.value = 0;
+            self.hueSlider.value = self.lampModel.state.hue;
             self.hueSlider.enabled = NO;
             self.hueLabel.text = @"N/A";
             self.hueSliderButton.enabled = YES;
-
-            self.saturationSlider.value = 0;
-            self.saturationSlider.enabled = NO;
-            self.saturationLabel.text = @"N/A";
-            self.saturationSliderButton.enabled = YES;
-
-            self.hasColor = NO;
-        }
-
-        if (self.lampModel.lampDetails.variableColorTemp)
-        {
-            if (self.lampModel.state.saturation == 100)
-            {
-                self.colorTempSlider.value = self.lampModel.state.colorTemp;
-                self.colorTempSlider.enabled = NO;
-                self.colorTempLabel.text = @"N/A";
-                self.colorTempSliderButton.enabled = YES;
-            }
-            else
-            {
-                self.colorTempSlider.value = self.lampModel.state.colorTemp;
-                self.colorTempSlider.enabled = YES;
-                self.colorTempLabel.text = [NSString stringWithFormat: @"%iK", self.lampModel.state.colorTemp];
-                self.colorTempSliderButton.enabled = NO;
-            }
-
-            self.hasVariableColorTemp = YES;
         }
         else
         {
-            self.colorTempSlider.value = 0;
+            self.hueSlider.value = self.lampModel.state.hue;
+            self.hueSlider.enabled = YES;
+            self.hueLabel.text = [NSString stringWithFormat: @"%i°", self.lampModel.state.hue];
+            self.hueSliderButton.enabled = NO;
+        }
+
+        self.saturationSlider.enabled = YES;
+        self.saturationSlider.value = self.lampModel.state.saturation;
+        self.saturationLabel.text = [NSString stringWithFormat: @"%i%%", self.lampModel.state.saturation];
+        self.saturationSliderButton.enabled = NO;
+        self.hasColor = YES;
+    }
+    else
+    {
+        self.hueSlider.value = 0;
+        self.hueSlider.enabled = NO;
+        self.hueLabel.text = @"N/A";
+        self.hueSliderButton.enabled = YES;
+
+        self.saturationSlider.value = 0;
+        self.saturationSlider.enabled = NO;
+        self.saturationLabel.text = @"N/A";
+        self.saturationSliderButton.enabled = YES;
+
+        self.hasColor = NO;
+    }
+
+    if (self.lampModel.lampDetails.variableColorTemp)
+    {
+        if (self.lampModel.state.saturation == 100)
+        {
+            self.colorTempSlider.value = self.lampModel.state.colorTemp;
             self.colorTempSlider.enabled = NO;
             self.colorTempLabel.text = @"N/A";
             self.colorTempSliderButton.enabled = YES;
-            self.hasVariableColorTemp = NO;
         }
+        else
+        {
+            self.colorTempSlider.value = self.lampModel.state.colorTemp;
+            self.colorTempSlider.enabled = YES;
+            self.colorTempLabel.text = [NSString stringWithFormat: @"%iK", self.lampModel.state.colorTemp];
+            self.colorTempSliderButton.enabled = NO;
+        }
+
+        self.hasVariableColorTemp = YES;
+    }
+    else
+    {
+        self.colorTempSlider.value = 0;
+        self.colorTempSlider.enabled = NO;
+        self.colorTempLabel.text = @"N/A";
+        self.colorTempSliderButton.enabled = YES;
+        self.hasVariableColorTemp = NO;
+    }
+
+    if (!self.isDimmable || !self.hasColor || !self.hasVariableColorTemp)
+    {
+        [self.presetButton setTitle: @"Save New Preset" forState: UIControlStateNormal];
+        self.presetButton.enabled = NO;
+    }
+    else
+    {
+        self.presetButton.enabled = YES;
 
         LSFPresetModelContainer *container = [LSFPresetModelContainer getPresetModelContainer];
         NSArray *presets = [container.presetContainer allValues];
 
+        NSMutableArray *presetsArray = [[NSMutableArray alloc] init];
         BOOL presetMatched = NO;
         for (LSFPresetModel *data in presets)
         {
@@ -233,24 +288,32 @@
 
             if (matchesPreset)
             {
-                [self.presetButton setTitle: data.name forState: UIControlStateNormal];
+                [presetsArray addObject: data.name];
                 presetMatched = YES;
             }
         }
 
-        if (!presetMatched)
+        if (presetMatched)
+        {
+            NSArray *sortedArray = [presetsArray sortedArrayUsingSelector: @selector(localizedCaseInsensitiveCompare:)];
+            NSMutableString *presetsMatched = [[NSMutableString alloc] init];
+
+            for (NSString *presetName in sortedArray)
+            {
+                [presetsMatched appendString: [NSString stringWithFormat:@"%@, ", presetName]];
+            }
+
+            [presetsMatched deleteCharactersInRange: NSMakeRange(presetsMatched.length - 2, 2)];
+            [self.presetButton setTitle: presetsMatched forState: UIControlStateNormal];
+        }
+        else
         {
             [self.presetButton setTitle: @"Save New Preset" forState: UIControlStateNormal];
         }
-        
-        if (!self.isDimmable && !self.hasColor && !self.hasVariableColorTemp)
-        {
-            self.presetButton.enabled = NO;
-        }
-        
-        self.lumensLabel.text = [NSString stringWithFormat: @"%i", self.lampModel.lampParameters.lumens];
-        self.energyUsageLabel.text = [NSString stringWithFormat: @"%i mW", self.lampModel.lampParameters.energyUsageMilliwatts];
     }
+
+    self.lumensLabel.text = [NSString stringWithFormat: @"%i", self.lampModel.lampParameters.lumens];
+    self.energyUsageLabel.text = [NSString stringWithFormat: @"%i mW", self.lampModel.lampParameters.energyUsageMilliwatts];
 
     [LSFUtilityFunctions colorIndicatorSetup: self.colorIndicatorImage dataState: self.lampModel.state];
 }
@@ -273,9 +336,9 @@
 }
 
 /*
- * LSFReloadPresetsCallbackDelegate Implementation
+ * PresetNotification Handler
  */
--(void)reloadPresets
+-(void)presetNotificationReceived: (NSNotification *)notification
 {
     //Reload the table
     [self reloadLampWithID: self.lampID];
@@ -413,10 +476,6 @@
         LSFConstants *constants = [LSFConstants getConstants];
         LSFLampManager *lampManager = ([LSFAllJoynManager getAllJoynManager]).lsfLampManager;
         unsigned int scaledBrightness = [constants scaleLampStateValue: (uint32_t)value withMax: 100];
-        if ((self.lampModel.state.onOff == NO) && (scaledBrightness > 0))
-        {
-            [lampManager transitionLampID: self.lampID onOffField: YES];
-        }
         [lampManager transitionLampID: self.lampID brightnessField: scaledBrightness];
     });
 }
@@ -515,10 +574,6 @@
     dispatch_async(([LSFDispatchQueue getDispatchQueue]).queue, ^{
         LSFLampManager *lampManager = ([LSFAllJoynManager getAllJoynManager]).lsfLampManager;
         unsigned int scaledBrightness = [constants scaleLampStateValue: (uint32_t)((UISlider *)sender).value withMax: 100];
-        if ((self.lampModel.state.onOff == NO) && (scaledBrightness > 0))
-        {
-            [lampManager transitionLampID: self.lampID onOffField: YES];
-        }
         [lampManager transitionLampID: self.lampID brightnessField: scaledBrightness];
     });
 }

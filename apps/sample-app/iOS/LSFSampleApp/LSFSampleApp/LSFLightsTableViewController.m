@@ -22,13 +22,17 @@
 #import "LSFDispatchQueue.h"
 #import "LSFAllJoynManager.h"
 #import "LSFConstants.h"
-#import "LSFGarbageCollector.h"
 #import "LSFUtilityFunctions.h"
+#import "LSFWifiMonitor.h"
+#import "LSFEnums.h"
 
 @interface LSFLightsTableViewController ()
 
-@property (nonatomic, strong) NSMutableArray *lampData;
-
+-(void)lampNotificationReceived: (NSNotification *)notification;
+-(void)addNewLamp: (NSString *)lampID;
+-(void)refreshLamp: (NSString *)lampID;
+-(void)reorderLamp: (NSString *)lampID;
+-(void)removeLamp: (NSString *)lampID;
 -(NSUInteger)checkIfLampModelExists: (LSFLampModel *)lampModel;
 -(NSUInteger)findInsertionIndexInArray: (LSFLampModel *)lampModel;
 -(void)sortLampsByName;
@@ -42,31 +46,22 @@
 
 @implementation LSFLightsTableViewController
 
-@synthesize lampData = _lampData;
-
 -(void)viewDidLoad
 {
-    NSLog(@"LSFLightsTableViewController - viewDidLoad()");
-
     [super viewDidLoad];
 }
 
 -(void)viewWillAppear: (BOOL)animated
 {
-    NSLog(@"LSFLightsTableViewController - viewWillAppear()");
-
     [super viewWillAppear: animated];
     [self.navigationItem setHidesBackButton:YES];
 
-    //Set lamps callback delegate
-    dispatch_async(([LSFDispatchQueue getDispatchQueue]).queue, ^{
-        LSFAllJoynManager *ajManager = [LSFAllJoynManager getAllJoynManager];
-        [ajManager.slmc setReloadLightsDelegate: self];
-    });
+    //Set lamps notification handler
+    [[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(lampNotificationReceived:) name: @"LampNotification" object: nil];
 
     //Set the content of the default lamp data array
     LSFLampModelContainer *container = [LSFLampModelContainer getLampModelContainer];
-    self.lampData = [[NSMutableArray alloc] initWithArray: [container.lampContainer allValues]];
+    self.data = [[NSMutableArray alloc] initWithArray: [container.lampContainer allValues]];
     [self sortLampsByName];
 
     //Reload the table
@@ -75,15 +70,10 @@
 
 -(void)viewWillDisappear: (BOOL)animated
 {
-    NSLog(@"LSFLightsTableViewController - viewWillDisappear()");
-
     [super viewWillDisappear: animated];
 
-    //Clear lamps callback delegate
-    dispatch_async(([LSFDispatchQueue getDispatchQueue]).queue, ^{
-        LSFAllJoynManager *ajManager = [LSFAllJoynManager getAllJoynManager];
-        [ajManager.slmc setReloadLightsDelegate: nil];
-    });
+    //Clear lamps notification handler
+    [[NSNotificationCenter defaultCenter] removeObserver: self];
 
     self.tableView.backgroundView = nil;
 }
@@ -94,74 +84,135 @@
 }
 
 /*
- * LSFReloadLightsCallbackDelegate Implementation
+ * LampNotification Handler
  */
--(void)reloadLampWithID: (NSString *)lampID
+-(void)lampNotificationReceived: (NSNotification *)notification
 {
-    @synchronized(self.lampData)
+    @synchronized(self.data)
     {
-        LSFLampModelContainer *container = [LSFLampModelContainer getLampModelContainer];
-        NSMutableDictionary *lamps = container.lampContainer;
-        LSFLampModel *model = [lamps valueForKey: lampID];
+        NSString *lampID = [notification.userInfo valueForKey: @"lampID"];
+        NSNumber *callbackOp = [notification.userInfo valueForKey: @"operation"];
 
-        if (model != nil)
+        switch (callbackOp.intValue)
         {
-            NSUInteger existingIndex = [self checkIfLampModelExists: model];
-
-            if (existingIndex == NSNotFound)
-            {
-                NSUInteger insertIndex = [self findInsertionIndexInArray: model];
-                [self.lampData insertObject: model atIndex: insertIndex];
-
-                [self addObjectToTableAtIndex: insertIndex];
-            }
-            else
-            {
-                NSUInteger insertIndex = [self findInsertionIndexInArray: model];
-
-                if (existingIndex == insertIndex)
-                {
-                    [self refreshRowInTableAtIndex: insertIndex];
-                }
-                else
-                {
-                    if (existingIndex < insertIndex)
-                    {
-                        insertIndex--;
-                    }
-
-                    [self.lampData removeObjectAtIndex: existingIndex];
-                    [self.lampData insertObject: model atIndex: insertIndex];
-
-                    [self moveObjectFromIndex: existingIndex toIndex: insertIndex];
-                }
-            }
-        }
-        else
-        {
-            NSLog(@"LSFLightsTableViewController - reloadLampWithID() model is nil");
+            case LampFound:
+                [self addNewLamp: lampID];
+                break;
+            case LampDeleted:
+                [self removeLamp: lampID];
+                break;
+            case LampNameUpdated:
+                [self reorderLamp: lampID];
+                break;
+            case LampDetailsUpdated:
+            case LampStateUpdated:
+                [self refreshLamp: lampID];
+                break;
+            default:
+                NSLog(@"Operation not found - Taking no action");
+                break;
         }
     }
 }
 
--(void)deleteLampWithID:(NSString *)lampID andName: (NSString *)lampName
+-(void)addNewLamp: (NSString *)lampID
 {
-    @synchronized(self.lampData)
+    LSFLampModelContainer *container = [LSFLampModelContainer getLampModelContainer];
+    NSMutableDictionary *lamps = container.lampContainer;
+    LSFLampModel *model = [lamps valueForKey: lampID];
+
+    NSUInteger existingIndex = [self checkIfLampModelExists: model];
+
+    if (existingIndex == NSNotFound)
     {
-        LSFLampModelContainer *container = [LSFLampModelContainer getLampModelContainer];
-        NSMutableDictionary *lamps = container.lampContainer;
-        LSFLampModel *model = [lamps valueForKey: lampID];
+        NSUInteger insertIndex = [self findInsertionIndexInArray: model];
+        [self.data insertObject: model atIndex: insertIndex];
 
-        if (model == nil)
+        [self addObjectToTableAtIndex: insertIndex];
+    }
+    else
+    {
+        NSLog(@"LSFLightsTableViewController - addNewLamp() model is nil");
+    }
+}
+
+-(void)refreshLamp: (NSString *)lampID
+{
+    LSFLampModelContainer *container = [LSFLampModelContainer getLampModelContainer];
+    NSMutableDictionary *lamps = container.lampContainer;
+    LSFLampModel *model = [lamps valueForKey: lampID];
+
+    if (model != nil)
+    {
+        NSUInteger existingIndex = [self findIndexInModelOfID: lampID];
+
+        if (existingIndex != -1)
         {
-            int modelArrayIndex = [self findIndexInModelOfID: lampID];
-
-            if (modelArrayIndex != -1)
-            {
-                [self.lampData removeObjectAtIndex: modelArrayIndex];
-                [self deleteRowInTableAtIndex: modelArrayIndex];
-            }
+            [self refreshRowInTableAtIndex: existingIndex];
         }
+    }
+    else
+    {
+        NSLog(@"LSFLightsTableViewController - refreshLamp() model is nil");
+    }
+}
+
+-(void)reorderLamp: (NSString *)lampID
+{
+    LSFLampModelContainer *container = [LSFLampModelContainer getLampModelContainer];
+    NSMutableDictionary *lamps = container.lampContainer;
+    LSFLampModel *model = [lamps valueForKey: lampID];
+
+    if (model != nil)
+    {
+        NSUInteger existingIndex = [self checkIfLampModelExists: model];
+        NSUInteger insertIndex = [self findInsertionIndexInArray: model];
+
+        if (existingIndex == insertIndex)
+        {
+            NSLog(@"Even though name changed the cell does not have to be moved. Just refreshed.");
+            [self refreshRowInTableAtIndex: insertIndex];
+        }
+        else
+        {
+            NSLog(@"Cell must be moved to preserve alphabetical order");
+
+            if (existingIndex < insertIndex)
+            {
+                insertIndex--;
+            }
+
+            [self.data removeObjectAtIndex: existingIndex];
+            [self.data insertObject: model atIndex: insertIndex];
+
+            [self moveObjectFromIndex: existingIndex toIndex: insertIndex];
+        }
+    }
+    else
+    {
+        NSLog(@"LSFLightsTableViewController - reorderLamp() model is nil");
+    }
+}
+
+-(void)removeLamp: (NSString *)lampID
+{
+    LSFLampModelContainer *container = [LSFLampModelContainer getLampModelContainer];
+    NSMutableDictionary *lamps = container.lampContainer;
+    LSFLampModel *model = [lamps valueForKey: lampID];
+
+    if (model == nil)
+    {
+        int modelArrayIndex = [self findIndexInModelOfID: lampID];
+
+        if (modelArrayIndex != -1)
+        {
+            [self.data removeObjectAtIndex: modelArrayIndex];
+            [self deleteRowInTableAtIndex: modelArrayIndex];
+        }
+    }
+    else
+    {
+        NSLog(@"LSFLightsTableViewController - removeLamp() model is not nil");
     }
 }
 
@@ -175,10 +226,30 @@
 
 -(NSInteger)tableView: (UITableView *)tableView numberOfRowsInSection: (NSInteger)section
 {
+    LSFWifiMonitor *wifiMonitor = [LSFWifiMonitor getWifiMonitor];
     LSFAllJoynManager *ajManager = [LSFAllJoynManager getAllJoynManager];
     LSFConstants *constants = [LSFConstants getConstants];
 
-    if (!ajManager.isConnectedToController)
+    if (!wifiMonitor.isWifiConnected)
+    {
+        CGRect frame = CGRectMake(0, 0, self.view.bounds.size.width, self.view.bounds.size.height);
+        UIView *customView = [[UIView alloc] initWithFrame: frame];
+        UILabel *messageLabel = [[UILabel alloc] init];
+        [customView addSubview: messageLabel];
+
+        frame.origin.x = 30;
+        frame.size.width = self.view.bounds.size.width - frame.origin.x;
+
+        messageLabel.frame = frame;
+        messageLabel.text = [NSString stringWithFormat: @"No Wi-Fi Connection.\n\nPlease check that Wi-Fi is enabled in this device's settings and that the device is connected to a Wi-Fi network.\n\nWaiting for Wi-Fi to become available..."];
+        messageLabel.textColor = [UIColor blackColor];
+        messageLabel.numberOfLines = 0;
+        messageLabel.textAlignment = NSTextAlignmentLeft;
+
+        self.tableView.backgroundView = customView;
+        return 0;
+    }
+    else if (!ajManager.isConnectedToController)
     {
         CGRect frame = CGRectMake(0, 0, self.view.bounds.size.width, self.view.bounds.size.height);
         UIView *customView = [[UIView alloc] initWithFrame: frame];
@@ -199,7 +270,7 @@
     }
     else
     {
-        if (self.lampData.count == 0)
+        if (self.data.count == 0)
         {
             CGRect frame = CGRectMake(0, 0, self.view.bounds.size.width, self.view.bounds.size.height);
             UIView *customView = [[UIView alloc] initWithFrame: frame];
@@ -222,20 +293,18 @@
             self.tableView.backgroundView = nil;
         }
         
-        return self.lampData.count;
+        return self.data.count;
     }
 }
 
 -(UITableViewCell *)tableView: (UITableView *)tableView cellForRowAtIndexPath: (NSIndexPath *)indexPath
 {
-    LSFLampModel *data = [self.lampData objectAtIndex: [indexPath row]];
+    LSFLampModel *data = [self.data objectAtIndex: [indexPath row]];
     
     LSFLightsCell *cell = [tableView dequeueReusableCellWithIdentifier: @"LightCell" forIndexPath: indexPath];
     cell.lampID = data.theID;
     cell.nameLabel.text = data.name;
 
-    cell.colorIndicatorImage.layer.rasterizationScale = [UIScreen mainScreen].scale;
-    cell.colorIndicatorImage.layer.shouldRasterize = YES;
     [LSFUtilityFunctions colorIndicatorSetup: cell.colorIndicatorImage dataState: data.state];
 
     if (data.lampDetails.dimmable)
@@ -259,28 +328,13 @@
         cell.brightnessSliderButton.enabled = YES;
     }
     
-    UITapGestureRecognizer *tapGestureRecognizer = [[UITapGestureRecognizer alloc] initWithTarget: cell action: @selector(sliderTapped:)];
-    [cell.brightnessSlider addGestureRecognizer: tapGestureRecognizer];
-    
-    unsigned int c;
-    NSString *color = @"f4f4f4";
-    if ([color characterAtIndex: 0] == '#')
-    {
-        [[NSScanner scannerWithString: [color substringFromIndex: 1]] scanHexInt: &c];
-    }
-    else
-    {
-        [[NSScanner scannerWithString: color] scanHexInt: &c];
-    }
-    cell.backgroundColor = [UIColor colorWithRed:((c & 0xff0000) >> 16)/255.0 green:((c & 0xff00) >> 8)/255.0 blue:(c & 0xff)/255.0 alpha:1.0];
-    
     if (data.state.onOff)
     {
-        cell.powerImage.image = [UIImage imageNamed: @"light_power_on_btn.png"];
+        cell.powerImage.image = [UIImage imageNamed: @"light_power_btn_on.png"];
     }
     else
     {
-        cell.powerImage.image = [UIImage imageNamed: @"light_power_off_btn.png"];
+        cell.powerImage.image = [UIImage imageNamed: @"light_power_btn_off.png"];
     }
 
     cell.selectionStyle = UITableViewCellSelectionStyleNone;
@@ -293,9 +347,9 @@
     return 70;
 }
 
--(CGFloat) tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section
+-(CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section
 {
-    return 1.0f;
+    return 0.00000000001f;
 }
 
 /*
@@ -308,7 +362,7 @@
         NSIndexPath *indexPath = [self.tableView indexPathForCell: sender];
         
         LSFLightInfoTableViewController *litvc = [segue destinationViewController];
-        litvc.lampID = ((LSFLampModel *)[self.lampData objectAtIndex: [indexPath row]]).theID;
+        litvc.lampID = ((LSFLampModel *)[self.data objectAtIndex: [indexPath row]]).theID;
     }
 }
 
@@ -317,9 +371,9 @@
  */
 -(NSUInteger)checkIfLampModelExists: (LSFLampModel *)lampModel
 {
-    for (int i = 0; i < self.lampData.count; i++)
+    for (int i = 0; i < self.data.count; i++)
     {
-        LSFLampModel *model = (LSFLampModel *)[self.lampData objectAtIndex: i];
+        LSFLampModel *model = (LSFLampModel *)[self.data objectAtIndex: i];
 
         if ([lampModel.theID isEqualToString: model.theID])
         {
@@ -332,7 +386,7 @@
 
 -(NSUInteger)findInsertionIndexInArray: (LSFLampModel *)lampModel
 {
-    return [self.lampData indexOfObject: lampModel inSortedRange: (NSRange){0, [self.lampData count]} options: (NSBinarySearchingFirstEqual | NSBinarySearchingInsertionIndex) usingComparator:
+    return [self.data indexOfObject: lampModel inSortedRange: (NSRange){0, [self.data count]} options: (NSBinarySearchingFirstEqual | NSBinarySearchingInsertionIndex) usingComparator:
             ^NSComparisonResult(id a, id b) {
                 NSString *first = [(LSFLampModel *)a name];
                 NSString *second = [(LSFLampModel *)b name];
@@ -342,20 +396,20 @@
 
 -(void)sortLampsByName
 {
-    NSMutableArray *sortedArray = [NSMutableArray arrayWithArray: [self.lampData sortedArrayUsingComparator: ^NSComparisonResult(id a, id b) {
+    NSMutableArray *sortedArray = [NSMutableArray arrayWithArray: [self.data sortedArrayUsingComparator: ^NSComparisonResult(id a, id b) {
         NSString *first = [(LSFLampModel *)a name];
         NSString *second = [(LSFLampModel *)b name];
         return [first localizedCaseInsensitiveCompare: second];
     }]];
 
-    self.lampData = [NSMutableArray arrayWithArray: sortedArray];
+    self.data = [NSMutableArray arrayWithArray: sortedArray];
 }
 
 -(int)findIndexInModelOfID: (NSString *)theID
 {
-    for (int i = 0; i < self.lampData.count; i++)
+    for (int i = 0; i < self.data.count; i++)
     {
-        LSFLampModel *model = [self.lampData objectAtIndex: i];
+        LSFLampModel *model = [self.data objectAtIndex: i];
 
         if ([theID isEqualToString: model.theID])
         {

@@ -19,6 +19,8 @@
 #import "LSFSceneDataModel.h"
 #import "LSFAllJoynManager.h"
 #import "LSFDispatchQueue.h"
+#import "LSFTabManager.h"
+#import "LSFEnums.h"
 
 @interface LSFSampleSceneManagerCallback()
 
@@ -29,13 +31,12 @@
 -(void)postUpdateScene: (NSString *)sceneID withName: (NSString *)sceneName;
 -(void)postDeleteScenes: (NSArray *)sceneIDs;
 -(void)postUpdateScene:(NSString *)sceneID withScene:(LSFScene *)scene;
--(void)updateSceneWithID: (NSString *)sceneID;
+-(void)updateSceneWithID: (NSString *)sceneID andCallbackOperation: (SceneCallbackOperation)callbackOp;
 
 @end
 
 @implementation LSFSampleSceneManagerCallback
 
-@synthesize reloadScenesDelegate = _reloadScenesDelegate;
 @synthesize queue = _queue;
 
 -(id)init
@@ -229,9 +230,14 @@
     {
         sceneModel = [[LSFSceneDataModel alloc] initWithSceneID: sceneID];
         [container.sceneContainer setValue: sceneModel forKey: sceneID];
+
+        dispatch_async(self.queue, ^{
+            LSFTabManager *tabManager = [LSFTabManager getTabManager];
+            [tabManager updateScenesTab];
+        });
     }
 
-    [self updateSceneWithID: sceneID];
+    [self updateSceneWithID: sceneID andCallbackOperation: SceneCreated];
 }
 
 -(void)postUpdateScene: (NSString *)sceneID withName: (NSString *)sceneName
@@ -244,7 +250,7 @@
         sceneModel.name = sceneName;
     }
 
-    [self updateSceneWithID: sceneID];
+    [self updateSceneWithID: sceneID andCallbackOperation: SceneNameUpdated];
 }
 
 -(void)postUpdateScene:(NSString *)sceneID withScene:(LSFScene *)scene
@@ -257,7 +263,7 @@
         [sceneModel fromScene: scene];
     }
 
-    [self updateSceneWithID: sceneID];
+    [self updateSceneWithID: sceneID andCallbackOperation: SceneUpdated];
 }
 
 -(void)postDeleteScenes: (NSArray *)sceneIDs
@@ -272,23 +278,26 @@
 
         [sceneNames insertObject: model.name atIndex: i];
         [scenes removeObjectForKey: sceneID];
+
+        dispatch_async(self.queue, ^{
+            LSFTabManager *tabManager = [LSFTabManager getTabManager];
+            [tabManager updateScenesTab];
+        });
     }
 
     dispatch_async(dispatch_get_main_queue(), ^{
-        if (self.reloadScenesDelegate != nil)
-        {
-            [self.reloadScenesDelegate deleteScenesWithIDs: sceneIDs andNames: [NSArray arrayWithArray: sceneNames]];
-        }
+        NSNumber *sceneOp = [[NSNumber alloc] initWithInt: SceneDeleted];
+        NSDictionary *userInfoDict = [[NSDictionary alloc] initWithObjects: [[NSArray alloc] initWithObjects: sceneOp, sceneIDs, [NSArray arrayWithArray: sceneNames], nil] forKeys: [[NSArray alloc] initWithObjects: @"operation", @"sceneIDs", @"sceneNames", nil]];
+        [[NSNotificationCenter defaultCenter] postNotificationName: @"SceneNotification" object: self userInfo: userInfoDict];
     });
 }
 
--(void)updateSceneWithID: (NSString *)sceneID;
+-(void)updateSceneWithID: (NSString *)sceneID andCallbackOperation: (SceneCallbackOperation)callbackOp
 {
     dispatch_async(dispatch_get_main_queue(), ^{
-        if (self.reloadScenesDelegate != nil)
-        {
-            [self.reloadScenesDelegate reloadSceneWithID: sceneID];
-        }
+        NSNumber *sceneOp = [[NSNumber alloc] initWithInt: callbackOp];
+        NSDictionary *userInfoDict = [[NSDictionary alloc] initWithObjects: [[NSArray alloc] initWithObjects: sceneOp, sceneID, nil] forKeys: [[NSArray alloc] initWithObjects: @"operation", @"sceneID", nil]];
+        [[NSNotificationCenter defaultCenter] postNotificationName: @"SceneNotification" object: self userInfo: userInfoDict];
     });
 }
 

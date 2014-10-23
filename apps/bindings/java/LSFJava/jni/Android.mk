@@ -124,6 +124,8 @@ LOCAL_SRC_FILES  := $(MY_LSF_STD_CLIENT_SRC)/ControllerClient.cc \
 					NUtil.cpp \
 					org_allseen_lsf_ControllerClient.cpp \
 					org_allseen_lsf_ControllerClientCallback.cpp \
+					org_allseen_lsf_ControllerServiceManager.cpp \
+					org_allseen_lsf_ControllerServiceManagerCallback.cpp \
 					org_allseen_lsf_LampDetails.cpp \
 					org_allseen_lsf_LampGroup.cpp \
 					org_allseen_lsf_LampGroupManager.cpp \
@@ -144,6 +146,8 @@ LOCAL_SRC_FILES  := $(MY_LSF_STD_CLIENT_SRC)/ControllerClient.cc \
 					org_allseen_lsf_SceneManagerCallback.cpp \
 					org_allseen_lsf_StatePulseEffect.cpp \
 					org_allseen_lsf_StateTransitionEffect.cpp \
+					XControllerServiceManager.cpp \
+					XControllerServiceManagerCallback.cpp \
 					XCppDelegator.cpp \
 					XJavaDelegator.cpp \
 					XLampMemberList.cpp \

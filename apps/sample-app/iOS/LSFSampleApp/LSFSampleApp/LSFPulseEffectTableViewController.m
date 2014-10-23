@@ -24,9 +24,14 @@
 #import "LSFConstants.h"
 #import "LSFPresetModelContainer.h"
 #import "LSFPresetModel.h"
+#import "LSFEnums.h"
 
 @interface LSFPulseEffectTableViewController ()
 
+-(void)controllerNotificationReceived: (NSNotification *)notification;
+-(void)sceneNotificationReceived: (NSNotification *)notification;
+-(void)deleteScenesWithIDs: (NSArray *)sceneIDs andNames: (NSArray *)sceneNames;
+-(void)presetNotificationReceived: (NSNotification *)notification;
 -(void)endBrightnessSliderTapped: (UIGestureRecognizer *)gr;
 -(void)endHueSliderTapped: (UIGestureRecognizer *)gr;
 -(void)endSaturationSliderTapped: (UIGestureRecognizer *)gr;
@@ -57,6 +62,7 @@
 @synthesize numPulsesLabel = _numPulsesLabel;
 @synthesize sceneModel = _sceneModel;
 @synthesize pedm = _pedm;
+@synthesize shouldUpdateSceneAndDismiss = _shouldUpdateSceneAndDismiss;
 
 
 -(void)viewDidLoad
@@ -65,17 +71,36 @@
 
     UITapGestureRecognizer *endBrightnessTGR = [[UITapGestureRecognizer alloc] initWithTarget: self action: @selector(endBrightnessSliderTapped:)];
     [self.endBrightnessSlider addGestureRecognizer: endBrightnessTGR];
+    [self.endBrightnessSlider setThumbImage: [UIImage imageNamed: @"power_slider_normal_icon.png"] forState: UIControlStateNormal];
+    [self.endBrightnessSlider setThumbImage: [UIImage imageNamed: @"power_slider_pressed_icon.png"] forState: UIControlStateHighlighted];
+
     UITapGestureRecognizer *endHueTGR = [[UITapGestureRecognizer alloc] initWithTarget: self action: @selector(endHueSliderTapped:)];
     [self.endHueSlider addGestureRecognizer: endHueTGR];
+    [self.endHueSlider setThumbImage: [UIImage imageNamed: @"power_slider_normal_icon.png"] forState: UIControlStateNormal];
+    [self.endHueSlider setThumbImage: [UIImage imageNamed: @"power_slider_pressed_icon.png"] forState: UIControlStateHighlighted];
+
     UITapGestureRecognizer *endSaturationTGR = [[UITapGestureRecognizer alloc] initWithTarget: self action: @selector(endSaturationSliderTapped:)];
     [self.endSaturationSlider addGestureRecognizer: endSaturationTGR];
+    [self.endSaturationSlider setThumbImage: [UIImage imageNamed: @"power_slider_normal_icon.png"] forState: UIControlStateNormal];
+    [self.endSaturationSlider setThumbImage: [UIImage imageNamed: @"power_slider_pressed_icon.png"] forState: UIControlStateHighlighted];
+
     UITapGestureRecognizer *endColorTempTGR = [[UITapGestureRecognizer alloc] initWithTarget: self action: @selector(endColorTempSliderTapped:)];
     [self.endColorTempSlider addGestureRecognizer: endColorTempTGR];
+    [self.endColorTempSlider setThumbImage: [UIImage imageNamed: @"power_slider_normal_icon.png"] forState: UIControlStateNormal];
+    [self.endColorTempSlider setThumbImage: [UIImage imageNamed: @"power_slider_pressed_icon.png"] forState: UIControlStateHighlighted];
+
+    self.endColorIndicatorImage.layer.rasterizationScale = [UIScreen mainScreen].scale;
+    self.endColorIndicatorImage.layer.shouldRasterize = YES;
 }
 
 -(void)viewWillAppear: (BOOL)animated
 {
     [super viewWillAppear: animated];
+
+    //Set notification handler
+    [[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(controllerNotificationReceived:) name: @"ControllerNotification" object: nil];
+    [[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(sceneNotificationReceived:) name: @"SceneNotification" object: nil];
+    [[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(presetNotificationReceived:) name: @"PresetNotification" object: nil];
 
     LSFConstants *constants = [LSFConstants getConstants];
 
@@ -147,9 +172,81 @@
     [self presetButtonSetup: self.endPresetButton state: self.pedm.endState];
 }
 
+-(void)viewWillDisappear: (BOOL)animated
+{
+    [super viewWillDisappear: animated];
+
+    //Clear groups notification handler
+    [[NSNotificationCenter defaultCenter] removeObserver: self];
+}
+
 -(void)didReceiveMemoryWarning
 {
     [super didReceiveMemoryWarning];
+}
+
+/*
+ * ControllerNotification Handler
+ */
+-(void)controllerNotificationReceived: (NSNotification *)notification
+{
+    NSDictionary *userInfo = notification.userInfo;
+    NSNumber *controllerStatus = [userInfo valueForKey: @"status"];
+
+    if (controllerStatus.intValue == Disconnected)
+    {
+        [self dismissViewControllerAnimated: NO completion: nil];
+    }
+}
+
+/*
+ * SceneNotification Handler
+ */
+-(void)sceneNotificationReceived: (NSNotification *)notification
+{
+    NSNumber *callbackOp = [notification.userInfo valueForKey: @"operation"];
+    NSArray *sceneIDs = [notification.userInfo valueForKey: @"sceneIDs"];
+    NSArray *sceneNames = [notification.userInfo valueForKey: @"sceneNames"];
+
+    if ([sceneIDs containsObject: self.sceneModel.theID])
+    {
+        switch (callbackOp.intValue)
+        {
+            case SceneDeleted:
+                [self deleteScenesWithIDs: sceneIDs andNames: sceneNames];
+                break;
+            default:
+                break;
+        }
+    }
+}
+
+-(void)deleteScenesWithIDs: (NSArray *)sceneIDs andNames: (NSArray *)sceneNames
+{
+    if ([sceneIDs containsObject: self.sceneModel.theID])
+    {
+        int index = [sceneIDs indexOfObject: self.sceneModel.theID];
+
+        [self dismissViewControllerAnimated: NO completion: nil];
+
+        dispatch_async(dispatch_get_main_queue(), ^{
+            UIAlertView *alert = [[UIAlertView alloc] initWithTitle: @"Scene Not Found"
+                                                            message: [NSString stringWithFormat: @"The scene \"%@\" no longer exists.", [sceneNames objectAtIndex: index]]
+                                                           delegate: nil
+                                                  cancelButtonTitle: @"OK"
+                                                  otherButtonTitles: nil];
+            [alert show];
+        });
+    }
+}
+
+/*
+ * PresetNotification Handler
+ */
+-(void)presetNotificationReceived: (NSNotification *)notification
+{
+    [self updatePresetButtonTitle: self.presetButton];
+    [self presetButtonSetup: self.endPresetButton state: [self getCurrentScaledLampState]];
 }
 
 /*
@@ -340,7 +437,6 @@
 -(IBAction)doneButtonPressed: (id)sender
 {
     LSFConstants *constants = [LSFConstants getConstants];
-    LSFAllJoynManager *ajManager = [LSFAllJoynManager getAllJoynManager];
 
     //Get Lamp State
     if (!self.startPropertiesSwitch.on)
@@ -377,13 +473,10 @@
 
     [self.sceneModel updatePulseEffect: self.pedm];
 
-    if (self.sceneModel.theID != nil && ![self.sceneModel.theID isEqualToString: @""])
+    if (self.shouldUpdateSceneAndDismiss)
     {
+        LSFAllJoynManager *ajManager = [LSFAllJoynManager getAllJoynManager];
         [ajManager.lsfSceneManager updateSceneWithID: self.sceneModel.theID withScene: [self.sceneModel toScene]];
-    }
-    else
-    {
-        [ajManager.lsfSceneManager createScene: [self.sceneModel toScene] andSceneName: self.sceneModel.name];
     }
 
     [self dismissViewControllerAnimated: YES completion: nil];
@@ -510,11 +603,12 @@
     [alert show];
 }
 
--(void)presetButtonSetup:(UIButton*) presetButton state:(LSFLampState*)state
+-(void)presetButtonSetup:(UIButton *)presetButton state:(LSFLampState*)state
 {
     LSFPresetModelContainer *container = [LSFPresetModelContainer getPresetModelContainer];
     NSArray *presets = [container.presetContainer allValues];
 
+    NSMutableArray *presetsArray = [[NSMutableArray alloc] init];
     BOOL presetMatched = NO;
     for (LSFPresetModel *data in presets)
     {
@@ -522,12 +616,25 @@
 
         if (matchesPreset)
         {
-            [presetButton setTitle: data.name forState: UIControlStateNormal];
+            [presetsArray addObject: data.name];
             presetMatched = YES;
         }
     }
 
-    if (!presetMatched)
+    if (presetMatched)
+    {
+        NSArray *sortedArray = [presetsArray sortedArrayUsingSelector: @selector(localizedCaseInsensitiveCompare:)];
+        NSMutableString *presetsMatched = [[NSMutableString alloc] init];
+
+        for (NSString *presetName in sortedArray)
+        {
+            [presetsMatched appendString: [NSString stringWithFormat:@"%@, ", presetName]];
+        }
+
+        [presetsMatched deleteCharactersInRange: NSMakeRange(presetsMatched.length - 2, 2)];
+        [presetButton setTitle: presetsMatched forState: UIControlStateNormal];
+    }
+    else
     {
         [presetButton setTitle: @"Save New Preset" forState: UIControlStateNormal];
     }
@@ -601,6 +708,7 @@
         seepvc.lampState = startScaledLampState;
         seepvc.endLampState = endScaledLampState;
         seepvc.effectSender = self;
+        seepvc.sceneID = self.sceneModel.theID;
     }
     else if ([segue.destinationViewController isKindOfClass:[LSFScenesPresetsTableViewController class]])
     {
@@ -617,6 +725,7 @@
         }
 
         sptvc.effectSender = self;
+        sptvc.sceneID = self.sceneModel.theID;
     }
 }
 

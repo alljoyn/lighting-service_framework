@@ -15,11 +15,13 @@
  ******************************************************************************/
 
 #import "LSFModel.h"
+#import "LSFLampStateUniformity.h"
 
 @interface LSFDataModel : LSFModel
 
 @property (nonatomic, strong) LSFLampState *state;
 @property (nonatomic, strong) LSFCapabilityData *capability;
+@property (nonatomic, strong) LSFLampStateUniformity *uniformity;
 
 -(id)initWithID: (NSString *)theID andName: (NSString *)name;
 

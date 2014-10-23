@@ -23,8 +23,8 @@
 #import "LSFConstants.h"
 #import "LSFDispatchQueue.h"
 #import "LSFAboutData.h"
-#import "LSFGarbageCollector.h"
-#import "LSFLampMaintenance.h"
+#import "LSFTabManager.h"
+#import "LSFEnums.h"
 
 @interface LSFSampleLampManagerCallback()
 
@@ -51,14 +51,13 @@
 -(void)updateLampStateColorTempForID: (NSString *)lampID withColorTemp: (unsigned int)colorTemp;
 -(void)postGetLampStateColorTempField: (NSString *)lampID;
 -(void)updateLampGroupState;
--(void)updateLampWithID: (NSString *)lampID;
--(void)deleteLampWithID: (NSString *)lampID andLampName: (NSString *)lampName;
+-(void)updateLampWithID: (NSString *)lampID withCallbackOperation: (LampCallbackOperation)callbackOp;
+-(void)deleteLampWithID: (NSString *)lampID withLampName: (NSString *)lampName andCallbackOperation: (LampCallbackOperation)callbackOp;
 
 @end
 
 @implementation LSFSampleLampManagerCallback
 
-@synthesize reloadLightsDelegate = _reloadLightsDelegate;
 @synthesize queue = _queue;
 
 -(id)init
@@ -91,9 +90,6 @@
             {
                 [self postUpdateLampID: lampID];
             }
-
-            LSFLampMaintenance *lm = [LSFLampMaintenance getLampMaintenance];
-            [lm addLampIDs: lampIDs];
         });
     }
 }
@@ -136,14 +132,10 @@
     });
 }
 
--(void)lampsNameChanged: (NSArray *)lampIDs
+-(void)lampsNameChangedWithID: (NSString *)lampID andName: (NSString *)name
 {
     dispatch_async(self.queue, ^{
-        LSFLampManager *lampManager = ((LSFAllJoynManager *)[LSFAllJoynManager getAllJoynManager]).lsfLampManager;
-        for (NSString *lampID in lampIDs)
-        {
-            [lampManager getLampName: lampID];
-        }
+        [self updateLampName: name forLampID: lampID];
     });
 }
 
@@ -229,7 +221,7 @@
     {
         dispatch_async(self.queue, ^{
             [self updateLampStateForID: lampID withState: state];
-            [self postGetLampParameters: lampID];
+            [self postGetLampParameters: lampID]; //TODO - only call when LampInfo page is being displayed
         });
     }
     else
@@ -248,7 +240,7 @@
     {
         dispatch_async(self.queue, ^{
             [self updateLampStateOnOffForID: lampID withOnOff: onOff];
-            [self postGetLampParameters: lampID];
+            [self postGetLampParameters: lampID]; //TODO - only call when LampInfo page is being displayed
         });
     }
     else
@@ -303,7 +295,7 @@
     {
         dispatch_async(self.queue, ^{
             [self updateLampStateBrightnessForID: lampID withBrightness: brightness];
-            [self postGetLampParameters: lampID];
+            [self postGetLampParameters: lampID]; //TODO - only call when LampInfo page is being displayed
         });
     }
     else
@@ -339,16 +331,13 @@
     //TODO - unused at this point
 }
 
--(void)lampsStateChanged: (NSArray *)lampIDs
+-(void)lampsStateChangedWithID: (NSString *)lampID andLampState: (LSFLampState *)state
 {
-    NSLog(@"LSFSampleLampManagerCallback - lampsStateChanged()");
+    NSLog(@"LSFSampleLampManagerCallback - lampsStateChanged() for lamp ID %@", lampID);
 
     dispatch_async(self.queue, ^{
-        LSFLampManager *lampManager = ((LSFAllJoynManager *)[LSFAllJoynManager getAllJoynManager]).lsfLampManager;
-        for (NSString *lampID in lampIDs)
-        {
-            [lampManager getLampStateForID: lampID];
-        }
+        [self updateLampStateForID: lampID withState: state];
+        [self postGetLampParameters: lampID]; //TODO - only call when LampInfo page is being displayed
     });
 }
 
@@ -373,11 +362,6 @@
     {
         NSLog(@"LSFSampleLampGroupManager - TransitionLampStateOnOffField() returned an error code: %i", rc);
     }
-
-//    dispatch_async(self.queue, ^{
-//        LSFLampManager *lampManager = ((LSFAllJoynManager *)[LSFAllJoynManager getAllJoynManager]).lsfLampManager;
-//        [lampManager getLampStateOnOffFieldForID: lampID];
-//    });
 }
 
 -(void)transitionLampStateHueFieldReplyWithCode: (LSFResponseCode)rc andLampID: (NSString*)lampID
@@ -386,11 +370,6 @@
     {
         NSLog(@"LSFSampleLampGroupManager - TransitionLampStateHueField() returned an error code: %i", rc);
     }
-
-//    dispatch_async(self.queue, ^{
-//        LSFLampManager *lampManager = ((LSFAllJoynManager *)[LSFAllJoynManager getAllJoynManager]).lsfLampManager;
-//        [lampManager getLampStateHueFieldForID: lampID];
-//    });
 }
 
 -(void)transitionLampStateSaturationFieldReplyWithCode: (LSFResponseCode)rc andLampID: (NSString*)lampID
@@ -399,11 +378,6 @@
     {
         NSLog(@"LSFSampleLampGroupManager - TransitionLampStateSaturationField() returned an error code: %i", rc);
     }
-
-//    dispatch_async(self.queue, ^{
-//        LSFLampManager *lampManager = ((LSFAllJoynManager *)[LSFAllJoynManager getAllJoynManager]).lsfLampManager;
-//        [lampManager getLampStateSaturationFieldForID: lampID];
-//    });
 }
 
 -(void)transitionLampStateBrightnessFieldReplyWithCode: (LSFResponseCode)rc andLampID: (NSString*)lampID
@@ -412,11 +386,6 @@
     {
         NSLog(@"LSFSampleLampGroupManager - TransitionLampStateBrightnessField() returned an error code: %i", rc);
     }
-
-//    dispatch_async(self.queue, ^{
-//        LSFLampManager *lampManager = ((LSFAllJoynManager *)[LSFAllJoynManager getAllJoynManager]).lsfLampManager;
-//        [lampManager getLampStateBrightnessFieldForID: lampID];
-//    });
 }
 
 -(void)transitionLampStateColorTempFieldReplyWithCode: (LSFResponseCode)rc andLampID: (NSString*)lampID
@@ -425,11 +394,6 @@
     {
         NSLog(@"LSFSampleLampGroupManager - TransitionLampStateColorTempField() returned an error code: %i", rc);
     }
-
-//    dispatch_async(self.queue, ^{
-//        LSFLampManager *lampManager = ((LSFAllJoynManager *)[LSFAllJoynManager getAllJoynManager]).lsfLampManager;
-//        [lampManager getLampStateColorTempFieldForID: lampID];
-//    });
 }
 
 -(void)getLampFaultsReplyWithCode: (LSFResponseCode)rc lampID: (NSString *)lampID andFaultCodes: (NSArray *)codes
@@ -502,7 +466,12 @@
         lampModel = [[LSFLampModel alloc] initWithLampID: lampID];
         [lamps setValue: lampModel forKey: lampID];
 
-        [self updateLampWithID: lampID];
+        dispatch_async(self.queue, ^{
+            LSFTabManager *tabManager = [LSFTabManager getTabManager];
+            [tabManager updateLampsTab];
+        });
+
+        [self updateLampWithID: lampID withCallbackOperation: LampFound];
     }
 
     if ([lampModel.name isEqualToString: @"[Loading lamp info...]"])
@@ -510,10 +479,7 @@
         //NSLog(@"Getting data set for lamp: %@", lampModel.theID);
 
         //Calls are only made when lamp name is still equal to default name
-        [lampManager getLampName: lampID];
-        [lampManager getLampStateForID: lampID];
-        [lampManager getLampDetailsForID: lampID];
-        //[lampManager getLampParametersForID: lampID];
+        [lampManager getLampDataSetForID: lampID];
     }
 
     if (aboutData != nil)
@@ -521,10 +487,6 @@
         //NSLog(@"Updating lamp about data");
         lampModel.aboutData = aboutData;
     }
-
-    //Update timestamp for pruning purposes
-//    long long timestamp = (long long)([[NSDate date] timeIntervalSince1970] * 1000);
-//    lampModel.timestamp = timestamp;
 }
 
 -(void)postRemoveLampID: (NSString *)lampID
@@ -536,7 +498,12 @@
     if (lampModel != nil)
     {
         [lamps removeObjectForKey: lampID];
-        [self deleteLampWithID: lampID andLampName: lampName];
+        [self deleteLampWithID: lampID withLampName: lampName andCallbackOperation: LampDeleted];
+
+        dispatch_async(self.queue, ^{
+            LSFTabManager *tabManager = [LSFTabManager getTabManager];
+            [tabManager updateLampsTab];
+        });
     }
     else
     {
@@ -552,7 +519,7 @@
     if (lampModel != nil)
     {
         lampModel.name = [NSString stringWithString: name];
-        [self updateLampWithID: lampID];
+        [self updateLampWithID: lampID withCallbackOperation: LampNameUpdated];
     }
     else
     {
@@ -579,7 +546,7 @@
     {
         lampModel.lampDetails = lampDetails;
         lampModel.capability = [[LSFCapabilityData alloc] initWithDimmable: lampDetails.dimmable color: lampDetails.color andTemp: lampDetails.variableColorTemp];
-        [self updateLampWithID: lampID];
+        [self updateLampWithID: lampID withCallbackOperation: LampDetailsUpdated];
     }
     else
     {
@@ -605,7 +572,7 @@
     if (lampModel != nil)
     {
         lampModel.lampParameters = lampParameters;
-        [self updateLampWithID: lampID];
+        [self updateLampWithID: lampID withCallbackOperation: LampParametersUpdated];
     }
     else
     {
@@ -636,8 +603,9 @@
         lampModel.state.hue = [constants unscaleLampStateValue: lampState.hue withMax: 360];
         lampModel.state.saturation = [constants unscaleLampStateValue: lampState.saturation withMax: 100];
         lampModel.state.colorTemp = [constants unscaleColorTemp: lampState.colorTemp];
-        
-        [self updateLampWithID: lampID];
+
+        [self updateLampGroupState];
+        [self updateLampWithID: lampID withCallbackOperation: LampStateUpdated];
     }
     else
     {
@@ -663,7 +631,7 @@
     if (lampModel != nil)
     {
         [lampModel.state setOnOff: onOff];
-        [self updateLampWithID: lampID];
+        [self updateLampWithID: lampID withCallbackOperation: LampStateUpdated];
     }
     else
     {
@@ -690,7 +658,7 @@
     if (lampModel != nil)
     {
         [lampModel.state setBrightness: [constants unscaleLampStateValue: brightness withMax: 100]];
-        [self updateLampWithID: lampID];
+        [self updateLampWithID: lampID withCallbackOperation: LampStateUpdated];
     }
     else
     {
@@ -717,7 +685,7 @@
     if (lampModel != nil)
     {
         [lampModel.state setHue: [constants unscaleLampStateValue: hue withMax: 360]];
-        [self updateLampWithID: lampID];
+        [self updateLampWithID: lampID withCallbackOperation: LampStateUpdated];
     }
     else
     {
@@ -744,7 +712,7 @@
     if (lampModel != nil)
     {
         [lampModel.state setSaturation: [constants unscaleLampStateValue: saturation withMax: 100]];
-        [self updateLampWithID: lampID];
+        [self updateLampWithID: lampID withCallbackOperation: LampStateUpdated];
     }
     else
     {
@@ -771,7 +739,7 @@
     if (lampModel != nil)
     {
         [lampModel.state setColorTemp: [constants unscaleColorTemp: colorTemp]];
-        [self updateLampWithID: lampID];
+        [self updateLampWithID: lampID withCallbackOperation: LampStateUpdated];
     }
     else
     {
@@ -791,39 +759,30 @@
 
 -(void)updateLampGroupState
 {
-//    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.3 * NSEC_PER_SEC)), self.queue, ^{
-//        LSFAllJoynManager *ajManager = [LSFAllJoynManager getAllJoynManager];
-//        [ajManager.slgmc refreshAllLampGroupIDs];
-//    });
-
     dispatch_async(self.queue, ^{
         LSFAllJoynManager *ajManager = [LSFAllJoynManager getAllJoynManager];
         [ajManager.slgmc refreshAllLampGroupIDs];
     });
 }
 
--(void)updateLampWithID: (NSString *)lampID
+-(void)updateLampWithID: (NSString *)lampID withCallbackOperation: (LampCallbackOperation)callbackOp
 {
-    [self updateLampGroupState];
-
-    if (self.reloadLightsDelegate != nil)
-    {
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [self.reloadLightsDelegate reloadLampWithID: lampID];
-        });
-    }
+    dispatch_async(dispatch_get_main_queue(), ^{
+        NSNumber *lampOp = [[NSNumber alloc] initWithInt: callbackOp];
+        NSDictionary *userInfoDict = [[NSDictionary alloc] initWithObjects: [[NSArray alloc] initWithObjects: lampOp, lampID, nil] forKeys: [[NSArray alloc] initWithObjects: @"operation", @"lampID", nil]];
+        [[NSNotificationCenter defaultCenter] postNotificationName: @"LampNotification" object: self userInfo: userInfoDict];
+    });
 }
 
--(void)deleteLampWithID: (NSString *)lampID andLampName: (NSString *)lampName
+-(void)deleteLampWithID: (NSString *)lampID withLampName: (NSString *)lampName andCallbackOperation: (LampCallbackOperation)callbackOp
 {
     [self updateLampGroupState];
 
-    if (self.reloadLightsDelegate != nil)
-    {
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [self.reloadLightsDelegate deleteLampWithID: lampID andName: lampName];
-        });
-    }
+    dispatch_async(dispatch_get_main_queue(), ^{
+        NSNumber *lampOp = [[NSNumber alloc] initWithInt: callbackOp];
+        NSDictionary *userInfoDict = [[NSDictionary alloc] initWithObjects: [[NSArray alloc] initWithObjects: lampOp, lampID, lampName, nil] forKeys: [[NSArray alloc] initWithObjects: @"operation", @"lampID", @"lampName", nil]];
+        [[NSNotificationCenter defaultCenter] postNotificationName: @"LampNotification" object: self userInfo: userInfoDict];
+    });
 }
 
 @end

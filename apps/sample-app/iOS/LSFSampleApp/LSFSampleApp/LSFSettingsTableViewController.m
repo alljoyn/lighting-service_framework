@@ -22,6 +22,8 @@
 
 @interface LSFSettingsTableViewController ()
 
+-(void)controllerNameNotificationReceived: (NSNotification *)notification;
+
 @end
 
 @implementation LSFSettingsTableViewController
@@ -35,22 +37,18 @@
 {
     [super viewWillAppear: animated];
 
-    dispatch_async(([LSFDispatchQueue getDispatchQueue]).queue, ^{
-        LSFAllJoynManager *ajManager = [LSFAllJoynManager getAllJoynManager];
-        [ajManager.scsmc setReloadControllerDelegate: self];
-    });
+    //Set controller notification handler
+    [[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(controllerNameNotificationReceived:) name: @"ControllerNameChanged" object: nil];
 
-    [self reloadControllerData];
+    [self.controllerNameLabel setText:([LSFControllerModel getControllerModel]).name];
 }
 
 -(void)viewWillDisappear: (BOOL)animated
 {
     [super viewWillDisappear: animated];
 
-    dispatch_async(([LSFDispatchQueue getDispatchQueue]).queue, ^{
-        LSFAllJoynManager *ajManager = [LSFAllJoynManager getAllJoynManager];
-        [ajManager.scsmc setReloadControllerDelegate: nil];
-    });
+    //Clear notification handler
+    [[NSNotificationCenter defaultCenter] removeObserver: self];
 }
 
 -(void)didReceiveMemoryWarning
@@ -59,9 +57,9 @@
 }
 
 /*
- * LSFReloadControllerCallbackDelegate Implementation
+ * ControllerNotification Handler
  */
--(void)reloadControllerData
+-(void)controllerNameNotificationReceived: (NSNotification *)notification
 {
     [self.controllerNameLabel setText:([LSFControllerModel getControllerModel]).name];
 }

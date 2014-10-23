@@ -24,6 +24,7 @@
 
 #include "JEnum.h"
 #include "NDefs.h"
+#include "NUtil.h"
 
 namespace lsf {
 

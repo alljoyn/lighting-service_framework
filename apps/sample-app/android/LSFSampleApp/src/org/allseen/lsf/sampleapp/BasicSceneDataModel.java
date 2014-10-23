@@ -17,7 +17,8 @@ package org.allseen.lsf.sampleapp;
 
 import java.util.ArrayList;
 import java.util.List;
-
+import org.allseen.lsf.PresetPulseEffect;
+import org.allseen.lsf.PresetTransitionEffect;
 import org.allseen.lsf.Scene;
 import org.allseen.lsf.StatePulseEffect;
 import org.allseen.lsf.StateTransitionEffect;
@@ -146,58 +147,101 @@ public class BasicSceneDataModel extends ItemDataModel {
     public Scene toScene() {
         Scene scene = new Scene();
 
-        //TODO-FIX handle preset effects properly
         List<StateTransitionEffect> stateTransitionEffects = new ArrayList<StateTransitionEffect>();
+        List<PresetTransitionEffect> presetTransitionEffects = new ArrayList<PresetTransitionEffect>();
         List<StatePulseEffect> statePulseEffects = new ArrayList<StatePulseEffect>();
+        List<PresetPulseEffect> presetPulseEffects = new ArrayList<PresetPulseEffect>();
 
         for (int i = 0; i < noEffects.size(); i++) {
             NoEffectDataModel elementModel = noEffects.get(i);
-            StateTransitionEffect stateTransitionEffect = new StateTransitionEffect();
 
-            stateTransitionEffect.setLamps(elementModel.members.getLamps());
-            stateTransitionEffect.setLampGroups(elementModel.members.getLampGroups());
-            stateTransitionEffect.setLampState(elementModel.state);
-            stateTransitionEffect.setTransitionPeriod(0);
+            if (elementModel.presetID == null) {
+                StateTransitionEffect stateTransitionEffect = new StateTransitionEffect();
 
-            stateTransitionEffects.add(stateTransitionEffect);
+                stateTransitionEffect.setLamps(elementModel.members.getLamps());
+                stateTransitionEffect.setLampGroups(elementModel.members.getLampGroups());
+                stateTransitionEffect.setLampState(elementModel.state);
+                stateTransitionEffect.setTransitionPeriod(0);
+
+                stateTransitionEffects.add(stateTransitionEffect);
+            } else {
+                PresetTransitionEffect presetTransitionEffect = new PresetTransitionEffect();
+
+                presetTransitionEffect.setLamps(elementModel.members.getLamps());
+                presetTransitionEffect.setLampGroups(elementModel.members.getLampGroups());
+                presetTransitionEffect.setPresetID(elementModel.presetID);
+                presetTransitionEffect.setTransitionPeriod(0);
+
+                presetTransitionEffects.add(presetTransitionEffect);
+            }
         }
 
         for (int i = 0; i < transitionEffects.size(); i++) {
             TransitionEffectDataModel elementModel = transitionEffects.get(i);
-            StateTransitionEffect stateTransitionEffect = new StateTransitionEffect();
 
-            stateTransitionEffect.setLamps(elementModel.members.getLamps());
-            stateTransitionEffect.setLampGroups(elementModel.members.getLampGroups());
-            stateTransitionEffect.setLampState(elementModel.state);
-            stateTransitionEffect.setTransitionPeriod(elementModel.duration);
+            if (elementModel.presetID == null) {
+                StateTransitionEffect stateTransitionEffect = new StateTransitionEffect();
 
-            stateTransitionEffects.add(stateTransitionEffect);
+                stateTransitionEffect.setLamps(elementModel.members.getLamps());
+                stateTransitionEffect.setLampGroups(elementModel.members.getLampGroups());
+                stateTransitionEffect.setLampState(elementModel.state);
+                stateTransitionEffect.setTransitionPeriod(elementModel.duration);
+
+                stateTransitionEffects.add(stateTransitionEffect);
+            } else {
+                PresetTransitionEffect presetTransitionEffect = new PresetTransitionEffect();
+
+                presetTransitionEffect.setLamps(elementModel.members.getLamps());
+                presetTransitionEffect.setLampGroups(elementModel.members.getLampGroups());
+                presetTransitionEffect.setPresetID(elementModel.presetID);
+
+                presetTransitionEffects.add(presetTransitionEffect);
+            }
         }
 
         for (int i = 0; i < pulseEffects.size(); i++) {
             PulseEffectDataModel elementModel = pulseEffects.get(i);
-            StatePulseEffect statePulseEffect = new StatePulseEffect();
 
-            statePulseEffect.setLamps(elementModel.members.getLamps());
-            statePulseEffect.setLampGroups(elementModel.members.getLampGroups());
-            statePulseEffect.setFromLampState(elementModel.state);
-            statePulseEffect.setToLampState(elementModel.endState);
-            statePulseEffect.setPulseDuration(elementModel.duration);
-            statePulseEffect.setPulsePeriod(elementModel.period);
-            statePulseEffect.setPulseCount(elementModel.count);
+            if (elementModel.presetID == null || elementModel.endPresetID == null) {
+                StatePulseEffect statePulseEffect = new StatePulseEffect();
 
-            statePulseEffects.add(statePulseEffect);
+                statePulseEffect.setLamps(elementModel.members.getLamps());
+                statePulseEffect.setLampGroups(elementModel.members.getLampGroups());
+                statePulseEffect.setFromLampState(elementModel.startWithCurrent ? EmptyLampState.instance : elementModel.state);
+                statePulseEffect.setToLampState(elementModel.endState);
+                statePulseEffect.setPulseDuration(elementModel.duration);
+                statePulseEffect.setPulsePeriod(elementModel.period);
+                statePulseEffect.setPulseCount(elementModel.count);
+
+                statePulseEffects.add(statePulseEffect);
+            } else {
+                PresetPulseEffect presetPulseEffect = new PresetPulseEffect();
+
+                presetPulseEffect.setLamps(elementModel.members.getLamps());
+                presetPulseEffect.setLampGroups(elementModel.members.getLampGroups());
+                presetPulseEffect.setFromPreset(elementModel.startWithCurrent ? PresetPulseEffect.PRESET_ID_CURRENT_STATE : elementModel.presetID);
+                presetPulseEffect.setToPreset(elementModel.endPresetID);
+                presetPulseEffect.setPulseDuration(elementModel.duration);
+                presetPulseEffect.setPulsePeriod(elementModel.period);
+                presetPulseEffect.setPulseCount(elementModel.count);
+
+                presetPulseEffects.add(presetPulseEffect);
+            }
         }
 
         scene.setStateTransitionEffects(stateTransitionEffects.toArray(new StateTransitionEffect[stateTransitionEffects.size()]));
+        scene.setPresetTransitionEffects(presetTransitionEffects.toArray(new PresetTransitionEffect[presetTransitionEffects.size()]));
         scene.setStatePulseEffects(statePulseEffects.toArray(new StatePulseEffect[statePulseEffects.size()]));
+        scene.setPresetPulseEffects(presetPulseEffects.toArray(new PresetPulseEffect[presetPulseEffects.size()]));
 
         return scene;
     }
 
     public void fromScene(Scene scene) {
         StateTransitionEffect[] stateTransitionEffects = scene.getStateTransitionEffects();
+        PresetTransitionEffect[] presetTransitionEffects = scene.getPresetTransitionEffects();
         StatePulseEffect[] statePulseEffects = scene.getStatePulseEffects();
+        PresetPulseEffect[] presetPulseEffects = scene.getPresetPulseEffects();
 
         noEffects.clear();
         transitionEffects.clear();
@@ -209,6 +253,8 @@ public class BasicSceneDataModel extends ItemDataModel {
             if (stateTransitionEffect.getTransitionPeriod() == 0) {
                 NoEffectDataModel elementModel = new NoEffectDataModel();
 
+                // The elementModel.presetID field is left at the default value
+                // set by the NoEffectDataModel constructor.
                 elementModel.members.setLamps(stateTransitionEffect.getLamps());
                 elementModel.members.setLampGroups(stateTransitionEffect.getLampGroups());
                 elementModel.state = stateTransitionEffect.getLampState();
@@ -217,6 +263,8 @@ public class BasicSceneDataModel extends ItemDataModel {
             } else {
                 TransitionEffectDataModel elementModel = new TransitionEffectDataModel();
 
+                // The elementModel.presetID field is left at the default value
+                // set by the TransitionEffectDataModel constructor.
                 elementModel.members.setLamps(stateTransitionEffect.getLamps());
                 elementModel.members.setLampGroups(stateTransitionEffect.getLampGroups());
                 elementModel.state = stateTransitionEffect.getLampState();
@@ -226,17 +274,76 @@ public class BasicSceneDataModel extends ItemDataModel {
             }
         }
 
+        for (int i = 0; i < presetTransitionEffects.length; i++) {
+            PresetTransitionEffect presetTransitionEffect = presetTransitionEffects[i];
+
+            if (presetTransitionEffect.getTransitionPeriod() == 0) {
+                NoEffectDataModel elementModel = new NoEffectDataModel();
+
+                // The elementModel.state field is left at the default value
+                // set by the NoEffectDataModel constructor.
+                //
+                // We delay copying the state because the preset may not have been
+                // received yet. See BasicSceneElementInfoFragment.onCreateView().
+                elementModel.members.setLamps(presetTransitionEffect.getLamps());
+                elementModel.members.setLampGroups(presetTransitionEffect.getLampGroups());
+                elementModel.presetID = presetTransitionEffect.getPresetID();
+
+                noEffects.add(elementModel);
+            } else {
+                TransitionEffectDataModel elementModel = new TransitionEffectDataModel();
+
+                // The elementModel.state field is left at the default value
+                // set by the TransitionEffectDataModel constructor.
+                //
+                // We delay copying the state because the preset may not have been
+                // received yet. See BasicSceneElementInfoFragment.onCreateView().
+                elementModel.members.setLamps(presetTransitionEffect.getLamps());
+                elementModel.members.setLampGroups(presetTransitionEffect.getLampGroups());
+                elementModel.presetID = presetTransitionEffect.getPresetID();
+                elementModel.duration = presetTransitionEffect.getTransitionPeriod();
+
+                transitionEffects.add(elementModel);
+            }
+        }
+
         for (int i = 0; i < statePulseEffects.length; i++) {
             StatePulseEffect statePulseEffect = statePulseEffects[i];
             PulseEffectDataModel elementModel = new PulseEffectDataModel();
 
+            // The elementModel.presetID and elementModel.endPresetID fields are
+            // left at the default values set by the PulseEffectDataModel constructor.
             elementModel.members.setLamps(statePulseEffect.getLamps());
             elementModel.members.setLampGroups(statePulseEffect.getLampGroups());
             elementModel.state = statePulseEffect.getFromLampState();
             elementModel.endState = statePulseEffect.getToLampState();
+            elementModel.startWithCurrent = elementModel.state.isNull();
             elementModel.period = statePulseEffect.getPulsePeriod();
             elementModel.duration = statePulseEffect.getPulseDuration();
             elementModel.count = statePulseEffect.getPulseCount();
+
+            pulseEffects.add(elementModel);
+        }
+
+        for (int i = 0; i < presetPulseEffects.length; i++) {
+            PresetPulseEffect presetPulseEffect = presetPulseEffects[i];
+            PulseEffectDataModel elementModel = new PulseEffectDataModel();
+
+            // The elementModel.state and elementModel.endState fields are
+            // left at the default values set by the PulseEffectDataModel
+            // constructor.
+            //
+            // We delay copying the state because the preset may not have been
+            // received yet. See BasicSceneElementInfoFragment.onCreateView()
+            // and PulseEffectFragment.onCreateView().
+            elementModel.members.setLamps(presetPulseEffect.getLamps());
+            elementModel.members.setLampGroups(presetPulseEffect.getLampGroups());
+            elementModel.presetID = presetPulseEffect.getFromPreset();
+            elementModel.endPresetID = presetPulseEffect.getToPreset();
+            elementModel.startWithCurrent = PresetPulseEffect.PRESET_ID_CURRENT_STATE.equals(elementModel.presetID);
+            elementModel.period = presetPulseEffect.getPulsePeriod();
+            elementModel.duration = presetPulseEffect.getPulseDuration();
+            elementModel.count = presetPulseEffect.getPulseCount();
 
             pulseEffects.add(elementModel);
         }

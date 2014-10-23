@@ -29,6 +29,10 @@ public class LampState extends DefaultNativeClassWrapper {
 		this.setSaturation(other.getSaturation());
 		this.setBrightness(other.getBrightness());
 		this.setColorTemp(other.getColorTemp());
+
+		// The setNull() call currently needs to be last due to the side
+		// effects of the other setXXX() calls.
+		this.setNull(other.isNull());
 	}
 
     //TODO-FIX The get*() methods returning primitives should return their
@@ -47,6 +51,9 @@ public class LampState extends DefaultNativeClassWrapper {
 
     public native void setBrightness(long brightness);
     public native long getBrightness();
+
+    protected native void setNull(boolean isNull);
+    public native boolean isNull();
 
 	@Override
 	protected native void createNativeObject();

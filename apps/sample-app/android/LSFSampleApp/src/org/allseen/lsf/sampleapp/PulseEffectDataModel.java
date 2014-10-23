@@ -20,6 +20,9 @@ import org.allseen.lsf.LampState;
 public class PulseEffectDataModel extends BasicSceneElementDataModel {
     public static String defaultName = "";
 
+    public boolean startWithCurrent;
+
+    public String endPresetID;
     public LampState endState;
 
     public long period;
@@ -29,6 +32,9 @@ public class PulseEffectDataModel extends BasicSceneElementDataModel {
     public PulseEffectDataModel() {
         super(EffectType.Pulse, defaultName);
 
+        this.startWithCurrent = false;
+
+        this.endPresetID = null;
         this.endState = new LampState();
 
         // State is always set to "on". To turn the lamp off as part of an effect,
@@ -43,6 +49,9 @@ public class PulseEffectDataModel extends BasicSceneElementDataModel {
     public PulseEffectDataModel(PulseEffectDataModel other) {
         super(other);
 
+        this.startWithCurrent = other.startWithCurrent;
+
+        this.endPresetID = other.endPresetID;
         this.endState = new LampState(other.endState);
 
         this.period = other.period;

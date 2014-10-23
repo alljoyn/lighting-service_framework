@@ -21,10 +21,13 @@
 @interface LSFRootTableViewController ()
 
 -(void)controllerNotificationReceived: (NSNotification *)notification;
+-(void)wifiNotificationReceived: (NSNotification *)notification;
 
 @end
 
 @implementation LSFRootTableViewController
+
+@synthesize data = _data;
 
 -(void)viewDidLoad
 {
@@ -36,6 +39,7 @@
     [super viewWillAppear: animated];
 
     [[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(controllerNotificationReceived:) name: @"ControllerNotification" object: nil];
+    [[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(wifiNotificationReceived:) name: @"WifiNotification" object: nil];
 }
 
 -(void)viewWillDisappear: (BOOL)animated
@@ -50,24 +54,36 @@
     [super didReceiveMemoryWarning];
 }
 
+/*
+ * ControllerNotification Handler
+ */
 -(void)controllerNotificationReceived: (NSNotification *)notification
 {
-    //NSLog(@"LSFRootTableViewController - notficicationReceived() executing");
-    //NSLog(@"Notification Name = %@", notification.name);
-
     NSDictionary *userInfo = notification.userInfo;
     NSNumber *controllerStatus = [userInfo valueForKey: @"status"];
 
     if (controllerStatus.intValue == Connected)
     {
         NSLog(@"Controller is now connected");
-        [self.tableView reloadData];
     }
     else if (controllerStatus.intValue == Disconnected)
     {
         NSLog(@"Controller is now disconnected");
-        [self.tableView reloadData];
     }
+
+    [self.data removeAllObjects];
+    [self.tableView reloadData];
+}
+
+/*
+ * WifiNotification Handler
+ */
+-(void)wifiNotificationReceived: (NSNotification *)notification
+{
+    NSLog(@"LSFRootTableViewController - wifiNotificationReceived() executing");
+
+    [self.data removeAllObjects];
+    [self.tableView reloadData];
 }
 
 @end

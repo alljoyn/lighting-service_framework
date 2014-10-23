@@ -22,5 +22,7 @@
 
 -(id)initWithBusAttachment: (AJNBusAttachment *)bus;
 -(void)getAboutDataFromBusName: (NSString *)busName onPort: (unsigned int)port;
+-(void)unregisterAnnouncementHandler;
+-(void)registerAnnouncementHandler;
 
 @end

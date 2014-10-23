@@ -43,6 +43,7 @@
 @synthesize pollingDelaySeconds = _pollingDelaySeconds;
 @synthesize lampExperationMilliseconds = _lampExperationMilliseconds;
 @synthesize RETRY_INTERVAL = _RETRY_INTERVAL;
+@synthesize UI_DELAY = _UI_DELAY;
 
 +(LSFConstants *)getConstants
 {
@@ -103,7 +104,12 @@
         self.pollingDelaySeconds = 2;
         self.lampExperationMilliseconds = 5000;
 
-        self.RETRY_INTERVAL = 1;
+        self.RETRY_INTERVAL = 0.2;
+
+        self.uniformPowerGreen = [[UIColor alloc] initWithRed: (CGFloat)(205.0 / 255.0) green: (CGFloat)(245.0 / 255) blue: (CGFloat)(78.0 / 255.0) alpha: 1.0];
+        self.midstatePowerOrange = [[UIColor alloc] initWithRed: (CGFloat)(249.0 / 255.0) green: (CGFloat)(233.0 / 255) blue: (CGFloat)(55.0 / 255.0) alpha: 1.0];
+
+        self.UI_DELAY = 250;
     }
     
     return self;
@@ -142,7 +148,7 @@
         if (info[@"SSID"])
         {
             ssid = info[@"SSID"];
-            NSLog(@"SSID = %@", ssid);
+            //NSLog(@"SSID = %@", ssid);
         }
     }
     

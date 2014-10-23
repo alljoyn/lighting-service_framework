@@ -16,9 +16,14 @@
 
 #import <Foundation/Foundation.h>
 
-@protocol LSFReloadGroupsCallbackDelegate <NSObject>
+@interface LSFColorAverager : NSObject
 
--(void)reloadGroupWithID: (NSString *)groupID;
--(void)deleteGroupsWithIDs: (NSArray *)groupIDs andNames: (NSArray *)groupNames;
+-(id)init;
+-(void)reset;
+-(void)add: (long long)value;
+-(long long)getSum;
+-(long long)getCount;
+-(long long)getAverage;
+-(BOOL)isUniform;
 
 @end

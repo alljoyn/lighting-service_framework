@@ -40,6 +40,7 @@
 @property (weak, nonatomic) IBOutlet UIImageView *endColorIndicatorImage;
 @property (nonatomic, strong) LSFSceneDataModel *sceneModel;
 @property (nonatomic, strong) LSFPulseEffectDataModel *pedm;
+@property (nonatomic) BOOL shouldUpdateSceneAndDismiss;
 
 -(IBAction)endBrightnessSliderValueChanged: (UISlider *)sender;
 -(IBAction)endBrightnessSliderTouchUpInside: (UISlider *)sender;

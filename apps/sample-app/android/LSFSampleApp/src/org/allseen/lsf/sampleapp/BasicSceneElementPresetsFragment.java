@@ -48,8 +48,8 @@ public class BasicSceneElementPresetsFragment extends DimmableItemPresetsFragmen
     @Override
     protected void doSavePreset(String presetName) {
         if (key2 == PulseEffectFragment.STATE2_ITEM_TAG) {
-            DimmableItemDataModel itemModel = getDimmableItemDataModel();
-            doSavePreset(presetName, ((PulseEffectDataModel)itemModel).endState);
+            PulseEffectDataModel pulseModel = (PulseEffectDataModel)getDimmableItemDataModel();
+            doSavePreset(presetName, pulseModel.endState);
         } else {
             super.doSavePreset(presetName);
         }
@@ -57,12 +57,14 @@ public class BasicSceneElementPresetsFragment extends DimmableItemPresetsFragmen
 
     @Override
     protected void doApplyPreset(PresetDataModel presetModel) {
-        DimmableItemDataModel itemModel = getDimmableItemDataModel();
-
         if (key2 == PulseEffectFragment.STATE2_ITEM_TAG) {
-            ((PulseEffectDataModel)itemModel).endState = new LampState(presetModel.state);
+            PulseEffectDataModel pulseModel = (PulseEffectDataModel)getDimmableItemDataModel();
+            pulseModel.endPresetID = presetModel.id;
+            pulseModel.endState = new LampState(presetModel.state);
         } else {
-            itemModel.state = new LampState(presetModel.state);
+            BasicSceneElementDataModel elementModel = (BasicSceneElementDataModel)getDimmableItemDataModel();
+            elementModel.presetID = presetModel.id;
+            elementModel.state = new LampState(presetModel.state);
         }
     }
 }

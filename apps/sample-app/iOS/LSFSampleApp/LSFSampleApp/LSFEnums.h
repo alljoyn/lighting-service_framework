@@ -18,3 +18,33 @@ typedef enum {
     Connected,
     Disconnected
 } ControllerStatus;
+
+typedef enum {
+    LampFound,
+    LampDeleted,
+    LampNameUpdated,
+    LampDetailsUpdated,
+    LampParametersUpdated,
+    LampStateUpdated
+} LampCallbackOperation;
+
+typedef enum {
+    GroupCreated,
+    GroupNameUpdated,
+    GroupStateUpdated,
+    GroupDeleted
+} GroupCallbackOperation;
+
+typedef enum {
+    SceneCreated,
+    SceneNameUpdated,
+    SceneUpdated,
+    SceneDeleted
+} SceneCallbackOperation;
+
+typedef enum {
+    MasterSceneCreated,
+    MasterSceneNameUpdated,
+    MasterSceneUpdated,
+    MasterSceneDeleted
+} MasterSceneCallbackOperation;

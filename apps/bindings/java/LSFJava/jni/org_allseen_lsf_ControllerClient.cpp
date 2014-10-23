@@ -41,7 +41,7 @@ jobject JNICALL Java_org_allseen_lsf_ControllerClient_start(JNIEnv*env, jobject 
         return NULL;
     }
 
-    return JEnum::jStatusCodeEnum->getObject((int)xController->Start());
+    return JEnum::jControllerClientStatusEnum->getObject((int)xController->Start());
 }
 
 JNIEXPORT
@@ -53,7 +53,7 @@ jobject JNICALL Java_org_allseen_lsf_ControllerClient_stop(JNIEnv*env, jobject t
         return NULL;
     }
 
-    return JEnum::jStatusCodeEnum->getObject((int)xController->Stop());
+    return JEnum::jControllerClientStatusEnum->getObject((int)xController->Stop());
 }
 
 JNIEXPORT

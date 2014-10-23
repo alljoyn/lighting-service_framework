@@ -21,15 +21,16 @@
 #import "LSFLampModelContainer.h"
 #import "LSFLampModel.h"
 #import "LSFUtilityFunctions.h"
-#import "LSFGarbageCollector.h"
 #import "LSFLightsTableViewController.h"
 #import "LSFLightInfoTableViewController.h"
+#import "LSFEnums.h"
 
 @interface LSFLightsChangeNameViewController ()
 
 @property (nonatomic, strong) LSFLampModel *lampModel;
 @property (nonatomic) BOOL doneButtonPressed;
 
+-(void)controllerNotificationReceived: (NSNotification *)notification;
 -(BOOL)checkForDuplicateName: (NSString *)name;
 
 @end
@@ -50,33 +51,22 @@
 {
     [super viewWillAppear: animated];
 
-    //Set lamps callback delegate
-    dispatch_async(([LSFDispatchQueue getDispatchQueue]).queue, ^{
-        LSFAllJoynManager *ajManager = [LSFAllJoynManager getAllJoynManager];
-        [ajManager.slmc setReloadLightsDelegate: self];
-
-        LSFGarbageCollector *garbageCollector = [LSFGarbageCollector getGarbageCollector];
-        [garbageCollector setReloadLightsDelegate: self];
-    });
+    //Set notification handler
+    [[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(controllerNotificationReceived:) name: @"ControllerNotification" object: nil];
+    [[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(lampNotificationReceived:) name: @"LampNotification" object: nil];
 
     [self.lampNameTextField becomeFirstResponder];
     self.doneButtonPressed = NO;
 
-    [self reloadLampWithID: self.lampID];
+    [self reloadLampName];
 }
 
 -(void)viewWillDisappear: (BOOL)animated
 {
     [super viewWillDisappear: animated];
 
-    //Clear lamps callback delegate
-    dispatch_async(([LSFDispatchQueue getDispatchQueue]).queue, ^{
-        LSFAllJoynManager *ajManager = [LSFAllJoynManager getAllJoynManager];
-        [ajManager.slmc setReloadLightsDelegate: nil];
-
-        LSFGarbageCollector *garbageCollector = [LSFGarbageCollector getGarbageCollector];
-        [garbageCollector setReloadLightsDelegate: nil];
-    });
+    //Clear notification handler
+    [[NSNotificationCenter defaultCenter] removeObserver: self];
 }
 
 -(void)didReceiveMemoryWarning
@@ -85,36 +75,65 @@
 }
 
 /*
- * LSFReloadLightsCallbackDelegate Implementation
+ * ControllerNotification Handler
  */
--(void)reloadLampWithID: (NSString *)lampID
+-(void)controllerNotificationReceived: (NSNotification *)notification
 {
+    NSDictionary *userInfo = notification.userInfo;
+    NSNumber *controllerStatus = [userInfo valueForKey: @"status"];
+
+    if (controllerStatus.intValue == Disconnected)
+    {
+        [self.navigationController popToRootViewControllerAnimated: YES];
+    }
+}
+
+/*
+ * LampNotification Handler
+ */
+-(void)lampNotificationReceived: (NSNotification *)notification
+{
+    NSString *lampID = [notification.userInfo valueForKey: @"lampID"];
+    NSNumber *callbackOp = [notification.userInfo valueForKey: @"operation"];
+
     if ([self.lampID isEqualToString: lampID])
     {
-        //Refresh lamp model from dictionary using lamp ID
-        LSFLampModelContainer *lampsContainer = [LSFLampModelContainer getLampModelContainer];
-        NSMutableDictionary *lamps = lampsContainer.lampContainer;
-        self.lampModel = [lamps valueForKey: self.lampID];
-
-        self.lampNameTextField.text = self.lampModel.name;
+        switch (callbackOp.intValue)
+        {
+            case LampDeleted:
+                [self deleteLampWithID: lampID andName: [notification.userInfo valueForKey: @"lampName"]];
+                break;
+            case LampNameUpdated:
+                [self reloadLampName];
+                break;
+            default:
+                NSLog(@"Operation not found - Taking no action");
+                break;
+        }
     }
+}
+
+-(void)reloadLampName
+{
+    LSFLampModelContainer *lampsContainer = [LSFLampModelContainer getLampModelContainer];
+    NSMutableDictionary *lamps = lampsContainer.lampContainer;
+    self.lampModel = [lamps valueForKey: self.lampID];
+
+    self.lampNameTextField.text = self.lampModel.name;
 }
 
 -(void)deleteLampWithID: (NSString *)lampID andName: (NSString *)lampName
 {
-//    if ([self.lampID isEqualToString: lampID])
-//    {
-//        [self.navigationController popToRootViewControllerAnimated: YES];
-//
-//        dispatch_async(dispatch_get_main_queue(), ^{
-//            UIAlertView *alert = [[UIAlertView alloc] initWithTitle: @"Connection Lost"
-//                                                            message: [NSString stringWithFormat: @"Unable to connect to \"%@\".", lampName]
-//                                                           delegate: nil
-//                                                  cancelButtonTitle: @"OK"
-//                                                  otherButtonTitles: nil];
-//            [alert show];
-//        });
-//    }
+    [self.navigationController popToRootViewControllerAnimated: YES];
+
+    dispatch_async(dispatch_get_main_queue(), ^{
+        UIAlertView *alert = [[UIAlertView alloc] initWithTitle: @"Connection Lost"
+                                                        message: [NSString stringWithFormat: @"Unable to connect to \"%@\".", lampName]
+                                                       delegate: nil
+                                              cancelButtonTitle: @"OK"
+                                              otherButtonTitles: nil];
+        [alert show];
+    });
 }
 
 /*
@@ -123,6 +142,11 @@
 -(BOOL)textFieldShouldReturn: (UITextField *)textField
 {
     if (![LSFUtilityFunctions checkNameLength: self.lampNameTextField.text entity: @"Lamp Name"])
+    {
+        return NO;
+    }
+
+    if (![LSFUtilityFunctions checkWhiteSpaces: self.lampNameTextField.text entity: @"Lamp Name"])
     {
         return NO;
     }
@@ -160,12 +184,12 @@
 {
     if (buttonIndex == 0)
     {
-        [alertView dismissWithClickedButtonIndex: 0 animated: YES];
+        [alertView dismissWithClickedButtonIndex: 0 animated: NO];
     }
     
     if (buttonIndex == 1)
     {
-        [alertView dismissWithClickedButtonIndex: 1 animated: YES];
+        [alertView dismissWithClickedButtonIndex: 1 animated: NO];
         
         self.doneButtonPressed = YES;
         [self.lampNameTextField resignFirstResponder];

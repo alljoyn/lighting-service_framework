@@ -16,11 +16,8 @@
 
 #import <Foundation/Foundation.h>
 #import "LSFControllerServiceManagerCallbackDelegate.h"
-#import "LSFReloadControllerCallbackDelegate.h"
 
 @interface LSFSampleControllerServiceManagerCallback : NSObject <LSFControllerServiceManagerCallbackDelegate>
-
-@property (nonatomic, weak) id<LSFReloadControllerCallbackDelegate> reloadControllerDelegate;
 
 -(id)init;
 

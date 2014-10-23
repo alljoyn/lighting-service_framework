@@ -27,7 +27,6 @@
 
 @implementation LSFSampleControllerServiceManagerCallback
 
-@synthesize reloadControllerDelegate = _reloadControllerDelegate;
 @synthesize queue = _queue;
 
 -(id)init
@@ -71,16 +70,9 @@
         NSLog(@"Controller name changed and Controller IDs match");
         model.name = controllerName;
 
-        if (self.reloadControllerDelegate != nil)
-        {
-            dispatch_async(dispatch_get_main_queue(), ^{
-                [self.reloadControllerDelegate reloadControllerData];
-            });
-        }
-    }
-    else
-    {
-        NSLog(@"Controller IDs do not match so the name cannot be changed locally");
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [[NSNotificationCenter defaultCenter] postNotificationName: @"ControllerNameChanged" object: self userInfo: nil];
+        });
     }
 }
 

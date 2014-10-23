@@ -12,13 +12,24 @@
  *    WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
  *    ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  *    OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ *
  ******************************************************************************/
 
-#import <Foundation/Foundation.h>
+#ifndef LSF_JNI_XCONTROLLERSERVICEMANAGER_H_
+#define LSF_JNI_XCONTROLLERSERVICEMANAGER_H_
 
-@protocol LSFReloadScenesCallbackDelegate <NSObject>
+#include <jni.h>
 
--(void)reloadSceneWithID: (NSString *)sceneID;
--(void)deleteScenesWithIDs: (NSArray *)sceneIDs andNames: (NSArray *)sceneNames;
+#include <ControllerServiceManager.h>   // lighting/service_framework
 
-@end
+namespace lsf {
+
+class XControllerServiceManager : public ControllerServiceManager {
+public:
+    XControllerServiceManager(jobject jobj, ControllerClient& controller, ControllerServiceManagerCallback& callback);
+    virtual ~XControllerServiceManager();
+};
+
+} /* namespace lsf */
+#endif /* LSF_JNI_XCONTROLLERSERVICEMANAGER_H_ */
+

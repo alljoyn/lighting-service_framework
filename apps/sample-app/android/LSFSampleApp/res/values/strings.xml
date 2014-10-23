@@ -161,6 +161,7 @@
     <string name="effect_info_count_name">Number of pulses</string>
     <string name="effect_transition_details">%1$.1f</string>
     <string name="effect_pulse_details">%1$.1f, %2$.1f, %3$d</string>
+    <string name="effect_pulse_start_with_current_properties">Start with each lamp\'s properties when the scene is applied</string>
     <string name="default_controller_name">[Searching for controller&#8230;]</string>
     <string name="default_lamp_name">[Loading lamp info&#8230;]</string>
     <string name="default_group_name">[Loading group info&#8230;]</string>

@@ -23,8 +23,13 @@
 #import "LSFScenesPresetsTableViewController.h"
 #import "LSFPresetModelContainer.h"
 #import "LSFPresetModel.h"
+#import "LSFEnums.h"
 
 @interface LSFTransitionEffectTableViewController ()
+
+-(void)controllerNotificationReceived: (NSNotification *)notification;
+-(void)sceneNotificationReceived: (NSNotification *)notification;
+-(void)deleteScenesWithIDs: (NSArray *)sceneIDs andNames: (NSArray *)sceneNames;
 
 @end
 
@@ -34,6 +39,7 @@
 @synthesize colorIndicatorImage = _colorIndicatorImage;
 @synthesize tedm = _tedm;
 @synthesize sceneModel = _sceneModel;
+@synthesize shouldUpdateSceneAndDismiss = _shouldUpdateSceneAndDismiss;
 
 -(void)viewDidLoad
 {
@@ -43,6 +49,10 @@
 -(void)viewWillAppear: (BOOL)animated
 {
     [super viewWillAppear: animated];
+
+    //Set notification handler
+    [[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(controllerNotificationReceived:) name: @"ControllerNotification" object: nil];
+    [[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(sceneNotificationReceived:) name: @"SceneNotification" object: nil];
 
     LSFConstants *constants = [LSFConstants getConstants];
 
@@ -77,9 +87,72 @@
     [self presetButtonSetup: self.tedm.state];
 }
 
+-(void)viewWillDisappear: (BOOL)animated
+{
+    [super viewWillDisappear: animated];
+
+    //Clear scenes notification handler
+    [[NSNotificationCenter defaultCenter] removeObserver: self];
+}
+
 -(void)didReceiveMemoryWarning
 {
     [super didReceiveMemoryWarning];
+}
+
+/*
+ * ControllerNotification Handler
+ */
+-(void)controllerNotificationReceived: (NSNotification *)notification
+{
+    NSDictionary *userInfo = notification.userInfo;
+    NSNumber *controllerStatus = [userInfo valueForKey: @"status"];
+
+    if (controllerStatus.intValue == Disconnected)
+    {
+        [self dismissViewControllerAnimated: NO completion: nil];
+    }
+}
+
+/*
+ * SceneNotification Handler
+ */
+-(void)sceneNotificationReceived: (NSNotification *)notification
+{
+    NSNumber *callbackOp = [notification.userInfo valueForKey: @"operation"];
+    NSArray *sceneIDs = [notification.userInfo valueForKey: @"sceneIDs"];
+    NSArray *sceneNames = [notification.userInfo valueForKey: @"sceneNames"];
+
+    if ([sceneIDs containsObject: self.sceneModel.theID])
+    {
+        switch (callbackOp.intValue)
+        {
+            case SceneDeleted:
+                [self deleteScenesWithIDs: sceneIDs andNames: sceneNames];
+                break;
+            default:
+                break;
+        }
+    }
+}
+
+-(void)deleteScenesWithIDs: (NSArray *)sceneIDs andNames: (NSArray *)sceneNames
+{
+    if ([sceneIDs containsObject: self.sceneModel.theID])
+    {
+        int index = [sceneIDs indexOfObject: self.sceneModel.theID];
+
+        [self dismissViewControllerAnimated: NO completion: nil];
+
+        dispatch_async(dispatch_get_main_queue(), ^{
+            UIAlertView *alert = [[UIAlertView alloc] initWithTitle: @"Scene Not Found"
+                                                            message: [NSString stringWithFormat: @"The scene \"%@\" no longer exists.", [sceneNames objectAtIndex: index]]
+                                                           delegate: nil
+                                                  cancelButtonTitle: @"OK"
+                                                  otherButtonTitles: nil];
+            [alert show];
+        });
+    }
 }
 
 /*
@@ -101,7 +174,6 @@
 -(IBAction)doneButtonPressed: (id)sender
 {
     LSFConstants *constants = [LSFConstants getConstants];
-    LSFAllJoynManager *ajManager = [LSFAllJoynManager getAllJoynManager];
 
     //Get Lamp State
     unsigned int scaledBrightness = [constants scaleLampStateValue: (uint32_t)self.brightnessSlider.value withMax: 100];
@@ -116,13 +188,10 @@
 
     [self.sceneModel updateTransitionEffect: self.tedm];
 
-    if (self.sceneModel.theID != nil && ![self.sceneModel.theID isEqualToString: @""])
+    if (self.shouldUpdateSceneAndDismiss)
     {
+        LSFAllJoynManager *ajManager = [LSFAllJoynManager getAllJoynManager];
         [ajManager.lsfSceneManager updateSceneWithID: self.sceneModel.theID withScene: [self.sceneModel toScene]];
-    }
-    else
-    {
-        [ajManager.lsfSceneManager createScene: [self.sceneModel toScene] andSceneName: self.sceneModel.name];
     }
 
     [self dismissViewControllerAnimated: YES completion: nil];
@@ -150,12 +219,14 @@
         seepvc.effectProperty = TransitionDuration;
         seepvc.lampState = scaledLampState;
         seepvc.effectSender = self;
+        seepvc.sceneID = self.sceneModel.theID;
     }
     else if ([segue.identifier isEqualToString: @"ScenePresets"])
     {
         LSFScenesPresetsTableViewController *sptvc = [segue destinationViewController];
         sptvc.lampState = scaledLampState;
         sptvc.effectSender = self;
+        sptvc.sceneID = self.sceneModel.theID;
     }
 }
 

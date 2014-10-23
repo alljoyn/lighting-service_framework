@@ -15,13 +15,16 @@
  ******************************************************************************/
 
 #import "LSFScenesEnterNameViewController.h"
-#import "LSFScenesMembersTableViewController.h"
+#import "LSFScenesCreateSceneElementsTableViewController.h"
 #import "LSFSceneModelContainer.h"
 #import "LSFDispatchQueue.h"
 #import "LSFAllJoynManager.h"
 #import "LSFUtilityFunctions.h"
+#import "LSFEnums.h"
 
 @interface LSFScenesEnterNameViewController ()
+
+-(void)controllerNotificationReceived: (NSNotification *)notification;
 
 @end
 
@@ -39,22 +42,38 @@
 {
     [super viewWillAppear: animated];
     [self.nameTextField becomeFirstResponder];
-
-    //Hide toolbar because it is not needed
     [self.navigationController.toolbar setHidden: YES];
+
+    //Set notification handler
+    [[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(controllerNotificationReceived:) name: @"ControllerNotification" object: nil];
 }
 
 -(void)viewWillDisappear: (BOOL)animated
 {
     [super viewWillDisappear: animated];
-
-    //Unhide toolbar because it is not needed
     [self.navigationController.toolbar setHidden: NO];
+
+    //Clear notification handler
+    [[NSNotificationCenter defaultCenter] removeObserver: self];
 }
 
-- (void)didReceiveMemoryWarning
+-(void)didReceiveMemoryWarning
 {
     [super didReceiveMemoryWarning];
+}
+
+/*
+ * ControllerNotification Handler
+ */
+-(void)controllerNotificationReceived: (NSNotification *)notification
+{
+    NSDictionary *userInfo = notification.userInfo;
+    NSNumber *controllerStatus = [userInfo valueForKey: @"status"];
+
+    if (controllerStatus.intValue == Disconnected)
+    {
+        [self dismissViewControllerAnimated: YES completion: nil];
+    }
 }
 
 /*
@@ -78,9 +97,9 @@
 
     if (buttonIndex == 1)
     {
-        [alertView dismissWithClickedButtonIndex: 1 animated: YES];
+        [alertView dismissWithClickedButtonIndex: 1 animated: NO];
         [self.nameTextField resignFirstResponder];
-        [self performSegueWithIdentifier: @"ChooseSceneLamps" sender: self];
+        [self performSegueWithIdentifier: @"SceneElements" sender: self];
     }
 }
 
@@ -92,6 +111,9 @@
     [self dismissViewControllerAnimated: YES completion: nil];
 }
 
+/*
+ * Next Button Handler
+ */
 -(IBAction)nextButtonPressed: (id)sender
 {
     if ([self.nameTextField.text isEqualToString: @""])
@@ -105,10 +127,6 @@
 
         return;
     }
-    else if ([self checkForDuplicateName: self.nameTextField.text])
-    {
-        return;
-    }
     else if (![LSFUtilityFunctions checkNameLength: self.nameTextField.text entity: @"Scene Name"])
     {
         return;
@@ -117,9 +135,13 @@
     {
         return;
     }
+    else if ([self checkForDuplicateName: self.nameTextField.text])
+    {
+        return;
+    }
     else
     {
-        [self performSegueWithIdentifier: @"ChooseSceneLamps" sender: self];
+        [self performSegueWithIdentifier: @"SceneElements" sender: self];
     }
 }
 
@@ -156,11 +178,10 @@
 {
     self.sceneModel.name = self.nameTextField.text;
 
-    if ([segue.identifier isEqualToString: @"ChooseSceneLamps"])
+    if ([segue.identifier isEqualToString: @"SceneElements"])
     {
-        LSFScenesMembersTableViewController *smtvc = [segue destinationViewController];
-        smtvc.sceneModel = self.sceneModel;
-        smtvc.usesCancel = NO;
+        LSFScenesCreateSceneElementsTableViewController *scsetvc = [segue destinationViewController];
+        scsetvc.sceneModel = self.sceneModel;
     }
 }
 

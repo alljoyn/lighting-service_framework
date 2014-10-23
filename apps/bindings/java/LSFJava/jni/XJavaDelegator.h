@@ -22,6 +22,7 @@
 
 #include "NTypes.h"
 #include "NUtil.h"
+#include "JEnum.h"
 
 namespace lsf {
 
@@ -30,7 +31,12 @@ class XJavaDelegator {
     XJavaDelegator();
 
   public:
+    // 0 Arg
+    static void Call_Void(const jweak jdelegate, char const *func);
+
     // 1 Arg
+    static void Call_Void_UInt32(const jweak jdelegate, char const *func, const uint32_t &uint32Value);
+    static void Call_Void_ResponseCode(const jweak jdelegate, char const *func, const LSFResponseCode &responseCode);
     static void Call_Void_EnumList(const jweak jdelegate, char const *func, const jobjectArray &enumList, char const *enumClass);
     static void Call_Void_StringList(const jweak jdelegate, char const *func, const LSFStringList &strList);
 
@@ -45,8 +51,8 @@ class XJavaDelegator {
 
     // 3 Args
     static void Call_Void_ResponseCode_String_Boolean(const jweak jdelegate, char const *func, const LSFResponseCode &responseCode, const LSFString &strValue, const bool &boolValue);
-    static void Call_Void_ResponseCode_String_SInt32(const jweak jdelegate, char const *func,const LSFResponseCode &responseCode, const LSFString &strValue, const uint32_t &uint32Value);
-    static void Call_Void_ResponseCode_String_UInt32(const jweak jdelegate, char const *func,const LSFResponseCode &responseCode, const LSFString &strValue, const uint32_t &uint32Value);
+    static void Call_Void_ResponseCode_String_SInt32(const jweak jdelegate, char const *func, const LSFResponseCode &responseCode, const LSFString &strValue, const uint32_t &uint32Value);
+    static void Call_Void_ResponseCode_String_UInt32(const jweak jdelegate, char const *func, const LSFResponseCode &responseCode, const LSFString &strValue, const uint32_t &uint32Value);
     static void Call_Void_ResponseCode_String_Enum(const jweak jdelegate, char const *func, const LSFResponseCode &responseCode, const LSFString &strValue, JEnum *enumObject, const int &enumValue, char const *enumClass);
     static void Call_Void_ResponseCode_String_String(const jweak jdelegate, char const *func, const LSFResponseCode &responseCode, const LSFString &strValue1, const LSFString &strValue2);
 

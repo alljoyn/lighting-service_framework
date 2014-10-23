@@ -38,7 +38,7 @@
             android:textSize="@dimen/font_size_1" />
 
         <Button
-            android:id="@+id/stateButton"
+            android:id="@id/stateButton"
             android:layout_width="wrap_content"
             android:maxWidth="200dp"
             android:layout_height="wrap_content"
@@ -54,11 +54,42 @@
             android:textColor="@color/detail_text"
             android:textSize="@dimen/font_size_2" />
 
+        <RelativeLayout
+            android:id="@+id/startWithCurrentStateRow"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/stateMainLabel"
+            android:layout_alignLeft="@id/stateMainLabel"
+            android:paddingTop="3dp"
+            android:visibility="gone" >
+
+            <CheckBox
+                android:id="@+id/startWithCurrentStateTick"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentLeft="true"
+                android:layout_centerVertical="true"
+                android:layout_gravity="center"
+                android:button="@drawable/checkbox" />
+
+            <TextView
+                android:id="@+id/startWithCurrentStateText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentTop="true"
+                android:layout_marginLeft="5dp"
+                android:layout_toRightOf="@id/startWithCurrentStateTick"
+                android:layout_centerVertical="true"
+                android:textColor="@color/detail_text_dark"
+                android:textSize="@dimen/font_size_3"
+                android:text="@string/effect_pulse_start_with_current_properties" />
+            </RelativeLayout>
+
         <TextView
             android:id="@+id/stateLabelBrightness"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_below="@+id/stateMainLabel"
+            android:layout_below="@+id/startWithCurrentStateRow"
             android:layout_marginLeft="20dp"
             android:layout_marginTop="5dp"
             android:scrollHorizontally="true"

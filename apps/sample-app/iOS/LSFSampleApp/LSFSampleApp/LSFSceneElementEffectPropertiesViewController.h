@@ -21,6 +21,7 @@
 
 @interface LSFSceneElementEffectPropertiesViewController : UIViewController
 
+@property (nonatomic, strong) NSString *sceneID;
 @property (nonatomic) EffectProperty effectProperty;
 @property (nonatomic, strong) LSFTransitionEffectDataModel *tedm;
 @property (nonatomic, strong) LSFPulseEffectDataModel *pedm;

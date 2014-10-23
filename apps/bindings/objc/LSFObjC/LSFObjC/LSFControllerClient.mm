@@ -16,7 +16,6 @@
 
 #import "LSFControllerClient.h"
 #import "LSFControllerClientCallback.h"
-#include "ControllerClient.h"
 
 @interface LSFControllerClient ()
 
@@ -65,9 +64,18 @@
     return self.controllerClient->GetVersion();
 }
 
--(void)reset
+-(ControllerClientStatus)start
+//-(void)start
 {
-    self.controllerClient->Reset();
+    return self.controllerClient->Start();
+    //self.controllerClient->Start();
+}
+
+-(ControllerClientStatus)stop
+//-(void)stop
+{
+    return self.controllerClient->Stop();
+    //self.controllerClient->Stop();
 }
 
 /*

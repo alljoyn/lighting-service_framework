@@ -15,16 +15,22 @@
  ******************************************************************************/
 
 #import "LSFGroupsCreatePresetViewController.h"
+#import "LSFGroupsInfoTableViewController.h"
 #import "LSFPresetModelContainer.h"
 #import "LSFPresetModel.h"
 #import "LSFDispatchQueue.h"
 #import "LSFAllJoynManager.h"
 #import "LSFConstants.h"
 #import "LSFUtilityFunctions.h"
+#import "LSFEnums.h"
 
 @interface LSFGroupsCreatePresetViewController ()
 
 @property (nonatomic) BOOL doneButtonPressed;
+
+-(void)controllerNotificationReceived: (NSNotification *)notification;
+-(void)groupNotificationReceived: (NSNotification *)notification;
+-(void)deleteGroupsWithIDs: (NSArray *)groupIDs andNames: (NSArray *)groupNames;
 
 @end
 
@@ -47,11 +53,75 @@
     [self.presetNameTextField becomeFirstResponder];
     self.presetNameTextField.text = [NSString stringWithFormat: @"Preset %i", ++numPresets];
     self.doneButtonPressed = NO;
+
+    //Set notification handler
+    [[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(controllerNotificationReceived:) name: @"ControllerNotification" object: nil];
+    [[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(groupNotificationReceived:) name: @"GroupNotification" object: nil];
+}
+
+-(void)viewWillDisappear: (BOOL)animated
+{
+    [super viewWillDisappear: animated];
+
+    //Clear notification handler
+    [[NSNotificationCenter defaultCenter] removeObserver: self];
 }
 
 -(void)didReceiveMemoryWarning
 {
     [super didReceiveMemoryWarning];
+}
+
+/*
+ * ControllerNotification Handler
+ */
+-(void)controllerNotificationReceived: (NSNotification *)notification
+{
+    NSDictionary *userInfo = notification.userInfo;
+    NSNumber *controllerStatus = [userInfo valueForKey: @"status"];
+
+    if (controllerStatus.intValue == Disconnected)
+    {
+        [self.navigationController popToRootViewControllerAnimated: YES];
+    }
+}
+
+/*
+ * GroupNotification Handler
+ */
+-(void)groupNotificationReceived: (NSNotification *)notification
+{
+    NSString *groupID = [notification.userInfo valueForKey: @"groupID"];
+    NSNumber *callbackOp = [notification.userInfo valueForKey: @"operation"];
+    NSArray *groupIDs = [notification.userInfo valueForKey: @"groupIDs"];
+    NSArray *groupNames = [notification.userInfo valueForKey: @"groupNames"];
+
+    if ([self.groupID isEqualToString: groupID] || [groupIDs containsObject: self.groupID])
+    {
+        switch (callbackOp.intValue)
+        {
+            case GroupDeleted:
+                [self deleteGroupsWithIDs: groupIDs andNames: groupNames];
+                break;
+            default:
+                NSLog(@"Operation not found - Taking no action");
+                break;
+        }
+    }
+}
+
+-(void)deleteGroupsWithIDs: (NSArray *)groupIDs andNames: (NSArray *)groupNames
+{
+    int index = [groupIDs indexOfObject: self.groupID];
+
+    UIAlertView *alert = [[UIAlertView alloc] initWithTitle: @"Group Not Found"
+                                                    message: [NSString stringWithFormat: @"The group \"%@\" no longer exists.", [groupNames objectAtIndex: index]]
+                                                   delegate: nil
+                                          cancelButtonTitle: @"OK"
+                                          otherButtonTitles: nil];
+    [alert show];
+
+    [self.navigationController popToRootViewControllerAnimated: YES];
 }
 
 /*
@@ -78,7 +148,6 @@
         
         dispatch_async(([LSFDispatchQueue getDispatchQueue]).queue, ^{
             LSFConstants *constants = [LSFConstants getConstants];
-            
             unsigned int scaledBrightness = [constants scaleLampStateValue: self.lampState.brightness withMax: 100];
             unsigned int scaledHue = [constants scaleLampStateValue: self.lampState.hue withMax: 360];
             unsigned int scaledSaturation = [constants scaleLampStateValue: self.lampState.saturation withMax: 100];
@@ -92,7 +161,14 @@
         
         return YES;
     }
-    
+
+    UIAlertView *alert = [[UIAlertView alloc] initWithTitle: @"Duplicate Name"
+                                                    message: [NSString stringWithFormat: @"Warning: there is already a preset named \"%@.\" Although it's possible to use the same name for more than one preset, it's better to give each preset a unique name.\n\nKeep duplicate preset name \"%@\"?", self.presetNameTextField.text, self.presetNameTextField.text]
+                                                   delegate: self
+                                          cancelButtonTitle: @"NO"
+                                          otherButtonTitles: @"YES", nil];
+    [alert show];
+
     return NO;
 }
 
@@ -100,7 +176,15 @@
 {
     if (self.doneButtonPressed)
     {
-        [self.navigationController popViewControllerAnimated: YES];
+        //[self.navigationController popViewControllerAnimated: YES];
+
+        for (UIViewController *vc in self.navigationController.viewControllers)
+        {
+            if ([vc isKindOfClass: [LSFGroupsInfoTableViewController class]])
+            {
+                [self.navigationController popToViewController: (LSFGroupsInfoTableViewController *)vc animated: YES];
+            }
+        }
     }
 }
 
@@ -111,12 +195,12 @@
 {
     if (buttonIndex == 0)
     {
-        [alertView dismissWithClickedButtonIndex: 0 animated: YES];
+        [alertView dismissWithClickedButtonIndex: 0 animated: NO];
     }
     
     if (buttonIndex == 1)
     {
-        [alertView dismissWithClickedButtonIndex: 1 animated: YES];
+        [alertView dismissWithClickedButtonIndex: 1 animated: NO];
         
         self.doneButtonPressed = YES;
         [self.presetNameTextField resignFirstResponder];
@@ -140,13 +224,6 @@
     {
         if ([name isEqualToString: model.name])
         {
-            UIAlertView *alert = [[UIAlertView alloc] initWithTitle: @"Duplicate Name"
-                                                            message: [NSString stringWithFormat: @"Warning: there is already a preset named \"%@.\" Although it's possible to use the same name for more than one preset, it's better to give each preset a unique name.\n\nKeep duplicate preset name \"%@\"?", name, name]
-                                                           delegate: self
-                                                  cancelButtonTitle: @"NO"
-                                                  otherButtonTitles: @"YES", nil];
-            [alert show];
-            
             return YES;
         }
     }

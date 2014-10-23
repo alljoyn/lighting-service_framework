@@ -21,15 +21,22 @@
 #import "LSFAllJoynManager.h"
 #import "LSFConstants.h"
 #import "LSFUtilityFunctions.h"
+#import "LSFLightInfoTableViewController.h"
+#import "LSFEnums.h"
 
 @interface LSFLightsCreatePresetViewController ()
 
 @property (nonatomic) BOOL doneButtonPressed;
 
+-(void)controllerNotificationReceived: (NSNotification *)notification;
+-(void)lampNotificationReceived: (NSNotification *)notification;
+-(void)deleteLampWithID: (NSString *)lampID andName: (NSString *)lampName;
+
 @end
 
 @implementation LSFLightsCreatePresetViewController
 
+@synthesize lampID = _lampID;
 @synthesize lampState = _lampState;
 @synthesize presetNameTextField = _presetNameTextField;
 @synthesize doneButtonPressed = _doneButtonPressed;
@@ -47,11 +54,76 @@
     [self.presetNameTextField becomeFirstResponder];
     self.presetNameTextField.text = [NSString stringWithFormat: @"Preset %i", ++numPresets];
     self.doneButtonPressed = NO;
+
+    //Set lamps notification handler
+    [[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(controllerNotificationReceived:) name: @"ControllerNotification" object: nil];
+    [[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(lampNotificationReceived:) name: @"LampNotification" object: nil];
+}
+
+-(void)viewWillDisappear: (BOOL)animated
+{
+    [super viewWillDisappear: animated];
+
+    //Clear lamps notification handler
+    [[NSNotificationCenter defaultCenter] removeObserver: self];
 }
 
 -(void)didReceiveMemoryWarning
 {
     [super didReceiveMemoryWarning];
+}
+
+/*
+ * ControllerNotification Handler
+ */
+-(void)controllerNotificationReceived: (NSNotification *)notification
+{
+    NSDictionary *userInfo = notification.userInfo;
+    NSNumber *controllerStatus = [userInfo valueForKey: @"status"];
+
+    if (controllerStatus.intValue == Disconnected)
+    {
+        [self.navigationController popToRootViewControllerAnimated: YES];
+    }
+}
+
+/*
+ * LampNotification Handler
+ */
+-(void)lampNotificationReceived: (NSNotification *)notification
+{
+    NSString *lampID = [notification.userInfo valueForKey: @"lampID"];
+    NSNumber *callbackOp = [notification.userInfo valueForKey: @"operation"];
+
+    if ([self.lampID isEqualToString: lampID])
+    {
+        switch (callbackOp.intValue)
+        {
+            case LampDeleted:
+                [self deleteLampWithID: lampID andName: [notification.userInfo valueForKey: @"lampName"]];
+                break;
+            default:
+                NSLog(@"Operation not found - Taking no action");
+                break;
+        }
+    }
+}
+
+-(void)deleteLampWithID: (NSString *)lampID andName: (NSString *)lampName
+{
+    if ([self.lampID isEqualToString: lampID])
+    {
+        [self.navigationController popToRootViewControllerAnimated: YES];
+
+        dispatch_async(dispatch_get_main_queue(), ^{
+            UIAlertView *alert = [[UIAlertView alloc] initWithTitle: @"Connection Lost"
+                                                            message: [NSString stringWithFormat: @"Unable to connect to \"%@\".", lampName]
+                                                           delegate: nil
+                                                  cancelButtonTitle: @"OK"
+                                                  otherButtonTitles: nil];
+            [alert show];
+        });
+    }
 }
 
 /*
@@ -93,7 +165,14 @@
         
         return YES;
     }
-    
+
+    UIAlertView *alert = [[UIAlertView alloc] initWithTitle: @"Duplicate Name"
+                                                    message: [NSString stringWithFormat: @"Warning: there is already a preset named \"%@.\" Although it's possible to use the same name for more than one preset, it's better to give each preset a unique name.\n\nKeep duplicate preset name \"%@\"?", self.presetNameTextField.text, self.presetNameTextField.text]
+                                                   delegate: self
+                                          cancelButtonTitle: @"NO"
+                                          otherButtonTitles: @"YES", nil];
+    [alert show];
+
     return NO;
 }
 
@@ -101,7 +180,15 @@
 {
     if (self.doneButtonPressed)
     {
-        [self.navigationController popViewControllerAnimated: YES];
+        //[self.navigationController popViewControllerAnimated: YES];
+
+        for (UIViewController *vc in self.navigationController.viewControllers)
+        {
+            if ([vc isKindOfClass: [LSFLightInfoTableViewController class]])
+            {
+                [self.navigationController popToViewController: (LSFLightInfoTableViewController *)vc animated: YES];
+            }
+        }
     }
 }
 
@@ -112,19 +199,28 @@
 {
     if (buttonIndex == 0)
     {
-        [alertView dismissWithClickedButtonIndex: 0 animated: YES];
+        [alertView dismissWithClickedButtonIndex: 0 animated: NO];
     }
     
     if (buttonIndex == 1)
     {
-        [alertView dismissWithClickedButtonIndex: 1 animated: YES];
+        [alertView dismissWithClickedButtonIndex: 1 animated: NO];
         
         self.doneButtonPressed = YES;
         [self.presetNameTextField resignFirstResponder];
         
         dispatch_async(([LSFDispatchQueue getDispatchQueue]).queue, ^{
+            LSFConstants *constants = [LSFConstants getConstants];
+
+            unsigned int scaledBrightness = [constants scaleLampStateValue: self.lampState.brightness withMax: 100];
+            unsigned int scaledHue = [constants scaleLampStateValue: self.lampState.hue withMax: 360];
+            unsigned int scaledSaturation = [constants scaleLampStateValue: self.lampState.saturation withMax: 100];
+            unsigned int scaledColorTemp = [constants scaleColorTemp: self.lampState.colorTemp];
+
+            LSFLampState *scaledState = [[LSFLampState alloc] initWithOnOff: self.lampState.onOff brightness: scaledBrightness hue: scaledHue saturation: scaledSaturation colorTemp: scaledColorTemp];
+
             LSFPresetManager *presetManager = ([LSFAllJoynManager getAllJoynManager]).lsfPresetManager;
-            [presetManager createPresetWithState: self.lampState andPresetName: self.presetNameTextField.text];
+            [presetManager createPresetWithState: scaledState andPresetName: self.presetNameTextField.text];
         });
     }
 }
@@ -141,13 +237,6 @@
     {
         if ([name isEqualToString: model.name])
         {
-            UIAlertView *alert = [[UIAlertView alloc] initWithTitle: @"Duplicate Name"
-                                                            message: [NSString stringWithFormat: @"Warning: there is already a preset named \"%@.\" Although it's possible to use the same name for more than one preset, it's better to give each preset a unique name.\n\nKeep duplicate preset name \"%@\"?", name, name]
-                                                           delegate: self
-                                                  cancelButtonTitle: @"NO"
-                                                  otherButtonTitles: @"YES", nil];
-            [alert show];
-            
             return YES;
         }
     }

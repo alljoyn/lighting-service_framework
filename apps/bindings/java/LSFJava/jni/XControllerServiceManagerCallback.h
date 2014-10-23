@@ -12,13 +12,34 @@
  *    WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
  *    ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  *    OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ *
  ******************************************************************************/
 
-#import <Foundation/Foundation.h>
+#ifndef LSF_JNI_XCONTROLLERSERVICEMANAGERCALLBACK_H_
+#define LSF_JNI_XCONTROLLERSERVICEMANAGERCALLBACK_H_
 
-@protocol LSFControllerServiceConnectedDelegate <NSObject>
+#include <jni.h>
 
--(void)connectedToControllerService;
--(void)disconnectedFromControllerService;
+#include <ControllerServiceManager.h>   // lighting/service_framework
 
-@end
+#include "NDefs.h"
+
+namespace lsf {
+
+class XControllerServiceManagerCallback : public ControllerServiceManagerCallback {
+public:
+    XControllerServiceManagerCallback(jobject jobj);
+    virtual ~XControllerServiceManagerCallback();
+
+    virtual void GetControllerServiceVersionReplyCB(const uint32_t& version) LSF_OVERRIDE;
+    virtual void LightingResetControllerServiceReplyCB(const LSFResponseCode& responseCode) LSF_OVERRIDE;
+    virtual void ControllerServiceLightingResetCB(void) LSF_OVERRIDE;
+    virtual void ControllerServiceNameChangedCB(const LSFString& controllerServiceDeviceID, const LSFString& controllerServiceName) LSF_OVERRIDE;
+
+protected:
+    jweak jdelegate;
+};
+
+} /* namespace lsf */
+#endif /* LSF_JNI_XCONTROLLERSERVICEMANAGERCALLBACK_H_ */
+

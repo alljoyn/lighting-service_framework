@@ -18,12 +18,18 @@
 #import "LSFObject.h"
 #import "AJNBusAttachment.h"
 #import "LSFControllerClientCallbackDelegate.h"
+#include "ControllerClientDefs.h"
+
+using namespace lsf;
 
 @interface LSFControllerClient : LSFObject
 
 -(id)initWithBusAttachment: (AJNBusAttachment *)bus
                             andControllerClientCallbackDelegate: (id<LSFControllerClientCallbackDelegate>) cccDelegate;
 -(unsigned int)getVersion;
--(void)reset;
+-(ControllerClientStatus)start;
+-(ControllerClientStatus)stop;
+//-(void)start;
+//-(void)stop;
 
 @end

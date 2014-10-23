@@ -16,11 +16,8 @@
 
 #import <Foundation/Foundation.h>
 #import "LSFSceneManagerCallbackDelegate.h"
-#import "LSFReloadScenesCallbackDelegate.h"
 
 @interface LSFSampleSceneManagerCallback : NSObject <LSFSceneManagerCallbackDelegate>
-
-@property (nonatomic, weak) id<LSFReloadScenesCallbackDelegate> reloadScenesDelegate;
 
 -(id)init;
 

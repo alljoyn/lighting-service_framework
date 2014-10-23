@@ -16,12 +16,8 @@
 
 #import <Foundation/Foundation.h>
 #import "LSFControllerClientCallbackDelegate.h"
-#import "LSFReloadUIDelegate.h"
-#import "LSFControllerServiceConnectedDelegate.h"
 
 @interface LSFSampleControllerClientCallback : NSObject <LSFControllerClientCallbackDelegate>
-
-@property (nonatomic, weak) id<LSFControllerServiceConnectedDelegate> cscDelegate;
 
 -(id)init;
 

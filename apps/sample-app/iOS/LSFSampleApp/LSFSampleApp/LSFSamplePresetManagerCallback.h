@@ -16,11 +16,8 @@
 
 #import <Foundation/Foundation.h>
 #import "LSFPresetManagerCallbackDelegate.h"
-#import "LSFReloadPresetsCallbackDelegate.h"
 
 @interface LSFSamplePresetManagerCallback : NSObject <LSFPresetManagerCallbackDelegate>
-
-@property (nonatomic, weak) id<LSFReloadPresetsCallbackDelegate> reloadPresetsDelegate;
 
 -(id)init;
 

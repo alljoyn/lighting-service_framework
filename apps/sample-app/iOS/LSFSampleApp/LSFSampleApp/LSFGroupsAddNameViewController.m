@@ -21,11 +21,13 @@
 #import "LSFDispatchQueue.h"
 #import "LSFAllJoynManager.h"
 #import "LSFUtilityFunctions.h"
+#import "LSFEnums.h"
 
 @interface LSFGroupsAddNameViewController ()
 
 @property (nonatomic) BOOL doneButtonPressed;
 
+-(void)controllerNotificationReceived: (NSNotification *)notification;
 -(BOOL)checkForDuplicateName: (NSString *)name;
 
 @end
@@ -46,6 +48,9 @@
 -(void)viewWillAppear: (BOOL)animated
 {
     [super viewWillAppear: animated];
+
+    //Set notification handler
+    [[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(controllerNotificationReceived:) name: @"ControllerNotification" object: nil];
     
     //Hide toolbar because it is not needed
     [self.navigationController.toolbar setHidden: YES];
@@ -54,6 +59,9 @@
 -(void)viewWillDisappear: (BOOL)animated
 {
     [super viewWillDisappear: animated];
+
+    //Clear notification handler
+    [[NSNotificationCenter defaultCenter] removeObserver: self];
     
     //Unhide toolbar because it is not needed
     [self.navigationController.toolbar setHidden: NO];
@@ -65,10 +73,36 @@
 }
 
 /*
+ * ControllerNotification Handler
+ */
+-(void)controllerNotificationReceived: (NSNotification *)notification
+{
+    NSDictionary *userInfo = notification.userInfo;
+    NSNumber *controllerStatus = [userInfo valueForKey: @"status"];
+
+    if (controllerStatus.intValue == Disconnected)
+    {
+        [self dismissViewControllerAnimated: YES completion: nil];
+    }
+}
+
+/*
  * UITextFieldDelegate implementation
  */
 -(BOOL)textFieldShouldReturn: (UITextField *)textField
 {
+    if ([self.groupNameTextField.text isEqualToString: @""])
+    {
+        UIAlertView *alert = [[UIAlertView alloc] initWithTitle: @"No Group Name"
+                                                        message: @"You need to provide a group name in order to proceed."
+                                                       delegate: self
+                                              cancelButtonTitle: @"OK"
+                                              otherButtonTitles: nil];
+        [alert show];
+
+        return NO;
+    }
+
     if (![LSFUtilityFunctions checkNameLength: self.groupNameTextField.text entity: @"Group Name"])
     {
         return NO;
@@ -104,10 +138,12 @@
     
     if (buttonIndex == 1)
     {
-        [alertView dismissWithClickedButtonIndex: 1 animated: YES];
+        [alertView dismissWithClickedButtonIndex: 1 animated: NO];
         
         self.doneButtonPressed = YES;
         [self.groupNameTextField resignFirstResponder];
+
+        [self performSegueWithIdentifier: @"ChooseGroupLamps" sender: nil];
     }
 }
 
@@ -117,6 +153,46 @@
 -(IBAction)cancelGroupCreate: (id)sender
 {
     [self dismissViewControllerAnimated: YES completion: nil];
+}
+
+/*
+ * Next Button Handler
+ */
+-(IBAction)nextButtonPressed: (id)sender
+{
+    if ([self.groupNameTextField.text isEqualToString: @""])
+    {
+        UIAlertView *alert = [[UIAlertView alloc] initWithTitle: @"No Group Name"
+                                                        message: @"You need to provide a group name in order to proceed."
+                                                       delegate: self
+                                              cancelButtonTitle: @"OK"
+                                              otherButtonTitles: nil];
+        [alert show];
+
+        return;
+    }
+
+    if (![LSFUtilityFunctions checkNameLength: self.groupNameTextField.text entity: @"Group Name"])
+    {
+        return;
+    }
+
+    if (![LSFUtilityFunctions checkWhiteSpaces:self.groupNameTextField.text entity: @"Group Name"])
+    {
+        return;
+    }
+
+    BOOL nameMatchFound = [self checkForDuplicateName: self.groupNameTextField.text];
+
+    if (!nameMatchFound)
+    {
+        self.doneButtonPressed = YES;
+        [self.groupNameTextField resignFirstResponder];
+
+        [self performSegueWithIdentifier: @"ChooseGroupLamps" sender: nil];
+
+        return;
+    }
 }
 
 /*
@@ -148,36 +224,6 @@
 /*
  * Segue Methods
  */
--(BOOL)shouldPerformSegueWithIdentifier: (NSString *)identifier sender: (id)sender
-{
-    if ([identifier isEqualToString: @"ChooseGroupLamps"])
-    {
-        if ([self.groupNameTextField.text isEqualToString: @""])
-        {
-            UIAlertView *alert = [[UIAlertView alloc] initWithTitle: @"No Group Name"
-                                                            message: @"You need to provide a group name in order to proceed."
-                                                           delegate: self
-                                                  cancelButtonTitle: @"OK"
-                                                  otherButtonTitles: nil];
-            [alert show];
-            
-            return NO;
-        }
-
-        if (![LSFUtilityFunctions checkNameLength: self.groupNameTextField.text entity: @"Group Name"])
-        {
-            return NO;
-        }
-
-        if (![LSFUtilityFunctions checkWhiteSpaces:self.groupNameTextField.text entity: @"Group Name"])
-        {
-            return NO;
-        }
-    }
-    
-    return YES;
-}
-
 -(void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender
 {
     if ([segue.identifier isEqualToString: @"ChooseGroupLamps"])

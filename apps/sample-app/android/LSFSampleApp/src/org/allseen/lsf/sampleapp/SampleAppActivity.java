@@ -116,6 +116,7 @@ public class SampleAppActivity extends FragmentActivity implements ActionBar.Tab
     public PulseEffectDataModel pendingPulseEffectModel;
 
     public SampleControllerClientCallback controllerClientCB;
+    public SampleControllerServiceManagerCallback controllerServiceManagerCB;
     public SampleLampManagerCallback lampManagerCB;
     public SampleGroupManagerCallback groupManagerCB;
     public SamplePresetManagerCallback presetManagerCB;
@@ -157,6 +158,7 @@ public class SampleAppActivity extends FragmentActivity implements ActionBar.Tab
         FragmentManager fragmentManager = getSupportFragmentManager();
         AboutManager aboutManager = new AboutManager(this, handler);
         controllerClientCB = new SampleControllerClientCallback(this, fragmentManager, handler);
+        controllerServiceManagerCB = new SampleControllerServiceManagerCallback(this, fragmentManager, handler);
         lampManagerCB = new SampleLampManagerCallback(this, fragmentManager, handler);
         groupManagerCB = new SampleGroupManagerCallback(this, fragmentManager, handler);
         presetManagerCB = new SamplePresetManagerCallback(this, fragmentManager, handler);
@@ -204,6 +206,7 @@ public class SampleAppActivity extends FragmentActivity implements ActionBar.Tab
         AllJoynManager.init(
             getSupportFragmentManager(),
             controllerClientCB,
+            controllerServiceManagerCB,
             lampManagerCB,
             groupManagerCB,
             presetManagerCB,
@@ -219,18 +222,6 @@ public class SampleAppActivity extends FragmentActivity implements ActionBar.Tab
         } else if (RETRY_ENABLE) {
             retryManager.start();
         }
-
-        // Handle wifi disconnect errors
-        IntentFilter filter = new IntentFilter();
-        filter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
-
-        registerReceiver(new BroadcastReceiver() {
-            @Override
-            public void onReceive(final Context context, Intent intent) {
-                controllerClientCB.postUpdateControllerDisplay();
-                wifiConnectionStateUpdate(isWifiConnected());
-            }
-        }, filter);
     }
 
     protected boolean isWifiConnected() {
@@ -253,9 +244,22 @@ public class SampleAppActivity extends FragmentActivity implements ActionBar.Tab
     }
 
     public void onAllJoynManagerInitialized() {
-        if (isWifiConnected()) {
-            AllJoynManager.start();
-        }
+        Log.d(SampleAppActivity.TAG, "onAllJoynManagerInitialized()");
+//        if (isWifiConnected()) {
+//            AllJoynManager.start();
+//        }
+
+        // Handle wifi disconnect errors
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
+
+        registerReceiver(new BroadcastReceiver() {
+            @Override
+            public void onReceive(final Context context, Intent intent) {
+                controllerClientCB.postUpdateControllerDisplay();
+                wifiConnectionStateUpdate(isWifiConnected());
+            }
+        }, filter);
     }
 
     @Override
@@ -350,12 +354,12 @@ public class SampleAppActivity extends FragmentActivity implements ActionBar.Tab
     }
 
     public void postOnBackPressed() {
-        handler.post(new Runnable() {
+        handler.postDelayed(new Runnable() {
             @Override
             public void run() {
                 onBackPressed();
             }
-        });
+        }, 5);
     }
 
     @Override
@@ -447,21 +451,12 @@ public class SampleAppActivity extends FragmentActivity implements ActionBar.Tab
                     postInForeground(new Runnable() {
                         @Override
                         public void run() {
-                            Log.d(SampleAppActivity.TAG_TRACE, "restarting AllJoyn");
+                            Log.d(SampleAppActivity.TAG_TRACE, "Restarting system");
+
+                            clearModels();
                             AllJoynManager.restart();
 
                             if (wifiDisconnectAlertDialog != null) {
-//                                AllJoynManager.init(
-//                                        getSupportFragmentManager(),
-//                                        controllerClientCB,
-//                                        lampManagerCB,
-//                                        groupManagerCB,
-//                                        presetManagerCB,
-//                                        sceneManagerCB,
-//                                        masterSceneManagerCB,
-//                                        new AboutManager(activity, handler),
-//                                        activity);
-
                                 wifiDisconnectAlertDialog.dismiss();
                                 wifiDisconnectAlertDialog = null;
                             }
@@ -479,9 +474,10 @@ public class SampleAppActivity extends FragmentActivity implements ActionBar.Tab
                         @Override
                         public void run() {
                             if (wifiDisconnectAlertDialog == null) {
-                                Log.d(SampleAppActivity.TAG, "stopping AllJoyn");
+                                Log.d(SampleAppActivity.TAG, "Stopping system");
+
+                                clearModels();
                                 AllJoynManager.stop();
-//                                AllJoynManager.destroy(getSupportFragmentManager());
 
                                 View view = activity.getLayoutInflater().inflate(R.layout.view_loading, null);
                                 ((TextView) view.findViewById(R.id.loadingText1)).setText(activity.getText(R.string.no_wifi_message));
@@ -499,6 +495,19 @@ public class SampleAppActivity extends FragmentActivity implements ActionBar.Tab
                 }
             });
         }
+    }
+
+    public void clearModels() {
+        lampIDs.clear();
+        commands.clear();
+        lampAbouts.clear();
+        lampModels.clear();
+        groupModels.clear();
+        presetModels.clear();
+        basicSceneModels.clear();
+        masterSceneModels.clear();
+
+        setTabTitles();
     }
 
     public void showErrorResponseCode(Enum code, String source) {
@@ -1192,13 +1201,13 @@ public class SampleAppActivity extends FragmentActivity implements ActionBar.Tab
 
     public void showToast(int resId){
 
-    	toast.setText(resId);
+    	toast = Toast.makeText(this, resId, Toast.LENGTH_LONG);
     	toast.show();
     }
 
     public void showToast(String text){
 
-    	toast.setText(text);
+    	toast = Toast.makeText(this, text, Toast.LENGTH_LONG);
     	toast.show();
     }
 

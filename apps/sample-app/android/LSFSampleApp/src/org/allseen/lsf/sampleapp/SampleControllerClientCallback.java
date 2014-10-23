@@ -105,6 +105,7 @@ public class SampleControllerClientCallback extends ControllerClientCallback {
             @Override
             public void run() {
                 activity.leaderControllerModel = null;
+                activity.clearModels();
 
                 postUpdateControllerDisplay();
             }
@@ -165,16 +166,22 @@ public class SampleControllerClientCallback extends ControllerClientCallback {
 
     public void postUpdateControllerDisplay() {
         // if connection status is ever changed, then prompt for updating the loading information
-        handler.post(new Runnable() {
+//        handler.post(new Runnable() {
+        activity.postInForeground(new Runnable() {
             @Override
             public void run() {
-                Fragment lampsPageFragment = fragmentManager.findFragmentByTag(LampsPageFragment.TAG);
-                Fragment groupsPageFragment = fragmentManager.findFragmentByTag(GroupsPageFragment.TAG);
-                Fragment scenesPageFragment = fragmentManager.findFragmentByTag(ScenesPageFragment.TAG);
+                PageFrameParentFragment lampsPageFragment = (PageFrameParentFragment)fragmentManager.findFragmentByTag(LampsPageFragment.TAG);
+                PageFrameParentFragment groupsPageFragment = (PageFrameParentFragment)fragmentManager.findFragmentByTag(GroupsPageFragment.TAG);
+                PageFrameParentFragment scenesPageFragment = (PageFrameParentFragment)fragmentManager.findFragmentByTag(ScenesPageFragment.TAG);
                 Fragment settingsFragment = null;
 
                 if (lampsPageFragment != null) {
                     ScrollableTableFragment tableFragment = (ScrollableTableFragment) lampsPageFragment.getChildFragmentManager().findFragmentByTag(PageFrameParentFragment.CHILD_TAG_TABLE);
+
+                    if (!AllJoynManager.controllerConnected) {
+                        lampsPageFragment.clearBackStack();
+                    }
+
                     if (tableFragment != null) {
                         tableFragment.updateLoading();
                     }
@@ -186,6 +193,11 @@ public class SampleControllerClientCallback extends ControllerClientCallback {
 
                 if (groupsPageFragment != null) {
                     ScrollableTableFragment tableFragment = (ScrollableTableFragment) groupsPageFragment.getChildFragmentManager().findFragmentByTag(PageFrameParentFragment.CHILD_TAG_TABLE);
+
+                    if (!AllJoynManager.controllerConnected) {
+                        groupsPageFragment.clearBackStack();
+                    }
+
                     if (tableFragment != null) {
                         tableFragment.updateLoading();
                     }
@@ -197,6 +209,11 @@ public class SampleControllerClientCallback extends ControllerClientCallback {
 
                 if (scenesPageFragment != null) {
                     ScrollableTableFragment tableFragment = (ScrollableTableFragment) scenesPageFragment.getChildFragmentManager().findFragmentByTag(PageFrameParentFragment.CHILD_TAG_TABLE);
+
+                    if (!AllJoynManager.controllerConnected) {
+                        scenesPageFragment.clearBackStack();
+                    }
+
                     if (tableFragment != null) {
                         tableFragment.updateLoading();
                     }

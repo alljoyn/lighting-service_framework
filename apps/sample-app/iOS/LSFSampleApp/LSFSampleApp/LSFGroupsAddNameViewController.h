@@ -21,5 +21,6 @@
 @property (nonatomic, weak) IBOutlet UITextField *groupNameTextField;
 
 -(IBAction)cancelGroupCreate: (id)sender;
+-(IBAction)nextButtonPressed: (id)sender;
 
 @end

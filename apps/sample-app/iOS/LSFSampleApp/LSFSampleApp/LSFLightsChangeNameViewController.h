@@ -15,9 +15,8 @@
  ******************************************************************************/
 
 #import <UIKit/UIKit.h>
-#import "LSFReloadLightsCallbackDelegate.h"
 
-@interface LSFLightsChangeNameViewController : UIViewController <UITextFieldDelegate, UINavigationBarDelegate, UIAlertViewDelegate, LSFReloadLightsCallbackDelegate>
+@interface LSFLightsChangeNameViewController : UIViewController <UITextFieldDelegate, UINavigationBarDelegate, UIAlertViewDelegate>
 
 @property (nonatomic, strong) NSString *lampID;
 @property (nonatomic, weak) IBOutlet UITextField *lampNameTextField;

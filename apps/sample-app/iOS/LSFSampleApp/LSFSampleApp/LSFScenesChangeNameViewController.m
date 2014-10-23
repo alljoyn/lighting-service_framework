@@ -20,11 +20,17 @@
 #import "LSFAllJoynManager.h"
 #import "LSFSceneModelContainer.h"
 #import "LSFUtilityFunctions.h"
+#import "LSFEnums.h"
 
 @interface LSFScenesChangeNameViewController ()
 
 @property (nonatomic) BOOL doneButtonPressed;
+@property (nonatomic, strong) LSFSceneDataModel *sceneModel;
 
+-(void)controllerNotificationReceived: (NSNotification *)notification;
+-(void)sceneNotificationReceived: (NSNotification *)notification;
+-(void)reloadSceneName;
+-(void)deleteScenesWithIDs: (NSArray *)sceneIDs andNames: (NSArray *)sceneNames;
 -(BOOL)checkForDuplicateName: (NSString *)name;
 
 @end
@@ -32,6 +38,7 @@
 @implementation LSFScenesChangeNameViewController
 
 @synthesize sceneID = _sceneID;
+@synthesize sceneModel = _sceneModel;
 @synthesize sceneNameTextField = _sceneNameTextField;
 @synthesize doneButtonPressed = _doneButtonPressed;
 
@@ -44,16 +51,96 @@
 {
     LSFSceneModelContainer *container = [LSFSceneModelContainer getSceneModelContainer];
     NSMutableDictionary *scenes = container.sceneContainer;
-    LSFSceneDataModel *model = [scenes valueForKey: self.sceneID];
+    self.sceneModel = [scenes valueForKey: self.sceneID];
+
+    //Set notification handler
+    [[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(controllerNotificationReceived:) name: @"ControllerNotification" object: nil];
+    [[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(sceneNotificationReceived:) name: @"SceneNotification" object: nil];
 
     [self.sceneNameTextField becomeFirstResponder];
-    self.sceneNameTextField.text = model.name;
+    self.sceneNameTextField.text = self.sceneModel.name;
     self.doneButtonPressed = NO;
+}
+
+-(void)viewWillDisappear: (BOOL)animated
+{
+    [super viewWillDisappear: animated];
+
+    //Clear notification handler
+    [[NSNotificationCenter defaultCenter] removeObserver: self];
 }
 
 -(void)didReceiveMemoryWarning
 {
     [super didReceiveMemoryWarning];
+}
+
+/*
+ * ControllerNotification Handler
+ */
+-(void)controllerNotificationReceived: (NSNotification *)notification
+{
+    NSDictionary *userInfo = notification.userInfo;
+    NSNumber *controllerStatus = [userInfo valueForKey: @"status"];
+
+    if (controllerStatus.intValue == Disconnected)
+    {
+        [self.navigationController popToRootViewControllerAnimated: YES];
+    }
+}
+
+/*
+ * SceneNotification Handler
+ */
+-(void)sceneNotificationReceived: (NSNotification *)notification
+{
+    NSString *sceneID = [notification.userInfo valueForKey: @"sceneID"];
+    NSNumber *callbackOp = [notification.userInfo valueForKey: @"operation"];
+    NSArray *sceneIDs = [notification.userInfo valueForKey: @"sceneIDs"];
+    NSArray *sceneNames = [notification.userInfo valueForKey: @"sceneNames"];
+
+    if ([self.sceneID isEqualToString: sceneID] || [sceneIDs containsObject: self.sceneID])
+    {
+        switch (callbackOp.intValue)
+        {
+            case SceneNameUpdated:
+                [self reloadSceneName];
+                break;
+            case SceneDeleted:
+                [self deleteScenesWithIDs: sceneIDs andNames: sceneNames];
+                break;
+            default:
+                break;
+        }
+    }
+}
+
+-(void)reloadSceneName
+{
+    LSFSceneModelContainer *scenesContainer = [LSFSceneModelContainer getSceneModelContainer];
+    NSMutableDictionary *scenes = scenesContainer.sceneContainer;
+    self.sceneModel = [scenes valueForKey: self.sceneID];
+
+    self.sceneNameTextField.text = self.sceneModel.name;
+}
+
+-(void)deleteScenesWithIDs: (NSArray *)sceneIDs andNames: (NSArray *)sceneNames
+{
+    if ([sceneIDs containsObject: self.sceneID])
+    {
+        int index = [sceneIDs indexOfObject: self.sceneID];
+
+        [self.navigationController popToRootViewControllerAnimated: YES];
+
+        dispatch_async(dispatch_get_main_queue(), ^{
+            UIAlertView *alert = [[UIAlertView alloc] initWithTitle: @"Scene Not Found"
+                                                            message: [NSString stringWithFormat: @"The scene \"%@\" no longer exists.", [sceneNames objectAtIndex: index]]
+                                                           delegate: nil
+                                                  cancelButtonTitle: @"OK"
+                                                  otherButtonTitles: nil];
+            [alert show];
+        });
+    }
 }
 
 /*

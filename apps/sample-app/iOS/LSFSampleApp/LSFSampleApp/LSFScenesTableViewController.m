@@ -34,14 +34,25 @@
 #import "LSFDispatchQueue.h"
 #import "LSFAllJoynManager.h"
 #import "LSFConstants.h"
+#import "LSFWifiMonitor.h"
+#import "LSFEnums.h"
 
 @interface LSFScenesTableViewController ()
 
-@property (nonatomic, strong) NSMutableArray *sceneData;
 @property (nonatomic, strong) UIBarButtonItem *myEditButton;
 @property (nonatomic, strong) UIBarButtonItem *settingsButton;
 @property (nonatomic, strong) UIBarButtonItem *addButton;
 
+-(void)sceneNotificationReceived: (NSNotification *)notification;
+-(void)addNewScene: (NSString *)sceneID;
+-(void)reorderScene: (NSString *)sceneID;
+-(void)refreshScene: (NSString *)sceneID;
+-(void)removeScenes: (NSArray *)sceneIDs;
+-(void)masterSceneNotificationReceived: (NSNotification *)notification;
+-(void)addNewMasterScene: (NSString *)masterSceneID;
+-(void)reorderMasterScene: (NSString *)masterSceneID;
+-(void)refreshMasterScene: (NSString *)masterSceneID;
+-(void)removeMasterScenes: (NSArray *)masterSceneIDs;
 -(void)plusButtonPressed;
 -(void)settingsButtonPressed;
 -(NSString *)buildSceneDetailsString: (LSFSceneDataModel *)sceneModel;
@@ -57,6 +68,7 @@
 -(void)moveObjectFromIndex: (NSUInteger)fromIndex toIndex: (NSUInteger)toIndex;
 -(void)refreshRowInTableAtIndex: (NSUInteger)index;
 -(void)deleteRowsInTableAtIndex: (NSArray *)cellIndexPaths;
+-(NSArray *)isSceneContainedInMasterScenes: (NSString *)sceneID;
 
 @end
 
@@ -91,19 +103,17 @@
 {
     [super viewWillAppear: animated];
 
-    dispatch_async(([LSFDispatchQueue getDispatchQueue]).queue, ^{
-        LSFAllJoynManager *ajManager = [LSFAllJoynManager getAllJoynManager];
-        [ajManager.ssmc setReloadScenesDelegate: self];
-        [ajManager.smsmc setReloadMasterScenesDelegate: self];
-    });
+    //Set scenes and master scenes notification handler
+    [[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(sceneNotificationReceived:) name: @"SceneNotification" object: nil];
+    [[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(masterSceneNotificationReceived:) name: @"MasterSceneNotification" object: nil];
 
     //Set the content of the default scene data array
     LSFSceneModelContainer *scenesContainer = [LSFSceneModelContainer getSceneModelContainer];
     LSFMasterSceneModelContainer *masterScenesContainer = [LSFMasterSceneModelContainer getMasterSceneModelContainer];
-    self.sceneData = [NSMutableArray arrayWithArray: [scenesContainer.sceneContainer allValues]];
-    [self.sceneData addObjectsFromArray: [masterScenesContainer.masterScenesContainer allValues]];
+    self.data = [NSMutableArray arrayWithArray: [scenesContainer.sceneContainer allValues]];
+    [self.data addObjectsFromArray: [masterScenesContainer.masterScenesContainer allValues]];
 
-    if (self.sceneData.count > 0)
+    if (self.data.count > 0)
     {
         [self sortScenesByName];
     }
@@ -115,11 +125,8 @@
 {
     [super viewWillDisappear: animated];
 
-    dispatch_async(([LSFDispatchQueue getDispatchQueue]).queue, ^{
-        LSFAllJoynManager *ajManager = [LSFAllJoynManager getAllJoynManager];
-        [ajManager.ssmc setReloadScenesDelegate: nil];
-        [ajManager.smsmc setReloadMasterScenesDelegate: nil];
-    });
+    //Clear scenes and master scenes notification handler
+    [[NSNotificationCenter defaultCenter] removeObserver: self];
 }
 
 -(void)didReceiveMemoryWarning
@@ -128,163 +135,245 @@
 }
 
 /*
- * LSFReloadScenesCallbackDelegate Implementation
+ * SceneNotification Handler
  */
--(void)reloadSceneWithID: (NSString *)sceneID
+-(void)sceneNotificationReceived: (NSNotification *)notification
 {
-    @synchronized(self.sceneData)
+    @synchronized(self.data)
     {
-        LSFSceneModelContainer *container = [LSFSceneModelContainer getSceneModelContainer];
-        NSMutableDictionary *scenes = container.sceneContainer;
-        LSFSceneDataModel *model = [scenes valueForKey: sceneID];
+        NSString *sceneID = [notification.userInfo valueForKey: @"sceneID"];
+        NSNumber *callbackOp = [notification.userInfo valueForKey: @"operation"];
+        NSArray *sceneIDs = [notification.userInfo valueForKey: @"sceneIDs"];
 
-        if (model != nil)
+        switch (callbackOp.intValue)
         {
-            NSUInteger existingIndex = [self checkIfModelExists: (LSFDataModel *)model];
-
-            if (existingIndex == NSNotFound)
-            {
-                NSUInteger insertIndex = [self findInsertionIndexInArray: (LSFDataModel *)model];
-                [self.sceneData insertObject: model atIndex: insertIndex];
-
-                [self addObjectToTableAtIndex: insertIndex];
-            }
-            else
-            {
-                NSUInteger insertIndex = [self findInsertionIndexInArray: (LSFDataModel *)model];
-
-                if (existingIndex == insertIndex)
-                {
-                    [self refreshRowInTableAtIndex: insertIndex];
-                }
-                else
-                {
-                    if (existingIndex < insertIndex)
-                    {
-                        insertIndex--;
-                    }
-
-                    [self.sceneData removeObjectAtIndex: existingIndex];
-                    [self.sceneData insertObject: model atIndex: insertIndex];
-
-                    [self moveObjectFromIndex: existingIndex toIndex: insertIndex];
-                }
-            }
-        }
-        else
-        {
-            NSLog(@"LSFScenesTableViewController - reloadSceneWithID() model is nil");
+            case SceneCreated:
+                [self addNewScene: sceneID];
+                break;
+            case SceneNameUpdated:
+                [self reorderScene: sceneID];
+                break;
+            case SceneUpdated:
+                [self refreshScene: sceneID];
+                break;
+            case SceneDeleted:
+                [self removeScenes: sceneIDs];
+                break;
+            default:
+                break;
         }
     }
 }
 
--(void)deleteScenesWithIDs: (NSArray *)sceneIDs andNames: (NSArray *)sceneNames
+-(void)addNewScene: (NSString *)sceneID
 {
-    @synchronized(self.sceneData)
+    LSFSceneModelContainer *container = [LSFSceneModelContainer getSceneModelContainer];
+    NSMutableDictionary *scenes = container.sceneContainer;
+    LSFSceneDataModel *model = [scenes valueForKey: sceneID];
+
+    NSUInteger existingIndex = [self checkIfModelExists: (LSFDataModel *)model];
+
+    if (existingIndex == NSNotFound)
     {
-        LSFSceneModelContainer *container = [LSFSceneModelContainer getSceneModelContainer];
-        NSMutableDictionary *scenes = container.sceneContainer;
+        NSUInteger insertIndex = [self findInsertionIndexInArray: (LSFDataModel *)model];
+        [self.data insertObject: model atIndex: insertIndex];
 
-        NSMutableArray *deleteIndexPaths = [[NSMutableArray alloc] init];
+        [self addObjectToTableAtIndex: insertIndex];
+    }
+}
 
-        for (NSString *sceneID in sceneIDs)
+-(void)reorderScene: (NSString *)sceneID
+{
+    LSFSceneModelContainer *container = [LSFSceneModelContainer getSceneModelContainer];
+    NSMutableDictionary *scenes = container.sceneContainer;
+    LSFSceneDataModel *model = [scenes valueForKey: sceneID];
+
+    if (model != nil)
+    {
+        NSUInteger existingIndex = [self checkIfModelExists: (LSFDataModel *)model];
+        NSUInteger insertIndex = [self findInsertionIndexInArray: (LSFDataModel *)model];
+
+        if (existingIndex == insertIndex)
         {
-            LSFSceneDataModel *model = [scenes valueForKey: sceneID];
-
-            if (model == nil)
+            [self refreshRowInTableAtIndex: insertIndex];
+        }
+        else
+        {
+            if (existingIndex < insertIndex)
             {
-                int modelArrayIndex = [self findIndexInModelOfID: sceneID];
+                insertIndex--;
+            }
 
-                if (modelArrayIndex != -1)
-                {
-                    [self.sceneData removeObjectAtIndex: modelArrayIndex];
-                    [deleteIndexPaths addObject: [NSIndexPath indexPathForRow: modelArrayIndex inSection:0]];
-                }
+            [self.data removeObjectAtIndex: existingIndex];
+            [self.data insertObject: model atIndex: insertIndex];
+
+            [self moveObjectFromIndex: existingIndex toIndex: insertIndex];
+        }
+    }
+}
+
+-(void)refreshScene: (NSString *)sceneID
+{
+    LSFSceneModelContainer *container = [LSFSceneModelContainer getSceneModelContainer];
+    NSMutableDictionary *scenes = container.sceneContainer;
+    LSFSceneDataModel *model = [scenes valueForKey: sceneID];
+
+    if (model != nil)
+    {
+        NSUInteger existingIndex = [self findIndexInModelOfID: sceneID];
+
+        if (existingIndex != -1)
+        {
+            [self refreshRowInTableAtIndex: existingIndex];
+        }
+    }
+}
+
+-(void)removeScenes: (NSArray *)sceneIDs
+{
+    LSFSceneModelContainer *container = [LSFSceneModelContainer getSceneModelContainer];
+    NSMutableDictionary *scenes = container.sceneContainer;
+
+    NSMutableArray *deleteIndexPaths = [[NSMutableArray alloc] init];
+
+    for (NSString *sceneID in sceneIDs)
+    {
+        LSFSceneDataModel *model = [scenes valueForKey: sceneID];
+
+        if (model == nil)
+        {
+            int modelArrayIndex = [self findIndexInModelOfID: sceneID];
+
+            if (modelArrayIndex != -1)
+            {
+                [self.data removeObjectAtIndex: modelArrayIndex];
+                [deleteIndexPaths addObject: [NSIndexPath indexPathForRow: modelArrayIndex inSection:0]];
             }
         }
-        
-        [self deleteRowsInTableAtIndex: deleteIndexPaths];
     }
+
+    [self deleteRowsInTableAtIndex: deleteIndexPaths];
 }
 
 /*
- * LSFReloadMasterScenesCallbackDelegate Implementation
+ * MasterSceneNotification Handler
  */
--(void)reloadMasterSceneWithID: (NSString *)masterSceneID
+-(void)masterSceneNotificationReceived: (NSNotification *)notification
 {
-    @synchronized(self.sceneData)
+    @synchronized(self.data)
     {
-        LSFMasterSceneModelContainer *container = [LSFMasterSceneModelContainer getMasterSceneModelContainer];
-        NSMutableDictionary *masterScenes = container.masterScenesContainer;
-        LSFMasterSceneDataModel *model = [masterScenes valueForKey: masterSceneID];
+        NSString *masterSceneID = [notification.userInfo valueForKey: @"masterSceneID"];
+        NSNumber *callbackOp = [notification.userInfo valueForKey: @"operation"];
+        NSArray *masterSceneIDs = [notification.userInfo valueForKey: @"masterSceneIDs"];
 
-        if (model != nil)
+        switch (callbackOp.intValue)
         {
-            NSUInteger existingIndex = [self checkIfModelExists: (LSFDataModel *)model];
-
-            if (existingIndex == NSNotFound)
-            {
-                NSUInteger insertIndex = [self findInsertionIndexInArray: (LSFDataModel *)model];
-                [self.sceneData insertObject: model atIndex: insertIndex];
-
-                [self addObjectToTableAtIndex: insertIndex];
-            }
-            else
-            {
-                NSUInteger insertIndex = [self findInsertionIndexInArray: (LSFDataModel *)model];
-
-                if (existingIndex == insertIndex)
-                {
-                    [self refreshRowInTableAtIndex: insertIndex];
-                }
-                else
-                {
-                    if (existingIndex < insertIndex)
-                    {
-                        insertIndex--;
-                    }
-
-                    [self.sceneData removeObjectAtIndex: existingIndex];
-                    [self.sceneData insertObject: model atIndex: insertIndex];
-
-                    [self moveObjectFromIndex: existingIndex toIndex: insertIndex];
-                }
-            }
-        }
-        else
-        {
-            NSLog(@"LSFScenesTableViewController - reloadMasterSceneWithID() model is nil");
+            case SceneCreated:
+                [self addNewMasterScene: masterSceneID];
+                break;
+            case SceneNameUpdated:
+                [self reorderMasterScene: masterSceneID];
+                break;
+            case SceneUpdated:
+                [self refreshMasterScene: masterSceneID];
+                break;
+            case SceneDeleted:
+                [self removeMasterScenes: masterSceneIDs];
+                break;
+            default:
+                break;
         }
     }
 }
 
--(void)deleteMasterScenesWithIDs: (NSArray *)masterSceneIDs andNames: (NSArray *)masterSceneNames
+-(void)addNewMasterScene: (NSString *)masterSceneID
 {
-    @synchronized(self.sceneData)
+    LSFMasterSceneModelContainer *container = [LSFMasterSceneModelContainer getMasterSceneModelContainer];
+    NSMutableDictionary *masterScenes = container.masterScenesContainer;
+    LSFMasterSceneDataModel *model = [masterScenes valueForKey: masterSceneID];
+
+    NSUInteger existingIndex = [self checkIfModelExists: (LSFDataModel *)model];
+
+    if (existingIndex == NSNotFound)
     {
-        LSFMasterSceneModelContainer *container = [LSFMasterSceneModelContainer getMasterSceneModelContainer];
-        NSMutableDictionary *masterScenes = container.masterScenesContainer;
+        NSUInteger insertIndex = [self findInsertionIndexInArray: (LSFDataModel *)model];
+        [self.data insertObject: model atIndex: insertIndex];
 
-        NSMutableArray *deleteIndexPaths = [[NSMutableArray alloc] init];
+        [self addObjectToTableAtIndex: insertIndex];
+    }
+}
 
-        for (NSString *masterSceneID in masterSceneIDs)
+-(void)reorderMasterScene: (NSString *)masterSceneID
+{
+    LSFMasterSceneModelContainer *container = [LSFMasterSceneModelContainer getMasterSceneModelContainer];
+    NSMutableDictionary *masterScenes = container.masterScenesContainer;
+    LSFMasterSceneDataModel *model = [masterScenes valueForKey: masterSceneID];
+
+    if (model != nil)
+    {
+        NSUInteger existingIndex = [self checkIfModelExists: (LSFDataModel *)model];
+        NSUInteger insertIndex = [self findInsertionIndexInArray: (LSFDataModel *)model];
+
+        if (existingIndex == insertIndex)
         {
-            LSFMasterSceneDataModel *model = [masterScenes valueForKey: masterSceneID];
-
-            if (model == nil)
+            [self refreshRowInTableAtIndex: insertIndex];
+        }
+        else
+        {
+            if (existingIndex < insertIndex)
             {
-                int modelArrayIndex = [self findIndexInModelOfID: masterSceneID];
+                insertIndex--;
+            }
 
-                if (modelArrayIndex != -1)
-                {
-                    [self.sceneData removeObjectAtIndex: modelArrayIndex];
-                    [deleteIndexPaths addObject: [NSIndexPath indexPathForRow: modelArrayIndex inSection:0]];
-                }
+            [self.data removeObjectAtIndex: existingIndex];
+            [self.data insertObject: model atIndex: insertIndex];
+
+            [self moveObjectFromIndex: existingIndex toIndex: insertIndex];
+        }
+    }
+}
+
+-(void)refreshMasterScene: (NSString *)masterSceneID
+{
+    LSFMasterSceneModelContainer *container = [LSFMasterSceneModelContainer getMasterSceneModelContainer];
+    NSMutableDictionary *masterScenes = container.masterScenesContainer;
+    LSFMasterSceneDataModel *model = [masterScenes valueForKey: masterSceneID];
+
+    if (model != nil)
+    {
+        NSUInteger existingIndex = [self findIndexInModelOfID: masterSceneID];
+
+        if (existingIndex != -1)
+        {
+            [self refreshRowInTableAtIndex: existingIndex];
+        }
+    }
+}
+
+-(void)removeMasterScenes: (NSArray *)masterSceneIDs
+{
+    LSFMasterSceneModelContainer *container = [LSFMasterSceneModelContainer getMasterSceneModelContainer];
+    NSMutableDictionary *masterScenes = container.masterScenesContainer;
+
+    NSMutableArray *deleteIndexPaths = [[NSMutableArray alloc] init];
+
+    for (NSString *masterSceneID in masterSceneIDs)
+    {
+        LSFMasterSceneDataModel *model = [masterScenes valueForKey: masterSceneID];
+
+        if (model == nil)
+        {
+            int modelArrayIndex = [self findIndexInModelOfID: masterSceneID];
+
+            if (modelArrayIndex != -1)
+            {
+                [self.data removeObjectAtIndex: modelArrayIndex];
+                [deleteIndexPaths addObject: [NSIndexPath indexPathForRow: modelArrayIndex inSection:0]];
             }
         }
-        
-        [self deleteRowsInTableAtIndex: deleteIndexPaths];
     }
+
+    [self deleteRowsInTableAtIndex: deleteIndexPaths];
 }
 
 /*
@@ -292,7 +381,7 @@
  */
 -(UITableViewCell *)tableView: (UITableView *)tableView cellForRowAtIndexPath: (NSIndexPath *)indexPath
 {
-    id data = [self.sceneData objectAtIndex: [indexPath row]];
+    id data = [self.data objectAtIndex: [indexPath row]];
 
     LSFSceneCell *cell = [tableView dequeueReusableCellWithIdentifier: @"SceneCell" forIndexPath: indexPath];
 
@@ -322,7 +411,7 @@
 
 -(void)tableView: (UITableView *)tableView didSelectRowAtIndexPath: (NSIndexPath *)indexPath
 {
-    id data = [self.sceneData objectAtIndex: indexPath.row];
+    id data = [self.data objectAtIndex: indexPath.row];
 
     if ([data isKindOfClass: [LSFSceneDataModel class]])
     {
@@ -332,6 +421,8 @@
             LSFSceneManager *sceneManager = ([LSFAllJoynManager getAllJoynManager]).lsfSceneManager;
             [sceneManager applySceneWithID: sceneDataModel.theID];
         });
+
+        [self.tableView deselectRowAtIndexPath: indexPath animated: YES];
     }
     else if ([data isKindOfClass: [LSFMasterSceneDataModel class]])
     {
@@ -341,15 +432,37 @@
             LSFMasterSceneManager *masterSceneManager = ([LSFAllJoynManager getAllJoynManager]).lsfMasterSceneManager;
             [masterSceneManager applyMasterSceneWithID: masterSceneDataModel.theID];
         });
+
+        [self.tableView deselectRowAtIndexPath: indexPath animated: YES];
     }
 }
 
 -(NSInteger)tableView: (UITableView *)tableView numberOfRowsInSection: (NSInteger)section
 {
+    LSFWifiMonitor *wifiMonitor = [LSFWifiMonitor getWifiMonitor];
     LSFAllJoynManager *ajManager = [LSFAllJoynManager getAllJoynManager];
     LSFConstants *constants = [LSFConstants getConstants];
 
-    if (!ajManager.isConnectedToController)
+    if (!wifiMonitor.isWifiConnected)
+    {
+        CGRect frame = CGRectMake(0, 0, self.view.bounds.size.width, self.view.bounds.size.height);
+        UIView *customView = [[UIView alloc] initWithFrame: frame];
+        UILabel *messageLabel = [[UILabel alloc] init];
+        [customView addSubview: messageLabel];
+
+        frame.origin.x = 30;
+        frame.size.width = self.view.bounds.size.width - frame.origin.x;
+
+        messageLabel.frame = frame;
+        messageLabel.text = [NSString stringWithFormat: @"No Wi-Fi Connection.\n\nPlease check that Wi-Fi is enabled in this device's settings and that the device is connected to a Wi-Fi network.\n\nWaiting for Wi-Fi to become available..."];
+        messageLabel.textColor = [UIColor blackColor];
+        messageLabel.numberOfLines = 0;
+        messageLabel.textAlignment = NSTextAlignmentLeft;
+
+        self.tableView.backgroundView = customView;
+        return 0;
+    }
+    else if (!ajManager.isConnectedToController)
     {
         CGRect frame = CGRectMake(0, 0, self.view.bounds.size.width, self.view.bounds.size.height);
         UIView *customView = [[UIView alloc] initWithFrame: frame];
@@ -370,7 +483,7 @@
     }
     else
     {
-        if (self.sceneData.count == 0)
+        if (self.data.count == 0)
         {
             // Display a message when the table is empty
             UILabel *messageLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, self.view.bounds.size.width, self.view.bounds.size.height)];
@@ -388,7 +501,7 @@
             self.tableView.backgroundView = nil;
         }
         
-        return self.sceneData.count;
+        return self.data.count;
     }
 }
 
@@ -399,7 +512,7 @@
 
 -(CGFloat) tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section
 {
-    return 1.0f;
+    return 0.00000000001f;
 }
 
 -(BOOL)tableView: (UITableView *)tableView canEditRowAtIndexPath: (NSIndexPath *)indexPath
@@ -411,29 +524,56 @@
 {
     if (editingStyle == UITableViewCellEditingStyleDelete)
     {
-        id data = [self.sceneData objectAtIndex: indexPath.row];
+        id data = [self.data objectAtIndex: indexPath.row];
 
         if ([data isKindOfClass: [LSFSceneDataModel class]])
         {
             LSFSceneDataModel *sceneDataModel = (LSFSceneDataModel *)data;
 
-            int modelArrayIndex = [self findIndexInModelOfID: sceneDataModel.theID];
-            [self.sceneData removeObjectAtIndex: modelArrayIndex];
+            NSArray *names = [self isSceneContainedInMasterScenes: sceneDataModel.theID];
+            if (names.count > 0)
+            {
+                NSMutableString *nameString = [[NSMutableString alloc] init];
 
-            // Delete the row from the data source
-            [tableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation: UITableViewRowAnimationFade];
+                for (int i = 0; i < names.count; i++)
+                {
+                    [nameString appendString: [NSString stringWithFormat: @"\"%@\", ", [names objectAtIndex: i]]];
 
-            dispatch_async(([LSFDispatchQueue getDispatchQueue]).queue, ^{
-                LSFSceneManager *sceneManager = ([LSFAllJoynManager getAllJoynManager]).lsfSceneManager;
-                [sceneManager deleteSceneWithID: sceneDataModel.theID];
-            });
+                    if (i == (names.count - 2))
+                    {
+                        [nameString appendString: @"and "];
+                    }
+                }
+
+                [nameString deleteCharactersInRange: NSMakeRange(nameString.length - 2, 2)];
+
+                UIAlertView *alert = [[UIAlertView alloc] initWithTitle: @"Can't Delete Scene"
+                                                                message: [NSString stringWithFormat: @"The scene \"%@\" is being used by the following master scenes: %@. It cannot be deleted until it is removed from those master scenes, or those master scenes are deleted.", sceneDataModel.name, nameString]
+                                                               delegate: nil
+                                                      cancelButtonTitle: @"OK"
+                                                      otherButtonTitles: nil];
+                [alert show];
+            }
+            else
+            {
+                int modelArrayIndex = [self findIndexInModelOfID: sceneDataModel.theID];
+                [self.data removeObjectAtIndex: modelArrayIndex];
+
+                // Delete the row from the data source
+                [tableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation: UITableViewRowAnimationFade];
+
+                dispatch_async(([LSFDispatchQueue getDispatchQueue]).queue, ^{
+                    LSFSceneManager *sceneManager = ([LSFAllJoynManager getAllJoynManager]).lsfSceneManager;
+                    [sceneManager deleteSceneWithID: sceneDataModel.theID];
+                });
+            }
         }
         else if ([data isKindOfClass: [LSFMasterSceneDataModel class]])
         {
             LSFMasterSceneDataModel *masterSceneDataModel = (LSFMasterSceneDataModel *)data;
 
             int modelArrayIndex = [self findIndexInModelOfID: masterSceneDataModel.theID];
-            [self.sceneData removeObjectAtIndex: modelArrayIndex];
+            [self.data removeObjectAtIndex: modelArrayIndex];
 
             // Delete the row from the data source
             [tableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation: UITableViewRowAnimationFade];
@@ -448,7 +588,7 @@
 
 -(void)tableView:(UITableView *)tableView accessoryButtonTappedForRowWithIndexPath:(NSIndexPath *)indexPath
 {
-    id data = [self.sceneData objectAtIndex: indexPath.row];
+    id data = [self.data objectAtIndex: indexPath.row];
 
     if ([data isKindOfClass: [LSFSceneDataModel class]])
     {
@@ -482,14 +622,14 @@
         NSIndexPath *indexPath = (NSIndexPath *)sender;
 
         LSFSceneInfoTableViewController *sitvc = [segue destinationViewController];
-        sitvc.sceneID = [NSString stringWithString: ((LSFSceneDataModel *)[self.sceneData objectAtIndex: [indexPath row]]).theID];
+        sitvc.sceneID = [NSString stringWithString: ((LSFSceneDataModel *)[self.data objectAtIndex: [indexPath row]]).theID];
     }
     else if ([segue.identifier isEqualToString: @"MasterSceneInfo"])
     {
         NSIndexPath *indexPath = (NSIndexPath *)sender;
 
         LSFMasterScenesInfoTableViewController *msitvc = [segue destinationViewController];
-        msitvc.masterSceneID = [NSString stringWithString: ((LSFMasterSceneDataModel *)[self.sceneData objectAtIndex: [indexPath row]]).theID];
+        msitvc.masterSceneID = [NSString stringWithString: ((LSFMasterSceneDataModel *)[self.data objectAtIndex: [indexPath row]]).theID];
     }
 }
 
@@ -517,8 +657,23 @@
  */
 -(void)plusButtonPressed
 {
-    UIActionSheet *actionSheet = [[UIActionSheet alloc] initWithTitle: nil delegate: self cancelButtonTitle: @"Cancel" destructiveButtonTitle: nil otherButtonTitles: @"Add Scene", @"Add Master Scene", nil];
-    [actionSheet showInView: self.view];
+    LSFWifiMonitor *wifiMonitor = [LSFWifiMonitor getWifiMonitor];
+    LSFAllJoynManager *ajManager = [LSFAllJoynManager getAllJoynManager];
+
+    if (wifiMonitor.isWifiConnected && ajManager.isConnectedToController)
+    {
+        UIActionSheet *actionSheet = [[UIActionSheet alloc] initWithTitle: nil delegate: self cancelButtonTitle: @"Cancel" destructiveButtonTitle: nil otherButtonTitles: @"Add Scene", @"Add Master Scene", nil];
+        [actionSheet showInView: self.view];
+    }
+    else
+    {
+        UIAlertView *alert = [[UIAlertView alloc] initWithTitle: @"Error"
+                                                        message: @"Must be connected to a controller before creating a scene."
+                                                       delegate: nil
+                                              cancelButtonTitle: @"OK"
+                                              otherButtonTitles: nil];
+        [alert show];
+    }
 };
 
 -(void)settingsButtonPressed
@@ -618,9 +773,9 @@
 
 -(NSUInteger)checkIfModelExists: (LSFDataModel *)sceneModel
 {
-    for (int i = 0; i < self.sceneData.count; i++)
+    for (int i = 0; i < self.data.count; i++)
     {
-        LSFDataModel *model = [self.sceneData objectAtIndex: i];
+        LSFDataModel *model = [self.data objectAtIndex: i];
 
         if ([sceneModel.theID isEqualToString: model.theID])
         {
@@ -633,7 +788,7 @@
 
 -(NSUInteger)findInsertionIndexInArray: (LSFDataModel *)sceneModel
 {
-    return [self.sceneData indexOfObject: sceneModel inSortedRange: (NSRange){0, [self.sceneData count]} options: (NSBinarySearchingFirstEqual | NSBinarySearchingInsertionIndex) usingComparator:
+    return [self.data indexOfObject: sceneModel inSortedRange: (NSRange){0, [self.data count]} options: (NSBinarySearchingFirstEqual | NSBinarySearchingInsertionIndex) usingComparator:
             ^NSComparisonResult(id a, id b) {
                 NSString *first = [(LSFModel *)a name];
                 NSString *second = [(LSFModel *)b name];
@@ -643,20 +798,20 @@
 
 -(void)sortScenesByName
 {
-    NSMutableArray *sortedArray = [NSMutableArray arrayWithArray: [self.sceneData sortedArrayUsingComparator: ^NSComparisonResult(id a, id b) {
+    NSMutableArray *sortedArray = [NSMutableArray arrayWithArray: [self.data sortedArrayUsingComparator: ^NSComparisonResult(id a, id b) {
         NSString *first = [(LSFModel *)a name];
         NSString *second = [(LSFModel *)b name];
         return [first localizedCaseInsensitiveCompare: second];
     }]];
 
-    self.sceneData = [NSMutableArray arrayWithArray: sortedArray];
+    self.data = [NSMutableArray arrayWithArray: sortedArray];
 }
 
 -(int)findIndexInModelOfID: (NSString *)theID
 {
-    for (int i = 0; i < self.sceneData.count; i++)
+    for (int i = 0; i < self.data.count; i++)
     {
-        LSFDataModel *model = [self.sceneData objectAtIndex: i];
+        LSFDataModel *model = [self.data objectAtIndex: i];
 
         if ([theID isEqualToString: model.theID])
         {
@@ -669,8 +824,7 @@
 
 -(void)addObjectToTableAtIndex: (NSUInteger)insertIndex
 {
-    NSLog(@"Add: Index = %u", insertIndex);
-
+    //NSLog(@"Add: Index = %u", insertIndex);
     NSArray *insertIndexPaths = [NSArray arrayWithObjects: [NSIndexPath indexPathForRow: insertIndex inSection:0], nil];
 
     [self.tableView beginUpdates];
@@ -680,8 +834,7 @@
 
 -(void)moveObjectFromIndex: (NSUInteger)fromIndex toIndex: (NSUInteger)toIndex
 {
-    NSLog(@"Move: FromIndex = %u; ToIndex = %u", fromIndex, toIndex);
-
+    //NSLog(@"Move: FromIndex = %u; ToIndex = %u", fromIndex, toIndex);
     NSIndexPath *fromIndexPath = [NSIndexPath indexPathForRow: fromIndex inSection: 0];
     NSIndexPath *toIndexPath = [NSIndexPath indexPathForRow: toIndex inSection: 0];
     [self.tableView moveRowAtIndexPath: fromIndexPath toIndexPath: toIndexPath];
@@ -691,8 +844,7 @@
 
 -(void)refreshRowInTableAtIndex: (NSUInteger)index
 {
-    NSLog(@"Refresh: Index = %u", index);
-
+    //NSLog(@"Refresh: Index = %u", index);
     NSArray *refreshIndexPaths = [NSArray arrayWithObjects: [NSIndexPath indexPathForRow: index inSection:0], nil];
     [self.tableView reloadRowsAtIndexPaths: refreshIndexPaths withRowAnimation: UITableViewRowAnimationNone];
 }
@@ -700,6 +852,25 @@
 -(void)deleteRowsInTableAtIndex: (NSArray *)cellIndexPaths
 {
     [self.tableView deleteRowsAtIndexPaths: cellIndexPaths withRowAnimation: UITableViewRowAnimationFade];
+}
+
+-(NSArray *)isSceneContainedInMasterScenes: (NSString *)sceneID
+{
+    NSMutableArray *names = [[NSMutableArray alloc] init];
+
+    LSFMasterSceneModelContainer *container = [LSFMasterSceneModelContainer getMasterSceneModelContainer];
+    NSMutableArray *masterScenes = [[NSMutableArray alloc] initWithArray: [container.masterScenesContainer allValues]];
+
+    for (LSFMasterSceneDataModel *model in masterScenes)
+    {
+        if ([model.masterScene.sceneIDs containsObject: sceneID])
+        {
+            NSLog(@"Master Scene %@ contains Scene ID %@", model.name, sceneID);
+            [names addObject: [NSString stringWithString: model.name]];
+        }
+    }
+    
+    return names;
 }
 
 @end

@@ -15,9 +15,8 @@
  ******************************************************************************/
 
 #import <UIKit/UIKit.h>
-#import "LSFReloadPresetsCallbackDelegate.h"
 
-@interface LSFGroupsPresetsTableViewController : UITableViewController <UITableViewDelegate, UITableViewDataSource, LSFReloadPresetsCallbackDelegate>
+@interface LSFGroupsPresetsTableViewController : UITableViewController <UITableViewDelegate, UITableViewDataSource>
 
 @property (nonatomic, strong) NSString *groupID;
 

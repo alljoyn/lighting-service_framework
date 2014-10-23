@@ -14,13 +14,35 @@
  *    OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  ******************************************************************************/
 
-#import <Foundation/Foundation.h>
+#import "LSFLampStateUniformity.h"
 
-@interface LSFLampMaintenance : NSObject
+@implementation LSFLampStateUniformity
 
-+(LSFLampMaintenance *)getLampMaintenance;
--(void)start;
--(void)addLampIDs: (NSArray *)lampIDs;
--(void)removeLampID: (NSString *)lampID;
+@synthesize power = _power;
+@synthesize brightness = _brightness;
+@synthesize hue = _hue;
+@synthesize saturation = _saturation;
+@synthesize colorTemp = _colorTemp;
+
+-(id)init
+{
+    return [self initWithPower: YES brightness: YES hue: YES saturation: YES andColorTemp: YES];
+}
+
+-(id)initWithPower: (BOOL)power brightness: (BOOL)brightness hue: (BOOL)hue saturation: (BOOL)saturation andColorTemp: (BOOL)colorTemp
+{
+    self = [super init];
+
+    if (self)
+    {
+        self.power = power;
+        self.brightness = brightness;
+        self.hue = hue;
+        self.saturation = saturation;
+        self.colorTemp = colorTemp;
+    }
+
+    return self;
+}
 
 @end

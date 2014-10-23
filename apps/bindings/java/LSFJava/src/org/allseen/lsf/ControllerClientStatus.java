@@ -19,7 +19,8 @@ package org.allseen.lsf;
 public enum ControllerClientStatus {
     OK,
     ERR_NOT_CONNECTED,
-    ERR_FAILURE;
+    ERR_FAILURE,
+    ERR_RETRY;
 
     /** Static lookup, used by the native code */
     @SuppressWarnings("unused")

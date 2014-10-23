@@ -26,6 +26,7 @@
 @synthesize lamps = _lamps;
 @synthesize groups = _groups;
 @synthesize duplicates = _duplicates;
+@synthesize delay = _delay;
 
 -(id)initWithGroupID: (NSString *)groupID
 {

@@ -21,10 +21,16 @@
 #import "LSFMasterSceneModelContainer.h"
 #import "LSFDispatchQueue.h"
 #import "LSFAllJoynManager.h"
+#import "LSFEnums.h"
 
 @interface LSFMasterScenesInfoTableViewController ()
 
 @property (nonatomic, strong) LSFMasterSceneDataModel *masterSceneModel;
+
+-(void)controllerNotificationReceived: (NSNotification *)notification;
+-(void)masterSceneNotificationReceived: (NSNotification *)notification;
+-(void)reloadMasterSceneWithID: (NSString *)masterSceneID;
+-(void)deleteMasterScenesWithIDs: (NSArray *)masterSceneIDs andNames: (NSArray *)masterSceneNames;
 
 @end
 
@@ -42,10 +48,16 @@
 {
     [super viewWillAppear: animated];
 
-    dispatch_async(([LSFDispatchQueue getDispatchQueue]).queue, ^{
-        LSFAllJoynManager *ajManager = [LSFAllJoynManager getAllJoynManager];
-        [ajManager.smsmc setReloadMasterScenesDelegate: self];
-    });
+    LSFAllJoynManager *ajManager = [LSFAllJoynManager getAllJoynManager];
+
+    if (!ajManager.isConnectedToController)
+    {
+        [self.navigationController popToRootViewControllerAnimated: NO];
+    }
+
+    //Set master scenes notification handler
+    [[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(controllerNotificationReceived:) name: @"ControllerNotification" object: nil];
+    [[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(masterSceneNotificationReceived:) name: @"MasterSceneNotification" object: nil];
 
     [self reloadMasterSceneWithID: self.masterSceneID];
 }
@@ -54,10 +66,8 @@
 {
     [super viewWillDisappear: animated];
 
-    dispatch_async(([LSFDispatchQueue getDispatchQueue]).queue, ^{
-        LSFAllJoynManager *ajManager = [LSFAllJoynManager getAllJoynManager];
-        [ajManager.smsmc setReloadMasterScenesDelegate: nil];
-    });
+    //Clear scenes and master scenes notification handler
+    [[NSNotificationCenter defaultCenter] removeObserver: self];
 }
 
 -(void)didReceiveMemoryWarning
@@ -66,16 +76,57 @@
 }
 
 /*
- * LSFReloadMasterScenesCallbackDelegate Implementation
+ * ControllerNotification Handler
  */
+-(void)controllerNotificationReceived: (NSNotification *)notification
+{
+    NSDictionary *userInfo = notification.userInfo;
+    NSNumber *controllerStatus = [userInfo valueForKey: @"status"];
+
+    if (controllerStatus.intValue == Disconnected)
+    {
+        [self.navigationController popToRootViewControllerAnimated: YES];
+    }
+}
+
+/*
+ * MasterSceneNotification Handler
+ */
+-(void)masterSceneNotificationReceived: (NSNotification *)notification
+{
+    NSString *masterSceneID = [notification.userInfo valueForKey: @"masterSceneID"];
+    NSNumber *callbackOp = [notification.userInfo valueForKey: @"operation"];
+    NSArray *masterSceneIDs = [notification.userInfo valueForKey: @"masterSceneIDs"];
+    NSArray *masterSceneNames = [notification.userInfo valueForKey: @"masterSceneNames"];
+
+    if ([self.masterSceneID isEqualToString: masterSceneID] || [masterSceneIDs containsObject: self.masterSceneID])
+    {
+        switch (callbackOp.intValue)
+        {
+            case SceneNameUpdated:
+                [self reloadMasterSceneWithID: masterSceneID];
+                break;
+            case SceneDeleted:
+                [self deleteMasterScenesWithIDs: masterSceneIDs andNames: masterSceneNames];
+                break;
+            default:
+                break;
+        }
+    }
+}
+
 -(void)reloadMasterSceneWithID: (NSString *)masterSceneID
 {
-    if ([self.masterSceneID isEqualToString: masterSceneID])
-    {
-        LSFMasterSceneModelContainer *container = [LSFMasterSceneModelContainer getMasterSceneModelContainer];
-        NSMutableDictionary *masterSceneDictionary = container.masterScenesContainer;
-        self.masterSceneModel = [masterSceneDictionary valueForKey: self.masterSceneID];
+    LSFMasterSceneModelContainer *container = [LSFMasterSceneModelContainer getMasterSceneModelContainer];
+    NSMutableDictionary *masterSceneDictionary = container.masterScenesContainer;
+    self.masterSceneModel = [masterSceneDictionary valueForKey: self.masterSceneID];
 
+    if (self.masterSceneModel == nil)
+    {
+        [self.navigationController popToRootViewControllerAnimated: YES];
+    }
+    else
+    {
         [self.tableView reloadData];
     }
 }

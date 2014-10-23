@@ -34,6 +34,30 @@
 @synthesize brightnessSlider = _brightnessSlider;
 @synthesize brightnessSliderButton = _brightnessSliderButton;
 
+-(void)awakeFromNib
+{
+    self.colorIndicatorImage.layer.rasterizationScale = [UIScreen mainScreen].scale;
+    self.colorIndicatorImage.layer.shouldRasterize = YES;
+
+    [self.brightnessSlider setThumbImage: [UIImage imageNamed: @"power_slider_normal_icon.png"] forState: UIControlStateNormal];
+    [self.brightnessSlider setThumbImage: [UIImage imageNamed: @"power_slider_pressed_icon.png"] forState: UIControlStateHighlighted];
+
+    UITapGestureRecognizer *tapGestureRecognizer = [[UITapGestureRecognizer alloc] initWithTarget: self action: @selector(sliderTapped:)];
+    [self.brightnessSlider addGestureRecognizer: tapGestureRecognizer];
+
+    unsigned int c;
+    NSString *color = @"f4f4f4";
+    if ([color characterAtIndex: 0] == '#')
+    {
+        [[NSScanner scannerWithString: [color substringFromIndex: 1]] scanHexInt: &c];
+    }
+    else
+    {
+        [[NSScanner scannerWithString: color] scanHexInt: &c];
+    }
+    self.backgroundColor = [UIColor colorWithRed: ((c & 0xff0000) >> 16) / 255.0 green: ((c & 0xff00) >> 8) / 255.0 blue: (c & 0xff) / 255.0 alpha: 1.0];
+}
+
 -(IBAction)powerImagePressed: (UIButton *)sender
 {
     LSFLampModelContainer *container = [LSFLampModelContainer getLampModelContainer];
@@ -53,13 +77,14 @@
         
         dispatch_async(([LSFDispatchQueue getDispatchQueue]).queue, ^{
             LSFLampManager *lampManager = ([LSFAllJoynManager getAllJoynManager]).lsfLampManager;
-            [lampManager transitionLampID: self.lampID onOffField: YES];
-            
-            if (model.state.brightness == 0)
+
+            if (model.state.brightness == 0 && model.lampDetails.dimmable)
             {
                 unsigned int scaledBrightness = [constants scaleLampStateValue: 25 withMax: 100];
                 [lampManager transitionLampID: self.lampID brightnessField: scaledBrightness];
             }
+
+            [lampManager transitionLampID: self.lampID onOffField: YES];
         });
     }
 }
@@ -67,17 +92,10 @@
 -(IBAction)brightnessSliderChanged: (UISlider *)sender
 {
     LSFConstants *constants = [LSFConstants getConstants];
-    LSFLampModelContainer *container = [LSFLampModelContainer getLampModelContainer];
-    NSMutableDictionary *lamps = container.lampContainer;
-    LSFLampModel *model = [lamps valueForKey: self.lampID];
 
     dispatch_async(([LSFDispatchQueue getDispatchQueue]).queue, ^{
         LSFLampManager *lampManager = ([LSFAllJoynManager getAllJoynManager]).lsfLampManager;
         unsigned int scaledBrightness = [constants scaleLampStateValue: (uint32_t)sender.value withMax: 100];
-        if ((model != nil) && (model.state.onOff == NO) && (scaledBrightness > 0))
-        {
-            [lampManager transitionLampID: self.lampID onOffField: YES];
-        }
         [lampManager transitionLampID: self.lampID brightnessField: scaledBrightness];
     });
 }
@@ -112,16 +130,9 @@
     
     dispatch_async(([LSFDispatchQueue getDispatchQueue]).queue, ^{
         LSFConstants *constants = [LSFConstants getConstants];
-        LSFLampModelContainer *container = [LSFLampModelContainer getLampModelContainer];
-        NSMutableDictionary *lamps = container.lampContainer;
-        LSFLampModel *model = [lamps valueForKey: self.lampID];
 
         LSFLampManager *lampManager = ([LSFAllJoynManager getAllJoynManager]).lsfLampManager;
         unsigned int scaledBrightness = [constants scaleLampStateValue: (uint32_t)value withMax: 100];
-        if ((model != nil) && (model.state.onOff == NO) && (scaledBrightness > 0))
-        {
-            [lampManager transitionLampID: self.lampID onOffField: YES];
-        }
         [lampManager transitionLampID: self.lampID brightnessField: scaledBrightness];
     });
 }

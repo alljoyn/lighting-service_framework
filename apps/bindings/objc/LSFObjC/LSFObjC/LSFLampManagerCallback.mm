@@ -53,16 +53,9 @@ void LSFLampManagerCallback::SetLampNameReplyCB(const LSFResponseCode& responseC
     [_lmDelegate setLampNameReplyWithCode: responseCode lampID: [NSString stringWithUTF8String: lampID.c_str()] andLanguage: [NSString stringWithUTF8String: language.c_str()]];
 }
 
-void LSFLampManagerCallback::LampsNameChangedCB(const LSFStringList& lampIDs)
+void LSFLampManagerCallback::LampNameChangedCB(const LSFString& lampID, const LSFString& lampName)
 {
-    NSMutableArray *lampIDsArray = [[NSMutableArray alloc] init];
-    
-    for (std::list<LSFString>::const_iterator iter = lampIDs.begin(); iter != lampIDs.end(); ++iter)
-    {
-        [lampIDsArray addObject: [NSString stringWithUTF8String: (*iter).c_str()]];
-    }
-    
-    [_lmDelegate lampsNameChanged: lampIDsArray];
+    [_lmDelegate lampsNameChangedWithID: [NSString stringWithUTF8String: lampID.c_str()] andName: [NSString stringWithUTF8String: lampName.c_str()]];
 }
 
 void LSFLampManagerCallback::LampsFoundCB(const LSFStringList& lampIDs)
@@ -88,11 +81,6 @@ void LSFLampManagerCallback::LampsLostCB(const LSFStringList& lampIDs)
 
     [_lmDelegate lampsLost: lampIDsArray];
 }
-
-//void LSFLampManagerCallback::PingLampReplyCB(const LSFResponseCode& responseCode, const LSFString& lampID)
-//{
-//    [_lmDelegate pingLampReplyWithCode: responseCode andLampID: [NSString stringWithUTF8String: lampID.c_str()]];
-//}
 
 void LSFLampManagerCallback::GetLampDetailsReplyCB(const LSFResponseCode& responseCode, const LSFString& lampID, const LampDetails& lampDetails)
 {
@@ -181,16 +169,16 @@ void LSFLampManagerCallback::ResetLampStateReplyCB(const LSFResponseCode& respon
     [_lmDelegate resetLampStateReplyWithCode: responseCode andLampID: [NSString stringWithUTF8String: lampID.c_str()]];
 }
 
-void LSFLampManagerCallback::LampsStateChangedCB(const LSFStringList& lampIDs)
+void LSFLampManagerCallback::LampStateChangedCB(const LSFString& lampID, const LampState& lampState)
 {
-    NSMutableArray *lampIDsArray = [[NSMutableArray alloc] init];
-    
-    for (std::list<LSFString>::const_iterator iter = lampIDs.begin(); iter != lampIDs.end(); ++iter)
-    {
-        [lampIDsArray addObject: [NSString stringWithUTF8String: (*iter).c_str()]];
-    }
-    
-    [_lmDelegate lampsStateChanged: lampIDsArray];
+    LSFLampState *state = [[LSFLampState alloc] init];
+    state.onOff = lampState.onOff;
+    state.brightness = lampState.brightness;
+    state.hue = lampState.hue;
+    state.saturation = lampState.saturation;
+    state.colorTemp = lampState.colorTemp;
+
+    [_lmDelegate lampsStateChangedWithID: [NSString stringWithUTF8String: lampID.c_str()] andLampState: state];
 }
 
 void LSFLampManagerCallback::TransitionLampStateReplyCB(const LSFResponseCode& responseCode, const LSFString& lampID)

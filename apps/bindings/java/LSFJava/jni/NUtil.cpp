@@ -76,7 +76,6 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm,
 {
     QCC_UseOSLogging(true);
     QCC_SetDebugLevel("CONTROLLER_CLIENT", 7);
-    QCC_SetDebugLevel("LAMP_GROUP_MANAGER", 6);
 
     jvm = vm;
     JNIEnv* env;

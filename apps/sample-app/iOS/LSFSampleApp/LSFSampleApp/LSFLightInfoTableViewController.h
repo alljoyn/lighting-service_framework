@@ -15,11 +15,8 @@
  ******************************************************************************/
 
 #import <UIKit/UIKit.h>
-#import "LSFLampModel.h"
-#import "LSFReloadLightsCallbackDelegate.h"
-#import "LSFReloadPresetsCallbackDelegate.h"
 
-@interface LSFLightInfoTableViewController : UITableViewController <LSFReloadLightsCallbackDelegate, LSFReloadPresetsCallbackDelegate>
+@interface LSFLightInfoTableViewController : UITableViewController
 
 @property (nonatomic, strong) NSString *lampID;
 @property (nonatomic, weak) IBOutlet UILabel *nameLabel;

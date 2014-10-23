@@ -15,14 +15,39 @@
  */
 package org.allseen.lsf.sampleapp;
 
-import org.allseen.lsf.LampState;
+import java.util.Map;
 
+import org.allseen.lsf.LampState;
+import org.allseen.lsf.PresetPulseEffect;
+
+import android.os.Bundle;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.SeekBar;
 
 public abstract class BasicSceneElementInfoFragment extends DimmableItemInfoFragment {
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        View root = super.onCreateView(inflater, container, savedInstanceState);
+        SampleAppActivity activity = (SampleAppActivity)getActivity();
+        BasicSceneElementDataModel pendingModel = getPendingSceneElementDataModel();
+
+        if (pendingModel.presetID != null && !pendingModel.presetID.equals(PresetPulseEffect.PRESET_ID_CURRENT_STATE)) {
+            PresetDataModel presetModel = activity.presetModels.get(pendingModel.presetID);
+
+            if (presetModel != null) {
+                pendingModel.state = presetModel.state;
+            } else {
+                pendingModel.presetID = null;
+            }
+        }
+
+        return root;
+    }
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
@@ -64,13 +89,20 @@ public abstract class BasicSceneElementInfoFragment extends DimmableItemInfoFrag
         } else if (seekBarID == R.id.stateSliderColorTemp) {
             pendingState.setColorTemp(DimmableItemScaleConverter.convertColorTempViewToModel(seekBarProgress + DimmableItemScaleConverter.VIEW_COLORTEMP_MIN));
         }
+
         updatePresetFields(pendingState, getLampStateViewAdapter(seekBarTag));
-        setColorIndicator(getLampStateViewAdapter(seekBarTag).stateView, getPendingSceneElementState(seekBarTag));
+        updatePresetID(getMatchingPreset(pendingState), seekBarTag);
+
+        setColorIndicator(getLampStateViewAdapter(seekBarTag).stateView, pendingState);
     }
 
     @Override
     public void updatePresetFields() {
         updatePresetFields(getPendingSceneElementDataModel());
+    }
+
+    protected void updatePresetID(String presetID, Object viewTag) {
+        getPendingSceneElementDataModel().presetID = presetID;
     }
 
     protected LampState getPendingSceneElementState(Object viewTag) {
@@ -79,6 +111,18 @@ public abstract class BasicSceneElementInfoFragment extends DimmableItemInfoFrag
 
     protected LampStateViewAdapter getLampStateViewAdapter(Object viewTag) {
         return stateAdapter;
+    }
+
+    protected String getMatchingPreset(LampState itemState) {
+        Map<String, PresetDataModel> presetModels = ((SampleAppActivity)getActivity()).presetModels;
+
+        for (PresetDataModel presetModel : presetModels.values()) {
+            if (presetModel.stateEquals(itemState)) {
+                return presetModel.id;
+            }
+        }
+
+        return null;
     }
 
     @Override

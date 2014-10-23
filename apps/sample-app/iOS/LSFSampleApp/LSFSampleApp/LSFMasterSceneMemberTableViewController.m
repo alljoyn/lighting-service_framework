@@ -19,11 +19,16 @@
 #import "LSFSceneDataModel.h"
 #import "LSFAllJoynManager.h"
 #import "LSFDispatchQueue.h"
+#import "LSFEnums.h"
 
 @interface LSFMasterSceneMembersTableViewController ()
 
 @property (nonatomic, strong) UIBarButtonItem *cancelButton;
 
+-(void)controllerNotificationReceived: (NSNotification *)notification;
+-(void)masterSceneNotificationReceived: (NSNotification *)notification;
+-(void)updateMasterSceneWithID: (NSString *)masterSceneID;
+-(void)deleteMasterScenesWithIDs: (NSArray *)masterSceneIDs andNames: (NSArray *)masterSceneNames;
 -(void)sortScenesByName: (NSArray *)scenes;
 
 @end
@@ -43,6 +48,10 @@
 {
     [super viewWillAppear: animated];
 
+    //Set master scenes notification handler
+    [[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(controllerNotificationReceived:) name: @"ControllerNotification" object: nil];
+    [[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(masterSceneNotificationReceived:) name: @"MasterSceneNotification" object: nil];
+
     if (self.usesCancel)
     {
         [self.navigationItem setHidesBackButton:YES];
@@ -56,9 +65,79 @@
     }
 }
 
+-(void)viewWillDisappear: (BOOL)animated
+{
+    [super viewWillDisappear: animated];
+
+    //Clear scenes and master scenes notification handler
+    [[NSNotificationCenter defaultCenter] removeObserver: self];
+}
+
 -(void)didReceiveMemoryWarning
 {
     [super didReceiveMemoryWarning];
+}
+
+/*
+ * ControllerNotification Handler
+ */
+-(void)controllerNotificationReceived: (NSNotification *)notification
+{
+    NSDictionary *userInfo = notification.userInfo;
+    NSNumber *controllerStatus = [userInfo valueForKey: @"status"];
+
+    if (controllerStatus.intValue == Disconnected)
+    {
+        [self dismissViewControllerAnimated: YES completion: nil];
+    }
+}
+
+/*
+ * MasterSceneNotification Handler
+ */
+-(void)masterSceneNotificationReceived: (NSNotification *)notification
+{
+    NSString *masterSceneID = [notification.userInfo valueForKey: @"masterSceneID"];
+    NSNumber *callbackOp = [notification.userInfo valueForKey: @"operation"];
+    NSArray *masterSceneIDs = [notification.userInfo valueForKey: @"masterSceneIDs"];
+    NSArray *masterSceneNames = [notification.userInfo valueForKey: @"masterSceneNames"];
+
+    if ([self.masterSceneModel.theID isEqualToString: masterSceneID] || [masterSceneIDs containsObject: self.masterSceneModel.theID])
+    {
+        switch (callbackOp.intValue)
+        {
+            case MasterSceneUpdated:
+                [self updateMasterSceneWithID: masterSceneID];
+                break;
+            case MasterSceneDeleted:
+                [self deleteMasterScenesWithIDs: masterSceneIDs andNames: masterSceneNames];
+                break;
+            default:
+                break;
+        }
+    }
+}
+
+-(void)updateMasterSceneWithID: (NSString *)masterSceneID
+{
+    [self buildTableArray];
+    [self.tableView reloadData];
+}
+
+-(void)deleteMasterScenesWithIDs: (NSArray *)masterSceneIDs andNames: (NSArray *)masterSceneNames
+{
+    int index = [masterSceneIDs indexOfObject: self.masterSceneModel.theID];
+
+    [self dismissViewControllerAnimated: NO completion: nil];
+
+    dispatch_async(dispatch_get_main_queue(), ^{
+        UIAlertView *alert = [[UIAlertView alloc] initWithTitle: @"Master Scene Not Found"
+                                                        message: [NSString stringWithFormat: @"The master scene \"%@\" no longer exists.", [masterSceneNames objectAtIndex: index]]
+                                                       delegate: nil
+                                              cancelButtonTitle: @"OK"
+                                              otherButtonTitles: nil];
+        [alert show];
+    });
 }
 
 /*

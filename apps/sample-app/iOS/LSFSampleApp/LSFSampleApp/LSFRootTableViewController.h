@@ -18,4 +18,6 @@
 
 @interface LSFRootTableViewController : UITableViewController
 
+@property (nonatomic, strong) NSMutableArray *data;
+
 @end

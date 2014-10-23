@@ -48,5 +48,6 @@
 -(IBAction)colorTempSliderTouchUpInside:(UISlider *)sender;
 -(IBAction)colorTempSliderTouchUpOutside:(UISlider *)sender;
 -(IBAction)colorTempSliderTouchedWhileDisabled: (UIButton *)sender;
+-(void)updatePresetButtonTitle: (UIButton*)presetButton;
 
 @end

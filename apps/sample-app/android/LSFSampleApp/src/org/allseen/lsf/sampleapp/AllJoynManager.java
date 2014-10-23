@@ -20,6 +20,9 @@ import java.util.concurrent.Semaphore;
 import org.alljoyn.bus.BusAttachment;
 import org.allseen.lsf.ControllerClient;
 import org.allseen.lsf.ControllerClientCallback;
+import org.allseen.lsf.ControllerClientStatus;
+import org.allseen.lsf.ControllerServiceManager;
+import org.allseen.lsf.ControllerServiceManagerCallback;
 import org.allseen.lsf.LampGroupManager;
 import org.allseen.lsf.LampManager;
 import org.allseen.lsf.LampManagerCallback;
@@ -42,6 +45,7 @@ public class AllJoynManager {
 
     public static BusAttachment bus;
     public static ControllerClient controllerClient;
+    public static ControllerServiceManager controllerServiceManager;
     public static LampManager lampManager;
     public static LampGroupManager groupManager;
     public static PresetManager presetManager;
@@ -50,12 +54,14 @@ public class AllJoynManager {
     public static SampleAppActivity activity;
     public static AboutManager aboutManager;
 
-    public static boolean controllerConnected;
+    public static boolean controllerConnected = false;
+    public static boolean controllerStarted = false;
     public static final Semaphore alljoynSemaphore = new Semaphore(1);
 
     public static void init(
             final FragmentManager fragmentManager,
             final ControllerClientCallback controllerClientCallback,
+            final ControllerServiceManagerCallback controllerServiceManagerCallback,
             final LampManagerCallback lampManagerCallback,
             final SampleGroupManagerCallback groupManagerCallback,
             final PresetManagerCallback presetManagerCallback,
@@ -88,6 +94,7 @@ public class AllJoynManager {
                         if (alljoynManagerFragment == null) {
                             alljoynManagerFragment = new AllJoynManagerFragment();
                             alljoynManagerFragment.controllerClientCallback = controllerClientCallback;
+                            alljoynManagerFragment.controllerServiceManagerCallback = controllerServiceManagerCallback;
                             alljoynManagerFragment.lampManagerCallback = lampManagerCallback;
                             alljoynManagerFragment.groupManagerCallback = groupManagerCallback;
                             alljoynManagerFragment.presetManagerCallback = presetManagerCallback;
@@ -111,29 +118,44 @@ public class AllJoynManager {
     }
 
     public static void start() {
-        Log.d(AllJoynManager.TAG, "AllJoynManager.start()");
+        if (!controllerStarted) {
+            Log.d(AllJoynManager.TAG, "AllJoynManager.start()");
 
-        activity.handler.post(new Runnable() {
-            @Override
-            public void run() {
-                if (controllerClient != null) {
-                    controllerClient.start();
+            controllerStarted = true;
+
+            activity.handler.post(new Runnable() {
+                @Override
+                public void run() {
+                    if (controllerClient != null) {
+                        if (controllerClient.start().equals(ControllerClientStatus.ERR_RETRY)) {
+                            Log.d(AllJoynManager.TAG, "AllJoynManager.start(): reposting");
+                            activity.handler.postDelayed(this, 5000);
+                        }
+                    } else {
+                        Log.d(AllJoynManager.TAG, "AllJoynManager.start(): no controller client");
+                    }
                 }
-            }
-        });
+            });
+        }
     }
 
     public static void stop() {
-        Log.d(AllJoynManager.TAG, "AllJoynManager.stop()");
+        if (controllerStarted) {
+            Log.d(AllJoynManager.TAG, "AllJoynManager.stop()");
 
-        activity.handler.post(new Runnable() {
-            @Override
-            public void run() {
-                if (controllerClient != null) {
-                    controllerClient.stop();
+            controllerStarted = false;
+
+            activity.handler.post(new Runnable() {
+                @Override
+                public void run() {
+                    if (controllerClient != null) {
+                        controllerClient.stop();
+                    } else {
+                        Log.d(AllJoynManager.TAG, "AllJoynManager.stop(): no controller client");
+                    }
                 }
-            }
-        });
+            });
+        }
     }
 
     public static void destroy(final FragmentManager fragmentManager) {
@@ -168,6 +190,7 @@ public class AllJoynManager {
         private AllJoynManagerAsyncTask alljoynManagerTask;
 
         public ControllerClientCallback controllerClientCallback;
+        public ControllerServiceManagerCallback controllerServiceManagerCallback;
         public LampManagerCallback lampManagerCallback;
         public SampleGroupManagerCallback groupManagerCallback;
         public PresetManagerCallback presetManagerCallback;
@@ -176,6 +199,7 @@ public class AllJoynManager {
 
         public BusAttachment bus;
         public ControllerClient controllerClient;
+        public ControllerServiceManager controllerServiceManager;
         public LampManager lampManager;
         public LampGroupManager groupManager;
         public PresetManager presetManager;
@@ -209,7 +233,7 @@ public class AllJoynManager {
             presetManager.destroy();
             groupManager.destroy();
             lampManager.destroy();
-
+            controllerServiceManager.destroy();
             controllerClient.destroy();
 
             bus.disconnect();
@@ -221,6 +245,7 @@ public class AllJoynManager {
             AllJoynManager.presetManager = null;
             AllJoynManager.groupManager = null;
             AllJoynManager.lampManager = null;
+            AllJoynManager.controllerServiceManager = null;
             AllJoynManager.controllerClient = null;
             AllJoynManager.bus = null;
 
@@ -245,6 +270,7 @@ public class AllJoynManager {
 //            alljoynManagerFragment.bus.setDaemonDebug("ALL", 7);
 
             alljoynManagerFragment.controllerClient = new ControllerClient(alljoynManagerFragment.bus, alljoynManagerFragment.controllerClientCallback);
+            alljoynManagerFragment.controllerServiceManager = new ControllerServiceManager(alljoynManagerFragment.controllerClient, alljoynManagerFragment.controllerServiceManagerCallback);
             alljoynManagerFragment.lampManager = new LampManager(alljoynManagerFragment.controllerClient, alljoynManagerFragment.lampManagerCallback);
             alljoynManagerFragment.groupManager = new SampleGroupManager(alljoynManagerFragment.controllerClient, alljoynManagerFragment.groupManagerCallback);
             alljoynManagerFragment.presetManager = new PresetManager(alljoynManagerFragment.controllerClient, alljoynManagerFragment.presetManagerCallback);
@@ -260,6 +286,7 @@ public class AllJoynManager {
 
             AllJoynManager.bus = alljoynManagerFragment.bus;
             AllJoynManager.controllerClient = alljoynManagerFragment.controllerClient;
+            AllJoynManager.controllerServiceManager = alljoynManagerFragment.controllerServiceManager;
             AllJoynManager.lampManager = alljoynManagerFragment.lampManager;
             AllJoynManager.groupManager = alljoynManagerFragment.groupManager;
             AllJoynManager.presetManager = alljoynManagerFragment.presetManager;

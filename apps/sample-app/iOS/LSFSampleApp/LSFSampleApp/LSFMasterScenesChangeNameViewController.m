@@ -20,12 +20,17 @@
 #import "LSFDispatchQueue.h"
 #import "LSFAllJoynManager.h"
 #import "LSFUtilityFunctions.h"
+#import "LSFEnums.h"
 
 @interface LSFMasterScenesChangeNameViewController ()
 
 @property (nonatomic) BOOL doneButtonPressed;
 @property (nonatomic, strong) LSFMasterSceneDataModel *masterSceneModel;
 
+-(void)controllerNotificationReceived: (NSNotification *)notification;
+-(void)masterSceneNotificationReceived: (NSNotification *)notification;
+-(void)reloadMasterSceneName;
+-(void)deleteMasterScenesWithIDs: (NSArray *)sceneIDs andNames: (NSArray *)sceneNames;
 -(BOOL)checkForDuplicateName: (NSString *)name;
 
 @end
@@ -44,6 +49,12 @@
 
 -(void)viewWillAppear: (BOOL)animated
 {
+    [super viewWillAppear: animated];
+
+    //Set master scenes notification handler
+    [[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(controllerNotificationReceived:) name: @"ControllerNotification" object: nil];
+    [[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(masterSceneNotificationReceived:) name: @"MasterSceneNotification" object: nil];
+
     LSFMasterSceneModelContainer *container = [LSFMasterSceneModelContainer getMasterSceneModelContainer];
     NSMutableDictionary *masterScenes = container.masterScenesContainer;
     self.masterSceneModel = [masterScenes objectForKey: self.masterSceneID];
@@ -53,9 +64,85 @@
     self.doneButtonPressed = NO;
 }
 
+-(void)viewWillDisappear: (BOOL)animated
+{
+    [super viewWillDisappear: animated];
+
+    //Clear scenes and master scenes notification handler
+    [[NSNotificationCenter defaultCenter] removeObserver: self];
+}
+
 -(void)didReceiveMemoryWarning
 {
     [super didReceiveMemoryWarning];
+}
+
+/*
+ * ControllerNotification Handler
+ */
+-(void)controllerNotificationReceived: (NSNotification *)notification
+{
+    NSDictionary *userInfo = notification.userInfo;
+    NSNumber *controllerStatus = [userInfo valueForKey: @"status"];
+
+    if (controllerStatus.intValue == Disconnected)
+    {
+        [self.navigationController popToRootViewControllerAnimated: YES];
+    }
+}
+
+/*
+ * MasterSceneNotification Handler
+ */
+-(void)masterSceneNotificationReceived: (NSNotification *)notification
+{
+    NSString *masterSceneID = [notification.userInfo valueForKey: @"masterSceneID"];
+    NSNumber *callbackOp = [notification.userInfo valueForKey: @"operation"];
+    NSArray *masterSceneIDs = [notification.userInfo valueForKey: @"masterSceneIDs"];
+    NSArray *masterSceneNames = [notification.userInfo valueForKey: @"masterSceneNames"];
+
+    if ([self.masterSceneID isEqualToString: masterSceneID] || [masterSceneIDs containsObject: self.masterSceneID])
+    {
+        switch (callbackOp.intValue)
+        {
+            case SceneNameUpdated:
+                [self reloadMasterSceneName];
+                break;
+            case SceneDeleted:
+                [self deleteMasterScenesWithIDs: masterSceneIDs andNames: masterSceneNames];
+                break;
+            default:
+                break;
+        }
+    }
+}
+
+-(void)reloadMasterSceneName
+{
+    LSFMasterSceneModelContainer *container = [LSFMasterSceneModelContainer getMasterSceneModelContainer];
+    NSMutableDictionary *masterScenes = container.masterScenesContainer;
+    self.masterSceneModel = [masterScenes objectForKey: self.masterSceneID];
+
+    self.masterSceneNameTextField.text = self.masterSceneModel.name;
+}
+
+-(void)deleteMasterScenesWithIDs: (NSArray *)masterSceneIDs andNames: (NSArray *)masterSceneNames
+{
+    if ([masterSceneIDs containsObject: self.masterSceneID])
+    {
+        int index = [masterSceneIDs indexOfObject: self.masterSceneID];
+
+        [self.navigationController popToRootViewControllerAnimated: YES];
+
+        dispatch_async(dispatch_get_main_queue(), ^{
+            UIAlertView *alert = [[UIAlertView alloc] initWithTitle: @"Master Scene Not Found"
+                                                            message: [NSString stringWithFormat: @"The master scene \"%@\" no longer exists.", [masterSceneNames objectAtIndex: index]]
+                                                           delegate: nil
+                                                  cancelButtonTitle: @"OK"
+                                                  otherButtonTitles: nil];
+            [alert show];
+        });
+    }
 }
 
 /*
@@ -118,12 +205,12 @@
 {
     if (buttonIndex == 0)
     {
-        [alertView dismissWithClickedButtonIndex: 0 animated: YES];
+        [alertView dismissWithClickedButtonIndex: 0 animated: NO];
     }
 
     if (buttonIndex == 1)
     {
-        [alertView dismissWithClickedButtonIndex: 1 animated: YES];
+        [alertView dismissWithClickedButtonIndex: 1 animated: NO];
 
         self.doneButtonPressed = YES;
         [self.masterSceneNameTextField resignFirstResponder];

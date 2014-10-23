@@ -24,16 +24,23 @@
 #import "LSFNoEffectTableViewController.h"
 #import "LSFTransitionEffectTableViewController.h"
 #import "LSFPulseEffectTableViewController.h"
+#import "LSFEnums.h"
 
 @interface LSFScenesPresetsTableViewController ()
 
 @property (nonatomic, strong) NSArray *presetData;
 @property (nonatomic, strong) NSArray *presetDataSorted;
 
+-(void)controllerNotificationReceived: (NSNotification *)notification;
+-(void)sceneNotificationReceived: (NSNotification *)notification;
+-(void)deleteScenesWithIDs: (NSArray *)sceneIDs andNames: (NSArray *)sceneNames;
+-(void)presetNotificationReceived: (NSNotification *)notification;
+
 @end
 
 @implementation LSFScenesPresetsTableViewController
 
+@synthesize sceneID = _sceneID;
 @synthesize lampState = _lampState;
 @synthesize effectSender = _effectSender;
 @synthesize endStateFlag = _endStateFlag;
@@ -48,10 +55,10 @@
     [super viewWillAppear: animated];
     self.navigationItem.rightBarButtonItem = self.editButtonItem;
 
-    dispatch_async(([LSFDispatchQueue getDispatchQueue]).queue, ^{
-        LSFAllJoynManager *ajManager = [LSFAllJoynManager getAllJoynManager];
-        [ajManager.spmc setReloadPresetsDelegate: self];
-    });
+    //Set notification handler
+    [[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(controllerNotificationReceived:) name: @"ControllerNotification" object: nil];
+    [[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(sceneNotificationReceived:) name: @"SceneNotification" object: nil];
+    [[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(presetNotificationReceived:) name: @"PresetNotification" object: nil];
 
     [self reloadPresets];
 }
@@ -80,10 +87,8 @@
         }
     }
 
-    dispatch_async(([LSFDispatchQueue getDispatchQueue]).queue, ^{
-        LSFAllJoynManager *ajManager = [LSFAllJoynManager getAllJoynManager];
-        [ajManager.spmc setReloadPresetsDelegate: nil];
-    });
+    //Clear notification handler
+    [[NSNotificationCenter defaultCenter] removeObserver: self];
 }
 
 -(void)didReceiveMemoryWarning
@@ -92,8 +97,68 @@
 }
 
 /*
- * LSFReloadPresetsCallbackDelegate Implementation
+ * ControllerNotification Handler
  */
+-(void)controllerNotificationReceived: (NSNotification *)notification
+{
+    NSDictionary *userInfo = notification.userInfo;
+    NSNumber *controllerStatus = [userInfo valueForKey: @"status"];
+
+    if (controllerStatus.intValue == Disconnected)
+    {
+        [self dismissViewControllerAnimated: NO completion: nil];
+    }
+}
+
+/*
+ * SceneNotification Handler
+ */
+-(void)sceneNotificationReceived: (NSNotification *)notification
+{
+    NSNumber *callbackOp = [notification.userInfo valueForKey: @"operation"];
+    NSArray *sceneIDs = [notification.userInfo valueForKey: @"sceneIDs"];
+    NSArray *sceneNames = [notification.userInfo valueForKey: @"sceneNames"];
+
+    if ([sceneIDs containsObject: self.sceneID])
+    {
+        switch (callbackOp.intValue)
+        {
+            case SceneDeleted:
+                [self deleteScenesWithIDs: sceneIDs andNames: sceneNames];
+                break;
+            default:
+                break;
+        }
+    }
+}
+
+-(void)deleteScenesWithIDs: (NSArray *)sceneIDs andNames: (NSArray *)sceneNames
+{
+    if ([sceneIDs containsObject: self.sceneID])
+    {
+        int index = [sceneIDs indexOfObject: self.sceneID];
+
+        [self dismissViewControllerAnimated: NO completion: nil];
+
+        dispatch_async(dispatch_get_main_queue(), ^{
+            UIAlertView *alert = [[UIAlertView alloc] initWithTitle: @"Scene Not Found"
+                                                            message: [NSString stringWithFormat: @"The scene \"%@\" no longer exists.", [sceneNames objectAtIndex: index]]
+                                                           delegate: nil
+                                                  cancelButtonTitle: @"OK"
+                                                  otherButtonTitles: nil];
+            [alert show];
+        });
+    }
+}
+
+/*
+ * PresetNotification Handler
+ */
+-(void)presetNotificationReceived: (NSNotification *)notification
+{
+    [self reloadPresets];
+}
+
 -(void)reloadPresets
 {
     LSFPresetModelContainer *container = [LSFPresetModelContainer getPresetModelContainer];
@@ -239,9 +304,6 @@
 {
     if (editingStyle == UITableViewCellEditingStyleDelete)
     {
-        //UITableViewCell *cell = [tableView cellForRowAtIndexPath: indexPath];
-        //NSLog(@"Clicked delete on %@", cell.textLabel.text);
-
         LSFPresetModel *data = [self.presetDataSorted objectAtIndex: [indexPath row]];
 
         LSFPresetModelContainer *container = [LSFPresetModelContainer getPresetModelContainer];
@@ -299,6 +361,7 @@
     {
         LSFScenesCreatePresetViewController *scpvc = [segue destinationViewController];
         scpvc.lampState = self.lampState;
+        scpvc.sceneID = self.sceneID;
     }
 }
 

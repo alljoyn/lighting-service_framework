@@ -15,9 +15,8 @@
  ******************************************************************************/
 
 #import <UIKit/UIKit.h>
-#import "LSFReloadGroupsCallbackDelegate.h"
 
-@interface LSFGroupsMembersTableViewController : UITableViewController <UITableViewDelegate, UITableViewDataSource, UIAlertViewDelegate, LSFReloadGroupsCallbackDelegate>
+@interface LSFGroupsMembersTableViewController : UITableViewController <UITableViewDelegate, UITableViewDataSource, UIAlertViewDelegate>
 
 @property (nonatomic, strong) NSString *groupID;
 

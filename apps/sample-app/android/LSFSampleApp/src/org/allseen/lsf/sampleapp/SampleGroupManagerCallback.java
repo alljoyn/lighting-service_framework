@@ -15,6 +15,9 @@
  */
 package org.allseen.lsf.sampleapp;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import org.allseen.lsf.LampGroup;
 import org.allseen.lsf.LampGroupManagerCallback;
 import org.allseen.lsf.ResponseCode;
@@ -34,7 +37,8 @@ public class SampleGroupManagerCallback extends LampGroupManagerCallback {
     protected final ColorAverager averageBrightness = new ColorAverager();
     protected final ColorAverager averageColorTemp = new ColorAverager();
 
-    protected String flattenTriggerGroupID;
+    protected Set<String> groupIDsWithPendingMembers = new HashSet<String>();
+    protected Set<String> groupIDsWithPendingFlatten = new HashSet<String>();
 
     public SampleGroupManagerCallback(SampleAppActivity activity, FragmentManager fragmentManager, Handler handler) {
         super();
@@ -54,95 +58,80 @@ public class SampleGroupManagerCallback extends LampGroupManagerCallback {
 
     @Override
     public void getAllLampGroupIDsReplyCB(ResponseCode rc, String[] groupIDs) {
+        Log.d(SampleAppActivity.TAG, "getAllLampGroupIDsReplyCB()");
         if (!rc.equals(ResponseCode.OK)) {
             activity.showErrorResponseCode(rc, "getAllLampGroupIDsReplyCB");
         }
 
-        Log.d(SampleAppActivity.TAG, "---------------------------");
-        Log.d(SampleAppActivity.TAG, "getAllLampGroupIDsReplyCB()");
-        postProcessLampGroupIDs(groupIDs);
-        postProcessLampGroupID(AllLampsDataModel.ALL_LAMPS_GROUP_ID);
+        postProcessLampGroupID(AllLampsDataModel.ALL_LAMPS_GROUP_ID, true, true);
 
         for (final String groupID : groupIDs) {
-            postProcessLampGroupID(groupID);
+            postProcessLampGroupID(groupID, true, true);
         }
     }
 
     @Override
     public void getLampGroupNameReplyCB(ResponseCode rc, String groupID, String language, String groupName) {
+        Log.d(SampleAppActivity.TAG, "getLampGroupNameReplyCB(): " + groupID + ": " + groupName);
         if (!rc.equals(ResponseCode.OK)) {
             activity.showErrorResponseCode(rc, "getLampGroupNameReplyCB");
+            AllJoynManager.groupManager.getLampGroupName(groupID, SampleAppActivity.LANGUAGE);
+        } else {
+            postUpdateLampGroupName(groupID, groupName);
         }
-
-        Log.d(SampleAppActivity.TAG, "getLampGroupNameReplyCB(): " + groupName);
-        postUpdateLampGroupName(groupID, groupName);
     }
 
     @Override
     public void setLampGroupNameReplyCB(ResponseCode responseCode, String lampGroupID, String language) {
+        Log.d(SampleAppActivity.TAG, "setLampGroupNameReplyCB(): " + lampGroupID);
         if (!responseCode.equals(ResponseCode.OK)) {
             activity.showErrorResponseCode(responseCode, "setLampGroupNameReplyCB");
         }
 
-        Log.d(SampleAppActivity.TAG, "setLampGroupNameReplyCB(): " + lampGroupID);
         AllJoynManager.groupManager.getLampGroupName(lampGroupID, SampleAppActivity.LANGUAGE);
     }
 
     @Override
     public void lampGroupsNameChangedCB(final String[] lampGroupIDs) {
-        handler.post(new Runnable() {
-            @Override
-            public void run() {
-                boolean containsNewIDs = false;
-
-                for (final String groupID : lampGroupIDs) {
-                    if (activity.groupModels.containsKey(groupID)) {
-                        Log.d(SampleAppActivity.TAG, "lampGroupsNameChangedCB(): " + groupID);
-                        AllJoynManager.groupManager.getLampGroupName(groupID, SampleAppActivity.LANGUAGE);
-                    } else {
-                        containsNewIDs = true;
-                    }
-                }
-
-                if (containsNewIDs) {
-                    AllJoynManager.groupManager.getAllLampGroupIDs();
-                }
-            }
-        });
+        Log.d(SampleAppActivity.TAG, "lampGroupsNameChangedCB(): " + lampGroupIDs.length);
+        for (String groupID : lampGroupIDs) {
+            postProcessLampGroupID(groupID, true, false);
+        }
     }
 
     @Override
     public void createLampGroupReplyCB(ResponseCode responseCode, String lampGroupID) {
+        Log.d(SampleAppActivity.TAG, "createLampGroupReplyCB(): " + lampGroupID);
         if (!responseCode.equals(ResponseCode.OK)) {
             activity.showErrorResponseCode(responseCode, "createLampGroupReplyCB");
         }
-
-        Log.d(SampleAppActivity.TAG, "createLampGroupReplyCB(): " + lampGroupID);
-        postProcessLampGroupID(lampGroupID);
     }
 
     @Override
     public void lampGroupsCreatedCB(String[] groupIDs) {
-        AllJoynManager.groupManager.getAllLampGroupIDs();
+        Log.d(SampleAppActivity.TAG, "lampGroupsCreatedCB(): " + groupIDs.length);
+        for (final String groupID : groupIDs) {
+            postProcessLampGroupID(groupID, true, true);
+        }
     }
 
     @Override
-    public void getLampGroupReplyCB(ResponseCode responseCode, String lampGroupID, LampGroup lampGroup) {
+    public void getLampGroupReplyCB(ResponseCode responseCode, String groupID, LampGroup lampGroup) {
+        Log.d(SampleAppActivity.TAG, "getLampGroupReplyCB(): " + groupID);
         if (!responseCode.equals(ResponseCode.OK)) {
             activity.showErrorResponseCode(responseCode, "getLampGroupReplyCB");
+            AllJoynManager.groupManager.getLampGroup(groupID);
+        } else {
+            postUpdateLampGroup(groupID, lampGroup);
         }
-
-        Log.d(SampleAppActivity.TAG, "getLampGroupReplyCB(): " + lampGroupID + ": " +  lampGroup);
-        postUpdateLampGroup(lampGroupID, lampGroup);
     }
 
     @Override
     public void deleteLampGroupReplyCB(ResponseCode responseCode, String lampGroupID) {
+        Log.d(SampleAppActivity.TAG, "deleteLampGroupReplyCB(): " + lampGroupID);
         if (!responseCode.equals(ResponseCode.OK)) {
             activity.showErrorResponseCode(responseCode, "deleteLampGroupReplyCB");
         }
-
-        Log.d(SampleAppActivity.TAG, "deleteLampGroupReplyCB(): " + lampGroupID);
     }
 
     @Override
@@ -153,112 +142,82 @@ public class SampleGroupManagerCallback extends LampGroupManagerCallback {
 
     @Override
     public void transitionLampGroupStateOnOffFieldReplyCB(ResponseCode responseCode, String groupID) {
+        Log.d(SampleAppActivity.TAG, "transitionLampGroupStateOnOffFieldReplyCB(): " + groupID);
         if (!responseCode.equals(ResponseCode.OK)) {
             activity.showErrorResponseCode(responseCode, "transitionLampGroupStateOnOffFieldReplyCB");
         }
-
-        Log.d(SampleAppActivity.TAG, "transitionLampGroupStateOnOffFieldReplyCB(): " + groupID);
-        postUpdateDimmableItemTask(groupID);
-        postUpdateLampGroupMemberLamps(groupID);
     }
 
     @Override
     public void transitionLampGroupStateHueFieldReplyCB(ResponseCode responseCode, String groupID) {
+        Log.d(SampleAppActivity.TAG, "transitionLampGroupStateHueFieldReplyCB(): " + groupID);
         if (!responseCode.equals(ResponseCode.OK)) {
             activity.showErrorResponseCode(responseCode, "transitionLampGroupStateHueFieldReplyCB");
         }
-
-        Log.d(SampleAppActivity.TAG, "transitionLampGroupStateHueFieldReplyCB(): " + groupID);
-        postUpdateDimmableItemTask(groupID);
-        postUpdateLampGroupMemberLamps(groupID);
     }
 
     @Override
     public void transitionLampGroupStateSaturationFieldReplyCB(ResponseCode responseCode, String groupID) {
+        Log.d(SampleAppActivity.TAG, "transitionLampGroupStateSaturationFieldReplyCB(): " + groupID);
         if (!responseCode.equals(ResponseCode.OK)) {
             activity.showErrorResponseCode(responseCode, "transitionLampGroupStateSaturationFieldReplyCB");
         }
-
-        Log.d(SampleAppActivity.TAG, "transitionLampGroupStateSaturationFieldReplyCB(): " + groupID);
-        postUpdateDimmableItemTask(groupID);
-        postUpdateLampGroupMemberLamps(groupID);
     }
 
     @Override
     public void transitionLampGroupStateBrightnessFieldReplyCB(ResponseCode responseCode, String groupID) {
+        Log.d(SampleAppActivity.TAG, "transitionLampGroupStateBrightnessFieldReplyCB(): " + groupID);
         if (!responseCode.equals(ResponseCode.OK)) {
             activity.showErrorResponseCode(responseCode, "transitionLampGroupStateBrightnessFieldReplyCB");
         }
-
-        Log.d(SampleAppActivity.TAG, "transitionLampGroupStateBrightnessFieldReplyCB(): " + groupID);
-        postUpdateDimmableItemTask(groupID);
-        postUpdateLampGroupMemberLamps(groupID);
     }
 
     @Override
     public void transitionLampGroupStateColorTempFieldReplyCB(ResponseCode responseCode, String groupID) {
+        Log.d(SampleAppActivity.TAG, "transitionLampGroupStateColorTempFieldReplyCB(): " + groupID);
         if (!responseCode.equals(ResponseCode.OK)) {
             activity.showErrorResponseCode(responseCode, "transitionLampGroupStateColorTempFieldReplyCB");
         }
-
-        Log.d(SampleAppActivity.TAG, "transitionLampGroupStateColorTempFieldReplyCB(): " + groupID);
-        postUpdateDimmableItemTask(groupID);
-        postUpdateLampGroupMemberLamps(groupID);
     }
 
     @Override
     public void lampGroupsUpdatedCB(String[] groupIDs) {
         Log.d(SampleAppActivity.TAG, "lampGroupsUpdatedCB(): " + groupIDs.length);
         for (String groupID : groupIDs) {
-            Log.d(SampleAppActivity.TAG, "lampGroupsUpdatedCB()" + groupID);
-            AllJoynManager.groupManager.getLampGroup(groupID);
+            postProcessLampGroupID(groupID, false, true);
         }
     }
 
-    protected void postProcessLampGroupIDs(String[] groupIDs) {
-        final String lastGroupID = groupIDs.length > 0 ? groupIDs[groupIDs.length - 1] : AllLampsDataModel.ALL_LAMPS_GROUP_ID;
-
-        handler.post(new Runnable() {
-            @Override
-            public void run() {
-                flattenTriggerGroupID = lastGroupID;
-            }
-        });
-    }
-
-    protected void postProcessLampGroupID(final String groupID) {
+    protected void postProcessLampGroupID(final String groupID, final boolean needName, final boolean needState) {
         Log.d(SampleAppActivity.TAG, "postProcessLampGroupID(): " + groupID);
         handler.post(new Runnable() {
             @Override
             public void run() {
-                if (!activity.groupModels.containsKey(groupID)) {
-                    Log.d(SampleAppActivity.TAG, "new group: " + groupID);
-                    postUpdateLampGroupID(groupID);
-                    AllJoynManager.groupManager.getLampGroupName(groupID, SampleAppActivity.LANGUAGE);
-                    AllJoynManager.groupManager.getLampGroup(groupID);
-                } else if (groupID.equals(flattenTriggerGroupID)) {
-                    Log.d(SampleAppActivity.TAG, "got trigger group ID: " + flattenTriggerGroupID);
-                    postFlattenLampGroups();
-                }
-            }
-        });
-    }
-
-    protected void postUpdateLampGroupID(final String groupID) {
-        Log.d(SampleAppActivity.TAG, "postUpdateLampGroupID(): " + groupID);
-        handler.post(new Runnable() {
-            @Override
-            public void run() {
                 GroupDataModel groupModel = activity.groupModels.get(groupID);
+                boolean getName = needName;
+                boolean getState = needState;
 
                 if (groupModel == null) {
+                    Log.d(SampleAppActivity.TAG, "new group: " + groupID);
+
                     groupModel = groupID != AllLampsDataModel.ALL_LAMPS_GROUP_ID ? new GroupDataModel(groupID) : new AllLampsDataModel();
+
+                    getName = true;
+                    getState = true;
+
                     activity.groupModels.put(groupID, groupModel);
+                }
+
+                if (getName) {
+                    AllJoynManager.groupManager.getLampGroupName(groupID, SampleAppActivity.LANGUAGE);
+                }
+
+                if (getState) {
+                    groupIDsWithPendingMembers.add(groupID);
+                    AllJoynManager.groupManager.getLampGroup(groupID);
                 }
             }
         });
-
-        postUpdateDimmableItemTask(groupID);
     }
 
     protected void postUpdateLampGroupName(final String groupID, final String groupName) {
@@ -274,46 +233,71 @@ public class SampleGroupManagerCallback extends LampGroupManagerCallback {
             }
         });
 
-        postUpdateDimmableItemTask(groupID);
+        postUpdateGroupUI(groupID);
     }
 
     protected void postUpdateLampGroup(final String groupID, final LampGroup lampGroup) {
-        Log.d(SampleAppActivity.TAG, "Updating lamp group state " + groupID + ": " +  lampGroup);
+        Log.d(SampleAppActivity.TAG, "postUpdateLampGroup(): " + groupID);
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+                GroupDataModel groupModel = activity.groupModels.get(groupID);
+
+                groupIDsWithPendingMembers.remove(groupID);
+
+                if (groupModel != null) {
+                    groupModel.members = lampGroup;
+
+                    groupIDsWithPendingFlatten.add(groupID);
+
+                    if (groupIDsWithPendingMembers.size() == 0) {
+                        for (String groupID : groupIDsWithPendingFlatten) {
+                            postFlattenLampGroup(groupID);
+                        }
+
+                        groupIDsWithPendingFlatten.clear();
+
+                        postUpdateLampGroupState(groupModel);
+                    }
+                } else {
+                    Log.e(SampleAppActivity.TAG, "postUpdateLampGroup(): group not found: " + groupID);
+                }
+            }
+        });
+    }
+
+    protected void postFlattenLampGroup(final String groupID) {
+        Log.d(SampleAppActivity.TAG, "postFlattenLampGroup()");
         handler.post(new Runnable() {
             @Override
             public void run() {
                 GroupDataModel groupModel = activity.groupModels.get(groupID);
 
                 if (groupModel != null) {
-                    groupModel.members = lampGroup;
-                }
-
-                if (groupID.equals(flattenTriggerGroupID)) {
-                    Log.d(SampleAppActivity.TAG, "got trigger group ID: " + flattenTriggerGroupID);
-                    postFlattenLampGroups();
+                    new GroupsFlattener().flattenGroup(activity.groupModels, groupModel);
                 }
             }
         });
-
-        postUpdateDimmableItemTask(groupID);
     }
 
-    protected void postFlattenLampGroups() {
-        Log.d(SampleAppActivity.TAG, "postFlattenLampGroup()");
+    public void postUpdateDependentLampGroups(final String lampID) {
+        Log.d(SampleAppActivity.TAG, "postUpdateDependentLampGroups(): " + lampID);
         handler.post(new Runnable() {
             @Override
             public void run() {
-                new GroupsFlattener().flattenGroups(activity.groupModels);
-
                 for (GroupDataModel groupModel : activity.groupModels.values()) {
-                    postUpdateLampGroupState(groupModel);
+                    Set<String> lampIDs = groupModel.getLamps();
+
+                    if (lampIDs != null && lampIDs.contains(lampID)) {
+                        postUpdateLampGroupState(groupModel);
+                    }
                 }
             }
         });
     }
 
     protected void postUpdateLampGroupState(final GroupDataModel groupModel) {
-        Log.d(SampleAppActivity.TAG, "postUpdateLampGroupState()");
+        Log.d(SampleAppActivity.TAG, "postUpdateLampGroupState(): " + groupModel.id);
         handler.post(new Runnable() {
             @Override
             public void run() {
@@ -373,26 +357,11 @@ public class SampleGroupManagerCallback extends LampGroupManagerCallback {
             }
         });
 
-        postUpdateDimmableItemTask(groupModel.id);
-    }
-
-    protected void postUpdateLampGroupMemberLamps(final String groupID) {
-        handler.post(new Runnable() {
-            @Override
-            public void run() {
-                GroupDataModel groupModel = activity.groupModels.get(groupID);
-
-                if (groupModel != null) {
-                    for (String lampID : groupModel.getLamps()) {
-                        AllJoynManager.lampManager.getLampState(lampID);
-                    }
-                }
-            }
-        });
+        postUpdateGroupUI(groupModel.id);
     }
 
     protected void postDeleteGroups(final String[] groupIDs) {
-        Log.d(SampleAppActivity.TAG, "Removing deleted groups");
+        Log.d(SampleAppActivity.TAG, "postDeleteGroups(): " + groupIDs.length);
         handler.post(new Runnable() {
             @Override
             public void run() {
@@ -417,8 +386,8 @@ public class SampleGroupManagerCallback extends LampGroupManagerCallback {
         });
     }
 
-    protected void postUpdateDimmableItemTask(final String groupID) {
-        Log.d(SampleAppActivity.TAG, "postUpdateDimmableItemTask(): " + groupID);
+    protected void postUpdateGroupUI(final String groupID) {
+        Log.d(SampleAppActivity.TAG, "postUpdateGroupUI(): " + groupID);
         handler.post(new Runnable() {
             @Override
             public void run() {

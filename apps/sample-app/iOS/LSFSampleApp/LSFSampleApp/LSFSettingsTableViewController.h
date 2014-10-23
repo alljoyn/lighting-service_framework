@@ -15,9 +15,8 @@
  ******************************************************************************/
 
 #import <UIKit/UIKit.h>
-#import "LSFReloadControllerCallbackDelegate.h"
 
-@interface LSFSettingsTableViewController : UITableViewController <LSFReloadControllerCallbackDelegate>
+@interface LSFSettingsTableViewController : UITableViewController
 
 @property (weak, nonatomic) IBOutlet UILabel *controllerNameLabel;
 

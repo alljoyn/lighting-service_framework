@@ -15,10 +15,8 @@
  ******************************************************************************/
 
 #import <UIKit/UIKit.h>
-#import "LSFReloadScenesCallbackDelegate.h"
-#import "LSFReloadMasterScenesCallbackDelegate.h"
 #import "LSFRootTableViewController.h"
 
-@interface LSFScenesTableViewController : LSFRootTableViewController <UITableViewDelegate, UITableViewDataSource, UIActionSheetDelegate, LSFReloadScenesCallbackDelegate, LSFReloadMasterScenesCallbackDelegate>
+@interface LSFScenesTableViewController : LSFRootTableViewController <UITableViewDelegate, UITableViewDataSource, UIActionSheetDelegate>
 
 @end

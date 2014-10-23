@@ -26,6 +26,7 @@
 @property (nonatomic, strong) NSSet *lamps;
 @property (nonatomic, strong) NSSet *groups;
 @property (nonatomic) int duplicates;
+@property (nonatomic) unsigned int delay;
 
 -(id)initWithGroupID: (NSString *)groupID;
 

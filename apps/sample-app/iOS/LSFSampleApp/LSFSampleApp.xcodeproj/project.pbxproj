@@ -16,12 +16,20 @@
 		196CA9DE19B5EE9D00927ED3 /* LSFScenesPresetsTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 196CA9DD19B5EE9D00927ED3 /* LSFScenesPresetsTableViewController.m */; };
 		1999FB7819D18EB7000F3F94 /* LSFLampAnnouncementData.m in Sources */ = {isa = PBXBuildFile; fileRef = 1999FB7619D18EB7000F3F94 /* LSFLampAnnouncementData.m */; };
 		8702033D1986C1D700A9314C /* LSFScenesTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 8702033C1986C1D700A9314C /* LSFScenesTableViewController.m */; };
+		870263E619F3693200C6FC93 /* LSFLampStateUniformity.m in Sources */ = {isa = PBXBuildFile; fileRef = 870263E519F3693200C6FC93 /* LSFLampStateUniformity.m */; };
+		870263EA19F36B7200C6FC93 /* LSFColorAverager.m in Sources */ = {isa = PBXBuildFile; fileRef = 870263E919F36B7200C6FC93 /* LSFColorAverager.m */; };
 		8704F10B19BCE432005D7048 /* LSFSampleControllerServiceManagerCallback.m in Sources */ = {isa = PBXBuildFile; fileRef = 8704F10A19BCE432005D7048 /* LSFSampleControllerServiceManagerCallback.m */; };
 		87074B861991322A001E807D /* LSFSceneCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 87074B851991322A001E807D /* LSFSceneCell.m */; };
 		87088676196328210002291F /* LSFAboutManager.mm in Sources */ = {isa = PBXBuildFile; fileRef = 87088675196328210002291F /* LSFAboutManager.mm */; };
 		870CCA571948A4CC006AF65C /* LSFLampModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 870CCA561948A4CC006AF65C /* LSFLampModel.m */; };
 		870CCA5B1948A6FC006AF65C /* LSFLampModelContainer.m in Sources */ = {isa = PBXBuildFile; fileRef = 870CCA5A1948A6FC006AF65C /* LSFLampModelContainer.m */; };
 		870FAB7A19A694D00056F70E /* LSFScenesModifyMembersTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 870FAB7919A694D00056F70E /* LSFScenesModifyMembersTableViewController.m */; };
+		87219A1219E5A37700E64556 /* groups_nav_normal.png in Resources */ = {isa = PBXBuildFile; fileRef = 87219A0C19E5A37700E64556 /* groups_nav_normal.png */; };
+		87219A1319E5A37700E64556 /* groups_nav_normal@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 87219A0D19E5A37700E64556 /* groups_nav_normal@2x.png */; };
+		87219A1419E5A37700E64556 /* lamps_nav_normal.png in Resources */ = {isa = PBXBuildFile; fileRef = 87219A0E19E5A37700E64556 /* lamps_nav_normal.png */; };
+		87219A1519E5A37700E64556 /* lamps_nav_normal@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 87219A0F19E5A37700E64556 /* lamps_nav_normal@2x.png */; };
+		87219A1619E5A37700E64556 /* scene_nav_normal.png in Resources */ = {isa = PBXBuildFile; fileRef = 87219A1019E5A37700E64556 /* scene_nav_normal.png */; };
+		87219A1719E5A37700E64556 /* scene_nav_normal@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 87219A1119E5A37700E64556 /* scene_nav_normal@2x.png */; };
 		872217AC1982EC6900F59863 /* groups_off_icon.png in Resources */ = {isa = PBXBuildFile; fileRef = 872217AB1982EC6900F59863 /* groups_off_icon.png */; };
 		872217B01982ED9B00F59863 /* groups_off_icon@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 872217AD1982ED9B00F59863 /* groups_off_icon@2x.png */; };
 		872217B11982ED9B00F59863 /* lamps_off_icon.png in Resources */ = {isa = PBXBuildFile; fileRef = 872217AE1982ED9B00F59863 /* lamps_off_icon.png */; };
@@ -51,9 +59,6 @@
 		875C596119885247007806EE /* LSFScenesEnterNameViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 875C596019885247007806EE /* LSFScenesEnterNameViewController.m */; };
 		8764957C1950A11300FB1399 /* nav_settings_regular_icon.png in Resources */ = {isa = PBXBuildFile; fileRef = 8764957A1950A11300FB1399 /* nav_settings_regular_icon.png */; };
 		8764957D1950A11300FB1399 /* nav_settings_regular_icon@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 8764957B1950A11300FB1399 /* nav_settings_regular_icon@2x.png */; };
-		876495841950AF4E00FB1399 /* light_power_on_btn.png in Resources */ = {isa = PBXBuildFile; fileRef = 876495801950AF4E00FB1399 /* light_power_on_btn.png */; };
-		876495851950AF4E00FB1399 /* light_power_on_btn@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 876495811950AF4E00FB1399 /* light_power_on_btn@2x.png */; };
-		876495871950AF8C00FB1399 /* light_power_off_btn.png in Resources */ = {isa = PBXBuildFile; fileRef = 876495861950AF8C00FB1399 /* light_power_off_btn.png */; };
 		87693CE9199BE07E00CD3BE6 /* LSFMasterScenesEnterNameViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 87693CE8199BE07E00CD3BE6 /* LSFMasterScenesEnterNameViewController.m */; };
 		87693CED199C054F00CD3BE6 /* LSFMasterSceneMemberTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 87693CEC199C054F00CD3BE6 /* LSFMasterSceneMemberTableViewController.m */; };
 		876B470119908B6800C538FF /* LSFSceneModelContainer.m in Sources */ = {isa = PBXBuildFile; fileRef = 876B470019908B6800C538FF /* LSFSceneModelContainer.m */; };
@@ -68,7 +73,6 @@
 		8771D67A195207A90027D3A1 /* LSFConstants.m in Sources */ = {isa = PBXBuildFile; fileRef = 8771D679195207A90027D3A1 /* LSFConstants.m */; };
 		8771D67D195216540027D3A1 /* LSFEnumConversions.m in Sources */ = {isa = PBXBuildFile; fileRef = 8771D67C195216540027D3A1 /* LSFEnumConversions.m */; };
 		8771D68019523A340027D3A1 /* LSFLightsChangeNameViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 8771D67F19523A340027D3A1 /* LSFLightsChangeNameViewController.m */; };
-		877666731986E60E00EC2472 /* light_power_off_btn@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 877666721986E60E00EC2472 /* light_power_off_btn@2x.png */; };
 		877666761986E68700EC2472 /* scenes_off_icon.png in Resources */ = {isa = PBXBuildFile; fileRef = 877666741986E68700EC2472 /* scenes_off_icon.png */; };
 		877666771986E68700EC2472 /* scenes_off_icon@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 877666751986E68700EC2472 /* scenes_off_icon@2x.png */; };
 		877725C0198820F100390287 /* liballjoyn_about_objc.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 87B4FB811964BC3B003621AD /* liballjoyn_about_objc.a */; };
@@ -78,6 +82,13 @@
 		878CC02918FDAFC5005C3E46 /* LSFLightsCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 878CC02818FDAFC5005C3E46 /* LSFLightsCell.m */; };
 		878CC03318FECD2C005C3E46 /* LSFLightsTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 878CC03118FECD2C005C3E46 /* LSFLightsTableViewController.m */; };
 		878CC04D18FF33F1005C3E46 /* LSFLightInfoTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 878CC04B18FF33F1005C3E46 /* LSFLightInfoTableViewController.m */; };
+		8797108019E82837005EDF3B /* LSFScenesCreateSceneElementsTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 8797107F19E82837005EDF3B /* LSFScenesCreateSceneElementsTableViewController.m */; };
+		879E896E19F7219C009EDF68 /* light_power_btn_off.png in Resources */ = {isa = PBXBuildFile; fileRef = 879E896819F7219C009EDF68 /* light_power_btn_off.png */; };
+		879E896F19F7219C009EDF68 /* light_power_btn_off@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 879E896919F7219C009EDF68 /* light_power_btn_off@2x.png */; };
+		879E897019F7219C009EDF68 /* light_power_btn_on.png in Resources */ = {isa = PBXBuildFile; fileRef = 879E896A19F7219C009EDF68 /* light_power_btn_on.png */; };
+		879E897119F7219C009EDF68 /* light_power_btn_on@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 879E896B19F7219C009EDF68 /* light_power_btn_on@2x.png */; };
+		879E897219F7219C009EDF68 /* light_power_btn_other.png in Resources */ = {isa = PBXBuildFile; fileRef = 879E896C19F7219C009EDF68 /* light_power_btn_other.png */; };
+		879E897319F7219C009EDF68 /* light_power_btn_other@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 879E896D19F7219C009EDF68 /* light_power_btn_other@2x.png */; };
 		87A427C31963412F0029B45C /* LSFAboutData.m in Sources */ = {isa = PBXBuildFile; fileRef = 87A427C21963412F0029B45C /* LSFAboutData.m */; };
 		87A47ECC1943930E00C9D3CD /* LSFAllJoynManager.mm in Sources */ = {isa = PBXBuildFile; fileRef = 87A47ECB1943930E00C9D3CD /* LSFAllJoynManager.mm */; };
 		87A669CF19780B1900254CE3 /* LSFGroupModelContainer.m in Sources */ = {isa = PBXBuildFile; fileRef = 87A669CE19780B1900254CE3 /* LSFGroupModelContainer.m */; };
@@ -85,7 +96,6 @@
 		87A669D61978149B00254CE3 /* LSFGroupModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 87A669D51978149B00254CE3 /* LSFGroupModel.m */; };
 		87A669D91978493200254CE3 /* LSFGroupsFlattener.m in Sources */ = {isa = PBXBuildFile; fileRef = 87A669D81978493200254CE3 /* LSFGroupsFlattener.m */; };
 		87A669DC1978640800254CE3 /* LSFModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 87A669DB1978640800254CE3 /* LSFModel.m */; };
-		87A9C2971996D4B200A6AC2A /* LSFGarbageCollector.m in Sources */ = {isa = PBXBuildFile; fileRef = 87A9C2961996D4B200A6AC2A /* LSFGarbageCollector.m */; };
 		87A9C29B1996DFA500A6AC2A /* LSFControllerModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 87A9C29A1996DFA500A6AC2A /* LSFControllerModel.m */; };
 		87ADD5CE1950E59A00CD608C /* LSFDispatchQueue.m in Sources */ = {isa = PBXBuildFile; fileRef = 87ADD5CD1950E59A00CD608C /* LSFDispatchQueue.m */; };
 		87ADD5D11951D52200CD608C /* arrow_details_up_icon.png in Resources */ = {isa = PBXBuildFile; fileRef = 87ADD5CF1951D52200CD608C /* arrow_details_up_icon.png */; };
@@ -100,10 +110,17 @@
 		87BD628B19994F4A003C28B1 /* LSFMasterSceneDataModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 87BD628A19994F4A003C28B1 /* LSFMasterSceneDataModel.m */; };
 		87BD628E19995D9F003C28B1 /* LSFSampleMasterSceneManagerCallback.m in Sources */ = {isa = PBXBuildFile; fileRef = 87BD628D19995D9F003C28B1 /* LSFSampleMasterSceneManagerCallback.m */; };
 		87BD629119996604003C28B1 /* LSFMasterSceneModelContainer.m in Sources */ = {isa = PBXBuildFile; fileRef = 87BD629019996604003C28B1 /* LSFMasterSceneModelContainer.m */; };
+		87C1598E19DDBB93005D912B /* LSFTabManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 87C1598D19DDBB93005D912B /* LSFTabManager.m */; };
 		87C5693519A6B306004EF373 /* master_scene_set_icon.png in Resources */ = {isa = PBXBuildFile; fileRef = 87C5693119A6B306004EF373 /* master_scene_set_icon.png */; };
 		87C5693619A6B306004EF373 /* master_scene_set_icon@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 87C5693219A6B306004EF373 /* master_scene_set_icon@2x.png */; };
 		87C5693719A6B306004EF373 /* scene_set_icon.png in Resources */ = {isa = PBXBuildFile; fileRef = 87C5693319A6B306004EF373 /* scene_set_icon.png */; };
 		87C5693819A6B306004EF373 /* scene_set_icon@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 87C5693419A6B306004EF373 /* scene_set_icon@2x.png */; };
+		87D2108F19EC1C50007D3295 /* power_slider_midstate_icon.png in Resources */ = {isa = PBXBuildFile; fileRef = 87D2108919EC1C50007D3295 /* power_slider_midstate_icon.png */; };
+		87D2109019EC1C50007D3295 /* power_slider_midstate_icon@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 87D2108A19EC1C50007D3295 /* power_slider_midstate_icon@2x.png */; };
+		87D2109119EC1C50007D3295 /* power_slider_normal_icon.png in Resources */ = {isa = PBXBuildFile; fileRef = 87D2108B19EC1C50007D3295 /* power_slider_normal_icon.png */; };
+		87D2109219EC1C50007D3295 /* power_slider_normal_icon@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 87D2108C19EC1C50007D3295 /* power_slider_normal_icon@2x.png */; };
+		87D2109319EC1C50007D3295 /* power_slider_pressed_icon.png in Resources */ = {isa = PBXBuildFile; fileRef = 87D2108D19EC1C50007D3295 /* power_slider_pressed_icon.png */; };
+		87D2109419EC1C50007D3295 /* power_slider_pressed_icon@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 87D2108E19EC1C50007D3295 /* power_slider_pressed_icon@2x.png */; };
 		87D2A4D91975AB790079B5ED /* LSFLightsCreatePresetViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 87D2A4D81975AB790079B5ED /* LSFLightsCreatePresetViewController.m */; };
 		87D5B98519896A9700EE67FB /* LSFMembersTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 87D5B98419896A9700EE67FB /* LSFMembersTableViewController.m */; };
 		87D5B989198973AD00EE67FB /* LSFScenesMembersTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 87D5B988198973AD00EE67FB /* LSFScenesMembersTableViewController.m */; };
@@ -126,11 +143,11 @@
 		87D8143918CA72B000903D59 /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 87D8143818CA72B000903D59 /* SystemConfiguration.framework */; };
 		87DCD86A19771C4100F05526 /* LSFGroupsTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 87DCD86919771C4100F05526 /* LSFGroupsTableViewController.m */; };
 		87DCD86D1977293700F05526 /* LSFGroupsCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 87DCD86C1977293700F05526 /* LSFGroupsCell.m */; };
+		87EED8BF19D9D9F9003ABF1B /* LSFWifiMonitor.m in Sources */ = {isa = PBXBuildFile; fileRef = 87EED8BE19D9D9F9003ABF1B /* LSFWifiMonitor.m */; };
 		87F1A20E1993CF6100C93339 /* LSFSceneInfoTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 87F1A20D1993CF6100C93339 /* LSFSceneInfoTableViewController.m */; };
 		87F20C90198ED2B000B817B2 /* LSFNoEffectTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 87F20C8F198ED2B000B817B2 /* LSFNoEffectTableViewController.m */; };
 		87F20C94198EEC5900B817B2 /* LSFPulseEffectTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 87F20C93198EEC5900B817B2 /* LSFPulseEffectTableViewController.m */; };
 		87F2B0DE19951C08001B5E1A /* LSFScenesChangeNameViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 87F2B0DD19951C08001B5E1A /* LSFScenesChangeNameViewController.m */; };
-		87F479DF197C861000338175 /* LSFControllerMaintenance.m in Sources */ = {isa = PBXBuildFile; fileRef = 87F479DE197C861000338175 /* LSFControllerMaintenance.m */; };
 		87F8AA4319A2FC64002DEC7F /* LSFConfigManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 87F8AA4219A2FC64002DEC7F /* LSFConfigManager.m */; };
 		87FB2790198EBD090004DE02 /* LSFEffectTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 87FB278F198EBD090004DE02 /* LSFEffectTableViewController.m */; };
 		87FB2793198ECAB80004DE02 /* LSFTransitionEffectTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 87FB2792198ECAB80004DE02 /* LSFTransitionEffectTableViewController.m */; };
@@ -138,7 +155,6 @@
 		87FE4A4619745C1100F0A781 /* LSFSamplePresetManagerCallback.m in Sources */ = {isa = PBXBuildFile; fileRef = 87FE4A4519745C1100F0A781 /* LSFSamplePresetManagerCallback.m */; };
 		87FE4A491974605E00F0A781 /* LSFPresetModelContainer.m in Sources */ = {isa = PBXBuildFile; fileRef = 87FE4A481974605E00F0A781 /* LSFPresetModelContainer.m */; };
 		87FE4A4F197463CD00F0A781 /* LSFPresetModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 87FE4A4E197463CD00F0A781 /* LSFPresetModel.m */; };
-		87FFD3DD19B9080D0047E176 /* LSFLampMaintenance.m in Sources */ = {isa = PBXBuildFile; fileRef = 87FFD3DC19B9080D0047E176 /* LSFLampMaintenance.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -190,9 +206,12 @@
 		1999FB7719D18EB7000F3F94 /* LSFLampAnnouncementData.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LSFLampAnnouncementData.h; sourceTree = "<group>"; };
 		8702033B1986C1D700A9314C /* LSFScenesTableViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LSFScenesTableViewController.h; sourceTree = "<group>"; };
 		8702033C1986C1D700A9314C /* LSFScenesTableViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LSFScenesTableViewController.m; sourceTree = "<group>"; };
+		870263E419F3693200C6FC93 /* LSFLampStateUniformity.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LSFLampStateUniformity.h; sourceTree = "<group>"; };
+		870263E519F3693200C6FC93 /* LSFLampStateUniformity.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LSFLampStateUniformity.m; sourceTree = "<group>"; };
+		870263E819F36B7200C6FC93 /* LSFColorAverager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LSFColorAverager.h; sourceTree = "<group>"; };
+		870263E919F36B7200C6FC93 /* LSFColorAverager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LSFColorAverager.m; sourceTree = "<group>"; };
 		8704F10919BCE432005D7048 /* LSFSampleControllerServiceManagerCallback.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LSFSampleControllerServiceManagerCallback.h; sourceTree = "<group>"; };
 		8704F10A19BCE432005D7048 /* LSFSampleControllerServiceManagerCallback.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LSFSampleControllerServiceManagerCallback.m; sourceTree = "<group>"; };
-		8704F10C19BCEDB0005D7048 /* LSFReloadControllerCallbackDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LSFReloadControllerCallbackDelegate.h; sourceTree = "<group>"; };
 		87074B841991322A001E807D /* LSFSceneCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LSFSceneCell.h; sourceTree = "<group>"; };
 		87074B851991322A001E807D /* LSFSceneCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LSFSceneCell.m; sourceTree = "<group>"; };
 		87088672196326C50002291F /* liballjoyn_about_objc.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = liballjoyn_about_objc.a; path = ../../../../../alljoyn/build/darwin/arm/iphoneos/debug/dist/about/lib/liballjoyn_about_objc.a; sourceTree = "<group>"; };
@@ -202,9 +221,14 @@
 		870CCA561948A4CC006AF65C /* LSFLampModel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LSFLampModel.m; sourceTree = "<group>"; };
 		870CCA591948A6FC006AF65C /* LSFLampModelContainer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LSFLampModelContainer.h; sourceTree = "<group>"; };
 		870CCA5A1948A6FC006AF65C /* LSFLampModelContainer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LSFLampModelContainer.m; sourceTree = "<group>"; };
-		870CCA5C1948AFE1006AF65C /* LSFReloadUIDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LSFReloadUIDelegate.h; sourceTree = "<group>"; };
 		870FAB7819A694D00056F70E /* LSFScenesModifyMembersTableViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LSFScenesModifyMembersTableViewController.h; sourceTree = "<group>"; };
 		870FAB7919A694D00056F70E /* LSFScenesModifyMembersTableViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LSFScenesModifyMembersTableViewController.m; sourceTree = "<group>"; };
+		87219A0C19E5A37700E64556 /* groups_nav_normal.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = groups_nav_normal.png; path = images/groups_nav_normal.png; sourceTree = "<group>"; };
+		87219A0D19E5A37700E64556 /* groups_nav_normal@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "groups_nav_normal@2x.png"; path = "images/groups_nav_normal@2x.png"; sourceTree = "<group>"; };
+		87219A0E19E5A37700E64556 /* lamps_nav_normal.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = lamps_nav_normal.png; path = images/lamps_nav_normal.png; sourceTree = "<group>"; };
+		87219A0F19E5A37700E64556 /* lamps_nav_normal@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "lamps_nav_normal@2x.png"; path = "images/lamps_nav_normal@2x.png"; sourceTree = "<group>"; };
+		87219A1019E5A37700E64556 /* scene_nav_normal.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = scene_nav_normal.png; path = images/scene_nav_normal.png; sourceTree = "<group>"; };
+		87219A1119E5A37700E64556 /* scene_nav_normal@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "scene_nav_normal@2x.png"; path = "images/scene_nav_normal@2x.png"; sourceTree = "<group>"; };
 		872217AB1982EC6900F59863 /* groups_off_icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = groups_off_icon.png; path = images/groups_off_icon.png; sourceTree = "<group>"; };
 		872217AD1982ED9B00F59863 /* groups_off_icon@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "groups_off_icon@2x.png"; path = "images/groups_off_icon@2x.png"; sourceTree = "<group>"; };
 		872217AE1982ED9B00F59863 /* lamps_off_icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = lamps_off_icon.png; path = images/lamps_off_icon.png; sourceTree = "<group>"; };
@@ -212,7 +236,6 @@
 		872AFE1E19D9B48E0002350B /* LSFRootTableViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LSFRootTableViewController.h; sourceTree = "<group>"; };
 		872AFE1F19D9B48E0002350B /* LSFRootTableViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LSFRootTableViewController.m; sourceTree = "<group>"; };
 		872AFE2219D9B9630002350B /* LSFEnums.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LSFEnums.h; sourceTree = "<group>"; };
-		8739D60A19624FD9008AEAAD /* LSFControllerServiceConnectedDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LSFControllerServiceConnectedDelegate.h; sourceTree = "<group>"; };
 		87426C001989DAEB00BFE3CD /* LSFSceneEffectsTableViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LSFSceneEffectsTableViewController.h; sourceTree = "<group>"; };
 		87426C011989DAEB00BFE3CD /* LSFSceneEffectsTableViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LSFSceneEffectsTableViewController.m; sourceTree = "<group>"; };
 		87426C041989DC0300BFE3CD /* list_constant_icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = list_constant_icon.png; path = images/list_constant_icon.png; sourceTree = "<group>"; };
@@ -251,9 +274,6 @@
 		875C596019885247007806EE /* LSFScenesEnterNameViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LSFScenesEnterNameViewController.m; sourceTree = "<group>"; };
 		8764957A1950A11300FB1399 /* nav_settings_regular_icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = nav_settings_regular_icon.png; path = images/nav_settings_regular_icon.png; sourceTree = "<group>"; };
 		8764957B1950A11300FB1399 /* nav_settings_regular_icon@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "nav_settings_regular_icon@2x.png"; path = "images/nav_settings_regular_icon@2x.png"; sourceTree = "<group>"; };
-		876495801950AF4E00FB1399 /* light_power_on_btn.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = light_power_on_btn.png; path = images/light_power_on_btn.png; sourceTree = "<group>"; };
-		876495811950AF4E00FB1399 /* light_power_on_btn@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "light_power_on_btn@2x.png"; path = "images/light_power_on_btn@2x.png"; sourceTree = "<group>"; };
-		876495861950AF8C00FB1399 /* light_power_off_btn.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = light_power_off_btn.png; path = images/light_power_off_btn.png; sourceTree = "<group>"; };
 		87693CE7199BE07E00CD3BE6 /* LSFMasterScenesEnterNameViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LSFMasterScenesEnterNameViewController.h; sourceTree = "<group>"; };
 		87693CE8199BE07E00CD3BE6 /* LSFMasterScenesEnterNameViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LSFMasterScenesEnterNameViewController.m; sourceTree = "<group>"; };
 		87693CEB199C054F00CD3BE6 /* LSFMasterSceneMembersTableViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LSFMasterSceneMembersTableViewController.h; sourceTree = "<group>"; };
@@ -283,7 +303,6 @@
 		8771D67C195216540027D3A1 /* LSFEnumConversions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LSFEnumConversions.m; sourceTree = "<group>"; };
 		8771D67E19523A340027D3A1 /* LSFLightsChangeNameViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LSFLightsChangeNameViewController.h; sourceTree = "<group>"; };
 		8771D67F19523A340027D3A1 /* LSFLightsChangeNameViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LSFLightsChangeNameViewController.m; sourceTree = "<group>"; };
-		877666721986E60E00EC2472 /* light_power_off_btn@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "light_power_off_btn@2x.png"; path = "images/light_power_off_btn@2x.png"; sourceTree = "<group>"; };
 		877666741986E68700EC2472 /* scenes_off_icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = scenes_off_icon.png; path = images/scenes_off_icon.png; sourceTree = "<group>"; };
 		877666751986E68700EC2472 /* scenes_off_icon@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "scenes_off_icon@2x.png"; path = "images/scenes_off_icon@2x.png"; sourceTree = "<group>"; };
 		8783A05E1947498D00860354 /* LSFSampleControllerClientCallback.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LSFSampleControllerClientCallback.h; sourceTree = "<group>"; };
@@ -299,7 +318,14 @@
 		878CC03118FECD2C005C3E46 /* LSFLightsTableViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LSFLightsTableViewController.m; sourceTree = "<group>"; };
 		878CC04A18FF33F1005C3E46 /* LSFLightInfoTableViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LSFLightInfoTableViewController.h; sourceTree = "<group>"; };
 		878CC04B18FF33F1005C3E46 /* LSFLightInfoTableViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LSFLightInfoTableViewController.m; sourceTree = "<group>"; };
-		879B347819B7B56A00EFEDB5 /* LSFReloadMasterScenesCallbackDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LSFReloadMasterScenesCallbackDelegate.h; sourceTree = "<group>"; };
+		8797107E19E82837005EDF3B /* LSFScenesCreateSceneElementsTableViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LSFScenesCreateSceneElementsTableViewController.h; sourceTree = "<group>"; };
+		8797107F19E82837005EDF3B /* LSFScenesCreateSceneElementsTableViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LSFScenesCreateSceneElementsTableViewController.m; sourceTree = "<group>"; };
+		879E896819F7219C009EDF68 /* light_power_btn_off.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = light_power_btn_off.png; path = images/light_power_btn_off.png; sourceTree = "<group>"; };
+		879E896919F7219C009EDF68 /* light_power_btn_off@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "light_power_btn_off@2x.png"; path = "images/light_power_btn_off@2x.png"; sourceTree = "<group>"; };
+		879E896A19F7219C009EDF68 /* light_power_btn_on.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = light_power_btn_on.png; path = images/light_power_btn_on.png; sourceTree = "<group>"; };
+		879E896B19F7219C009EDF68 /* light_power_btn_on@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "light_power_btn_on@2x.png"; path = "images/light_power_btn_on@2x.png"; sourceTree = "<group>"; };
+		879E896C19F7219C009EDF68 /* light_power_btn_other.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = light_power_btn_other.png; path = images/light_power_btn_other.png; sourceTree = "<group>"; };
+		879E896D19F7219C009EDF68 /* light_power_btn_other@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "light_power_btn_other@2x.png"; path = "images/light_power_btn_other@2x.png"; sourceTree = "<group>"; };
 		87A427C11963412F0029B45C /* LSFAboutData.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LSFAboutData.h; sourceTree = "<group>"; };
 		87A427C21963412F0029B45C /* LSFAboutData.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LSFAboutData.m; sourceTree = "<group>"; };
 		87A47ECA1943930E00C9D3CD /* LSFAllJoynManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LSFAllJoynManager.h; sourceTree = "<group>"; };
@@ -316,8 +342,6 @@
 		87A669D81978493200254CE3 /* LSFGroupsFlattener.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LSFGroupsFlattener.m; sourceTree = "<group>"; };
 		87A669DA1978640800254CE3 /* LSFModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LSFModel.h; sourceTree = "<group>"; };
 		87A669DB1978640800254CE3 /* LSFModel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LSFModel.m; sourceTree = "<group>"; };
-		87A9C2951996D4B200A6AC2A /* LSFGarbageCollector.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LSFGarbageCollector.h; sourceTree = "<group>"; };
-		87A9C2961996D4B200A6AC2A /* LSFGarbageCollector.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LSFGarbageCollector.m; sourceTree = "<group>"; };
 		87A9C2991996DFA500A6AC2A /* LSFControllerModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LSFControllerModel.h; sourceTree = "<group>"; };
 		87A9C29A1996DFA500A6AC2A /* LSFControllerModel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LSFControllerModel.m; sourceTree = "<group>"; };
 		87ADD5CC1950E59A00CD608C /* LSFDispatchQueue.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LSFDispatchQueue.h; sourceTree = "<group>"; };
@@ -336,12 +360,18 @@
 		87BD628D19995D9F003C28B1 /* LSFSampleMasterSceneManagerCallback.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LSFSampleMasterSceneManagerCallback.m; sourceTree = "<group>"; };
 		87BD628F19996604003C28B1 /* LSFMasterSceneModelContainer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LSFMasterSceneModelContainer.h; sourceTree = "<group>"; };
 		87BD629019996604003C28B1 /* LSFMasterSceneModelContainer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LSFMasterSceneModelContainer.m; sourceTree = "<group>"; };
+		87C1598C19DDBB93005D912B /* LSFTabManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LSFTabManager.h; sourceTree = "<group>"; };
+		87C1598D19DDBB93005D912B /* LSFTabManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LSFTabManager.m; sourceTree = "<group>"; };
 		87C5693119A6B306004EF373 /* master_scene_set_icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = master_scene_set_icon.png; path = images/master_scene_set_icon.png; sourceTree = "<group>"; };
 		87C5693219A6B306004EF373 /* master_scene_set_icon@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "master_scene_set_icon@2x.png"; path = "images/master_scene_set_icon@2x.png"; sourceTree = "<group>"; };
 		87C5693319A6B306004EF373 /* scene_set_icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = scene_set_icon.png; path = images/scene_set_icon.png; sourceTree = "<group>"; };
 		87C5693419A6B306004EF373 /* scene_set_icon@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "scene_set_icon@2x.png"; path = "images/scene_set_icon@2x.png"; sourceTree = "<group>"; };
-		87C93A3619B669CE004A1398 /* LSFReloadPresetsCallbackDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LSFReloadPresetsCallbackDelegate.h; sourceTree = "<group>"; };
-		87C93A3919B68C8B004A1398 /* LSFReloadScenesCallbackDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LSFReloadScenesCallbackDelegate.h; sourceTree = "<group>"; };
+		87D2108919EC1C50007D3295 /* power_slider_midstate_icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = power_slider_midstate_icon.png; path = images/power_slider_midstate_icon.png; sourceTree = "<group>"; };
+		87D2108A19EC1C50007D3295 /* power_slider_midstate_icon@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "power_slider_midstate_icon@2x.png"; path = "images/power_slider_midstate_icon@2x.png"; sourceTree = "<group>"; };
+		87D2108B19EC1C50007D3295 /* power_slider_normal_icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = power_slider_normal_icon.png; path = images/power_slider_normal_icon.png; sourceTree = "<group>"; };
+		87D2108C19EC1C50007D3295 /* power_slider_normal_icon@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "power_slider_normal_icon@2x.png"; path = "images/power_slider_normal_icon@2x.png"; sourceTree = "<group>"; };
+		87D2108D19EC1C50007D3295 /* power_slider_pressed_icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = power_slider_pressed_icon.png; path = images/power_slider_pressed_icon.png; sourceTree = "<group>"; };
+		87D2108E19EC1C50007D3295 /* power_slider_pressed_icon@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "power_slider_pressed_icon@2x.png"; path = "images/power_slider_pressed_icon@2x.png"; sourceTree = "<group>"; };
 		87D2A4D71975AB790079B5ED /* LSFLightsCreatePresetViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LSFLightsCreatePresetViewController.h; sourceTree = "<group>"; };
 		87D2A4D81975AB790079B5ED /* LSFLightsCreatePresetViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LSFLightsCreatePresetViewController.m; sourceTree = "<group>"; };
 		87D5B98319896A9700EE67FB /* LSFMembersTableViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LSFMembersTableViewController.h; sourceTree = "<group>"; };
@@ -381,8 +411,8 @@
 		87DCD86919771C4100F05526 /* LSFGroupsTableViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LSFGroupsTableViewController.m; sourceTree = "<group>"; };
 		87DCD86B1977293700F05526 /* LSFGroupsCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LSFGroupsCell.h; sourceTree = "<group>"; };
 		87DCD86C1977293700F05526 /* LSFGroupsCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LSFGroupsCell.m; sourceTree = "<group>"; };
-		87E8B43F19B38D3B00B39F4F /* LSFReloadLightsCallbackDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LSFReloadLightsCallbackDelegate.h; sourceTree = "<group>"; };
-		87E8B48919B4F48D00B39F4F /* LSFReloadGroupsCallbackDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LSFReloadGroupsCallbackDelegate.h; sourceTree = "<group>"; };
+		87EED8BD19D9D9F9003ABF1B /* LSFWifiMonitor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LSFWifiMonitor.h; sourceTree = "<group>"; };
+		87EED8BE19D9D9F9003ABF1B /* LSFWifiMonitor.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LSFWifiMonitor.m; sourceTree = "<group>"; };
 		87F1A20C1993CF6100C93339 /* LSFSceneInfoTableViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LSFSceneInfoTableViewController.h; sourceTree = "<group>"; };
 		87F1A20D1993CF6100C93339 /* LSFSceneInfoTableViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LSFSceneInfoTableViewController.m; sourceTree = "<group>"; };
 		87F20C8E198ED2B000B817B2 /* LSFNoEffectTableViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LSFNoEffectTableViewController.h; sourceTree = "<group>"; };
@@ -391,8 +421,6 @@
 		87F20C93198EEC5900B817B2 /* LSFPulseEffectTableViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LSFPulseEffectTableViewController.m; sourceTree = "<group>"; };
 		87F2B0DC19951C08001B5E1A /* LSFScenesChangeNameViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LSFScenesChangeNameViewController.h; sourceTree = "<group>"; };
 		87F2B0DD19951C08001B5E1A /* LSFScenesChangeNameViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LSFScenesChangeNameViewController.m; sourceTree = "<group>"; };
-		87F479DD197C861000338175 /* LSFControllerMaintenance.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LSFControllerMaintenance.h; sourceTree = "<group>"; };
-		87F479DE197C861000338175 /* LSFControllerMaintenance.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LSFControllerMaintenance.m; sourceTree = "<group>"; };
 		87F8AA4119A2FC64002DEC7F /* LSFConfigManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LSFConfigManager.h; sourceTree = "<group>"; };
 		87F8AA4219A2FC64002DEC7F /* LSFConfigManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LSFConfigManager.m; sourceTree = "<group>"; };
 		87FB278E198EBD090004DE02 /* LSFEffectTableViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LSFEffectTableViewController.h; sourceTree = "<group>"; };
@@ -407,8 +435,6 @@
 		87FE4A481974605E00F0A781 /* LSFPresetModelContainer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LSFPresetModelContainer.m; sourceTree = "<group>"; };
 		87FE4A4D197463CD00F0A781 /* LSFPresetModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LSFPresetModel.h; sourceTree = "<group>"; };
 		87FE4A4E197463CD00F0A781 /* LSFPresetModel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LSFPresetModel.m; sourceTree = "<group>"; };
-		87FFD3DB19B9080D0047E176 /* LSFLampMaintenance.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LSFLampMaintenance.h; sourceTree = "<group>"; };
-		87FFD3DC19B9080D0047E176 /* LSFLampMaintenance.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LSFLampMaintenance.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -448,10 +474,10 @@
 		870203331986AA5500A9314C /* GenericViewControllers */ = {
 			isa = PBXGroup;
 			children = (
-				87D5B98319896A9700EE67FB /* LSFMembersTableViewController.h */,
-				87D5B98419896A9700EE67FB /* LSFMembersTableViewController.m */,
 				87FB278E198EBD090004DE02 /* LSFEffectTableViewController.h */,
 				87FB278F198EBD090004DE02 /* LSFEffectTableViewController.m */,
+				87D5B98319896A9700EE67FB /* LSFMembersTableViewController.h */,
+				87D5B98419896A9700EE67FB /* LSFMembersTableViewController.m */,
 				87F20C8E198ED2B000B817B2 /* LSFNoEffectTableViewController.h */,
 				87F20C8F198ED2B000B817B2 /* LSFNoEffectTableViewController.m */,
 				87F20C92198EEC5900B817B2 /* LSFPulseEffectTableViewController.h */,
@@ -490,24 +516,26 @@
 				87D6DB421977755300131AC9 /* LSFAllLampsLampGroup.m */,
 				87A669D119780CCC00254CE3 /* LSFCapabilityData.h */,
 				87A669D219780CCC00254CE3 /* LSFCapabilityData.m */,
+				870263E819F36B7200C6FC93 /* LSFColorAverager.h */,
+				870263E919F36B7200C6FC93 /* LSFColorAverager.m */,
 				8771D678195207A90027D3A1 /* LSFConstants.h */,
 				8771D679195207A90027D3A1 /* LSFConstants.m */,
-				87F479DD197C861000338175 /* LSFControllerMaintenance.h */,
-				87F479DE197C861000338175 /* LSFControllerMaintenance.m */,
 				87ADD5CC1950E59A00CD608C /* LSFDispatchQueue.h */,
 				87ADD5CD1950E59A00CD608C /* LSFDispatchQueue.m */,
 				876E5EB5199028D30046F9C7 /* LSFEffectType.h */,
 				872AFE2219D9B9630002350B /* LSFEnums.h */,
 				8771D67B195216540027D3A1 /* LSFEnumConversions.h */,
 				8771D67C195216540027D3A1 /* LSFEnumConversions.m */,
-				87A9C2951996D4B200A6AC2A /* LSFGarbageCollector.h */,
-				87A9C2961996D4B200A6AC2A /* LSFGarbageCollector.m */,
 				87A669D71978493200254CE3 /* LSFGroupsFlattener.h */,
 				87A669D81978493200254CE3 /* LSFGroupsFlattener.m */,
-				87FFD3DB19B9080D0047E176 /* LSFLampMaintenance.h */,
-				87FFD3DC19B9080D0047E176 /* LSFLampMaintenance.m */,
+				870263E419F3693200C6FC93 /* LSFLampStateUniformity.h */,
+				870263E519F3693200C6FC93 /* LSFLampStateUniformity.m */,
+				87C1598C19DDBB93005D912B /* LSFTabManager.h */,
+				87C1598D19DDBB93005D912B /* LSFTabManager.m */,
 				1923B00019A646A500525A39 /* LSFUtilityFunctions.h */,
 				1923B00119A646A500525A39 /* LSFUtilityFunctions.m */,
+				87EED8BD19D9D9F9003ABF1B /* LSFWifiMonitor.h */,
+				87EED8BE19D9D9F9003ABF1B /* LSFWifiMonitor.m */,
 			);
 			name = Utilities;
 			sourceTree = "<group>";
@@ -542,15 +570,21 @@
 				874CE6DB199E447F0039D570 /* Default_iPad.png */,
 				874CE6DC199E447F0039D570 /* Default-568h@2x.png */,
 				874CE6DD199E447F0039D570 /* Default@2x.png */,
+				87219A0C19E5A37700E64556 /* groups_nav_normal.png */,
+				87219A0D19E5A37700E64556 /* groups_nav_normal@2x.png */,
 				872217AB1982EC6900F59863 /* groups_off_icon.png */,
 				872217AD1982ED9B00F59863 /* groups_off_icon@2x.png */,
 				874CE6DE199E447F0039D570 /* Icon-60@2x.png */,
+				87219A0E19E5A37700E64556 /* lamps_nav_normal.png */,
+				87219A0F19E5A37700E64556 /* lamps_nav_normal@2x.png */,
 				872217AE1982ED9B00F59863 /* lamps_off_icon.png */,
 				872217AF1982ED9B00F59863 /* lamps_off_icon@2x.png */,
-				876495861950AF8C00FB1399 /* light_power_off_btn.png */,
-				877666721986E60E00EC2472 /* light_power_off_btn@2x.png */,
-				876495801950AF4E00FB1399 /* light_power_on_btn.png */,
-				876495811950AF4E00FB1399 /* light_power_on_btn@2x.png */,
+				879E896819F7219C009EDF68 /* light_power_btn_off.png */,
+				879E896919F7219C009EDF68 /* light_power_btn_off@2x.png */,
+				879E896A19F7219C009EDF68 /* light_power_btn_on.png */,
+				879E896B19F7219C009EDF68 /* light_power_btn_on@2x.png */,
+				879E896C19F7219C009EDF68 /* light_power_btn_other.png */,
+				879E896D19F7219C009EDF68 /* light_power_btn_other@2x.png */,
 				87426C041989DC0300BFE3CD /* list_constant_icon.png */,
 				87426C051989DC0300BFE3CD /* list_constant_icon@2x.png */,
 				87426C061989DC0300BFE3CD /* list_pulse_icon.png */,
@@ -561,6 +595,14 @@
 				87C5693219A6B306004EF373 /* master_scene_set_icon@2x.png */,
 				8764957A1950A11300FB1399 /* nav_settings_regular_icon.png */,
 				8764957B1950A11300FB1399 /* nav_settings_regular_icon@2x.png */,
+				87D2108919EC1C50007D3295 /* power_slider_midstate_icon.png */,
+				87D2108A19EC1C50007D3295 /* power_slider_midstate_icon@2x.png */,
+				87D2108B19EC1C50007D3295 /* power_slider_normal_icon.png */,
+				87D2108C19EC1C50007D3295 /* power_slider_normal_icon@2x.png */,
+				87D2108D19EC1C50007D3295 /* power_slider_pressed_icon.png */,
+				87D2108E19EC1C50007D3295 /* power_slider_pressed_icon@2x.png */,
+				87219A1019E5A37700E64556 /* scene_nav_normal.png */,
+				87219A1119E5A37700E64556 /* scene_nav_normal@2x.png */,
 				877666741986E68700EC2472 /* scenes_off_icon.png */,
 				877666751986E68700EC2472 /* scenes_off_icon@2x.png */,
 				87C5693319A6B306004EF373 /* scene_set_icon.png */,
@@ -636,6 +678,8 @@
 				87F2B0DD19951C08001B5E1A /* LSFScenesChangeNameViewController.m */,
 				196CA9D919B5EE5100927ED3 /* LSFScenesCreatePresetViewController.h */,
 				196CA9DA19B5EE5100927ED3 /* LSFScenesCreatePresetViewController.m */,
+				8797107E19E82837005EDF3B /* LSFScenesCreateSceneElementsTableViewController.h */,
+				8797107F19E82837005EDF3B /* LSFScenesCreateSceneElementsTableViewController.m */,
 				87426C001989DAEB00BFE3CD /* LSFSceneEffectsTableViewController.h */,
 				87426C011989DAEB00BFE3CD /* LSFSceneEffectsTableViewController.m */,
 				8745658C1991DE0900AD60EA /* LSFSceneElementEffectPropertiesViewController.h */,
@@ -654,21 +698,6 @@
 				8702033C1986C1D700A9314C /* LSFScenesTableViewController.m */,
 			);
 			name = Scenes;
-			sourceTree = "<group>";
-		};
-		878CC04F19006534005C3E46 /* Delegates */ = {
-			isa = PBXGroup;
-			children = (
-				870CCA5C1948AFE1006AF65C /* LSFReloadUIDelegate.h */,
-				8739D60A19624FD9008AEAAD /* LSFControllerServiceConnectedDelegate.h */,
-				8704F10C19BCEDB0005D7048 /* LSFReloadControllerCallbackDelegate.h */,
-				87E8B48919B4F48D00B39F4F /* LSFReloadGroupsCallbackDelegate.h */,
-				87E8B43F19B38D3B00B39F4F /* LSFReloadLightsCallbackDelegate.h */,
-				879B347819B7B56A00EFEDB5 /* LSFReloadMasterScenesCallbackDelegate.h */,
-				87C93A3619B669CE004A1398 /* LSFReloadPresetsCallbackDelegate.h */,
-				87C93A3919B68C8B004A1398 /* LSFReloadScenesCallbackDelegate.h */,
-			);
-			name = Delegates;
 			sourceTree = "<group>";
 		};
 		87A47ECE194398A000C9D3CD /* AllJoyn */ = {
@@ -763,7 +792,6 @@
 			children = (
 				87A47ECE194398A000C9D3CD /* AllJoyn */,
 				8783A05D1947497A00860354 /* CallbackClasses */,
-				878CC04F19006534005C3E46 /* Delegates */,
 				870203331986AA5500A9314C /* GenericViewControllers */,
 				878CC03918FED491005C3E46 /* Groups */,
 				878CC02118FDAED6005C3E46 /* Images */,
@@ -962,35 +990,49 @@
 				872217AC1982EC6900F59863 /* groups_off_icon.png in Resources */,
 				87426C0B1989DC0300BFE3CD /* list_constant_icon@2x.png in Resources */,
 				874CE6E2199E447F0039D570 /* Default@2x.png in Resources */,
+				87D2109219EC1C50007D3295 /* power_slider_normal_icon@2x.png in Resources */,
+				87219A1219E5A37700E64556 /* groups_nav_normal.png in Resources */,
+				87219A1419E5A37700E64556 /* lamps_nav_normal.png in Resources */,
+				879E897019F7219C009EDF68 /* light_power_btn_on.png in Resources */,
 				872217B01982ED9B00F59863 /* groups_off_icon@2x.png in Resources */,
 				87426C0D1989DC0300BFE3CD /* list_pulse_icon@2x.png in Resources */,
+				879E897319F7219C009EDF68 /* light_power_btn_other@2x.png in Resources */,
 				87426C0F1989DC0300BFE3CD /* list_transition_icon@2x.png in Resources */,
+				87D2109319EC1C50007D3295 /* power_slider_pressed_icon.png in Resources */,
+				87D2109419EC1C50007D3295 /* power_slider_pressed_icon@2x.png in Resources */,
 				87ADD5D11951D52200CD608C /* arrow_details_up_icon.png in Resources */,
 				872217B11982ED9B00F59863 /* lamps_off_icon.png in Resources */,
+				879E896E19F7219C009EDF68 /* light_power_btn_off.png in Resources */,
+				87D2109119EC1C50007D3295 /* power_slider_normal_icon.png in Resources */,
 				874CE6E0199E447F0039D570 /* Default_iPad.png in Resources */,
 				87D813FB18CA536700903D59 /* InfoPlist.strings in Resources */,
 				874CE6E3199E447F0039D570 /* Icon-60@2x.png in Resources */,
 				877666761986E68700EC2472 /* scenes_off_icon.png in Resources */,
-				876495841950AF4E00FB1399 /* light_power_on_btn.png in Resources */,
 				87C5693619A6B306004EF373 /* master_scene_set_icon@2x.png in Resources */,
+				879E897119F7219C009EDF68 /* light_power_btn_on@2x.png in Resources */,
 				87426C0E1989DC0300BFE3CD /* list_transition_icon.png in Resources */,
+				87D2108F19EC1C50007D3295 /* power_slider_midstate_icon.png in Resources */,
 				87426C0C1989DC0300BFE3CD /* list_pulse_icon.png in Resources */,
 				87C5693719A6B306004EF373 /* scene_set_icon.png in Resources */,
-				876495851950AF4E00FB1399 /* light_power_on_btn@2x.png in Resources */,
 				872217B21982ED9B00F59863 /* lamps_off_icon@2x.png in Resources */,
+				87219A1519E5A37700E64556 /* lamps_nav_normal@2x.png in Resources */,
+				87219A1619E5A37700E64556 /* scene_nav_normal.png in Resources */,
 				87C5693819A6B306004EF373 /* scene_set_icon@2x.png in Resources */,
 				877666771986E68700EC2472 /* scenes_off_icon@2x.png in Resources */,
 				8759DD8E195083920047D92D /* MainStoryboard.storyboard in Resources */,
+				879E896F19F7219C009EDF68 /* light_power_btn_off@2x.png in Resources */,
+				879E897219F7219C009EDF68 /* light_power_btn_other.png in Resources */,
+				87219A1319E5A37700E64556 /* groups_nav_normal@2x.png in Resources */,
 				87C5693519A6B306004EF373 /* master_scene_set_icon.png in Resources */,
+				87D2109019EC1C50007D3295 /* power_slider_midstate_icon@2x.png in Resources */,
+				87219A1719E5A37700E64556 /* scene_nav_normal@2x.png in Resources */,
 				8764957D1950A11300FB1399 /* nav_settings_regular_icon@2x.png in Resources */,
 				87ADD5D21951D52200CD608C /* arrow_details_up_icon@2x.png in Resources */,
-				876495871950AF8C00FB1399 /* light_power_off_btn.png in Resources */,
 				8764957C1950A11300FB1399 /* nav_settings_regular_icon.png in Resources */,
 				874CE6DF199E447F0039D570 /* Default_iPad@2x.png in Resources */,
 				87D8140318CA536700903D59 /* Images.xcassets in Resources */,
 				874CE6E1199E447F0039D570 /* Default-568h@2x.png in Resources */,
 				87426C0A1989DC0300BFE3CD /* list_constant_icon.png in Resources */,
-				877666731986E60E00EC2472 /* light_power_off_btn@2x.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1012,6 +1054,7 @@
 				87F20C94198EEC5900B817B2 /* LSFPulseEffectTableViewController.m in Sources */,
 				87D8140118CA536700903D59 /* LSFAppDelegate.m in Sources */,
 				87BD628E19995D9F003C28B1 /* LSFSampleMasterSceneManagerCallback.m in Sources */,
+				87C1598E19DDBB93005D912B /* LSFTabManager.m in Sources */,
 				8789698D19822A6D00D07084 /* LSFGroupsMembersTableViewController.m in Sources */,
 				87F8AA4319A2FC64002DEC7F /* LSFConfigManager.m in Sources */,
 				87FE4A4219745A5C00F0A781 /* LSFLightsPresetsTableViewController.m in Sources */,
@@ -1020,6 +1063,7 @@
 				876E5EB819902E2B0046F9C7 /* LSFNoEffectDataModel.m in Sources */,
 				87D6DB46197778CD00131AC9 /* LSFSampleLampGroupManagerCallback.m in Sources */,
 				878CC04D18FF33F1005C3E46 /* LSFLightInfoTableViewController.m in Sources */,
+				87EED8BF19D9D9F9003ABF1B /* LSFWifiMonitor.m in Sources */,
 				1999FB7819D18EB7000F3F94 /* LSFLampAnnouncementData.m in Sources */,
 				87F1A20E1993CF6100C93339 /* LSFSceneInfoTableViewController.m in Sources */,
 				8771D675195206F20027D3A1 /* LSFLightDetailsTableViewController.m in Sources */,
@@ -1031,7 +1075,6 @@
 				874F4C521981AEFF007EE9E0 /* LSFGroupsAddNameViewController.m in Sources */,
 				876E5EBB199031770046F9C7 /* LSFTransitionEffectDataModel.m in Sources */,
 				8783A0631947498D00860354 /* LSFSampleLampManagerCallback.m in Sources */,
-				87A9C2971996D4B200A6AC2A /* LSFGarbageCollector.m in Sources */,
 				87F20C90198ED2B000B817B2 /* LSFNoEffectTableViewController.m in Sources */,
 				8771D67D195216540027D3A1 /* LSFEnumConversions.m in Sources */,
 				872AFE2019D9B48E0002350B /* LSFRootTableViewController.m in Sources */,
@@ -1060,12 +1103,13 @@
 				87A47ECC1943930E00C9D3CD /* LSFAllJoynManager.mm in Sources */,
 				196CA9DB19B5EE5100927ED3 /* LSFScenesCreatePresetViewController.m in Sources */,
 				876E5EAC198FF8FA0046F9C7 /* LSFSampleSceneManagerCallback.m in Sources */,
+				8797108019E82837005EDF3B /* LSFScenesCreateSceneElementsTableViewController.m in Sources */,
 				1903F51C198A1B8F00E9B302 /* LSFSettingsInfoViewController.m in Sources */,
-				87F479DF197C861000338175 /* LSFControllerMaintenance.m in Sources */,
 				87D5B989198973AD00EE67FB /* LSFScenesMembersTableViewController.m in Sources */,
 				878CC03318FECD2C005C3E46 /* LSFLightsTableViewController.m in Sources */,
 				87FE4A491974605E00F0A781 /* LSFPresetModelContainer.m in Sources */,
 				8702033D1986C1D700A9314C /* LSFScenesTableViewController.m in Sources */,
+				870263E619F3693200C6FC93 /* LSFLampStateUniformity.m in Sources */,
 				876E5EB019900D5B0046F9C7 /* LSFDataModel.m in Sources */,
 				87D5B98519896A9700EE67FB /* LSFMembersTableViewController.m in Sources */,
 				874C9F6C199D4AC900317B97 /* LSFMasterScenesChangeNameViewController.m in Sources */,
@@ -1080,8 +1124,8 @@
 				87A669CF19780B1900254CE3 /* LSFGroupModelContainer.m in Sources */,
 				87FE4A4F197463CD00F0A781 /* LSFPresetModel.m in Sources */,
 				874D77FF197EF8CE005F816D /* LSFGroupsChangeNameViewController.m in Sources */,
-				87FFD3DD19B9080D0047E176 /* LSFLampMaintenance.m in Sources */,
 				87D6DB4A197787DB00131AC9 /* LSFSampleLampGroupManager.m in Sources */,
+				870263EA19F36B7200C6FC93 /* LSFColorAverager.m in Sources */,
 				87FB2790198EBD090004DE02 /* LSFEffectTableViewController.m in Sources */,
 				87A669D61978149B00254CE3 /* LSFGroupModel.m in Sources */,
 				196CA9DE19B5EE9D00927ED3 /* LSFScenesPresetsTableViewController.m in Sources */,
