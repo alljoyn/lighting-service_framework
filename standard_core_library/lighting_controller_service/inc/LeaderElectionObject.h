@@ -23,10 +23,9 @@
  *    OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  ******************************************************************************/
 
-#include <alljoyn/about/AnnounceHandler.h>
 #include <alljoyn/BusAttachment.h>
 #include <alljoyn/BusObject.h>
-
+#include <alljoyn/AboutListener.h>
 #include <LSFTypes.h>
 #include <Mutex.h>
 #include <Alarm.h>

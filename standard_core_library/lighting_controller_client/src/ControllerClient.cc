@@ -15,14 +15,12 @@
  ******************************************************************************/
 
 #include <algorithm>
-
-#include <alljoyn/about/AnnounceHandler.h>
-#include <alljoyn/about/AnnouncementRegistrar.h>
 #include <alljoyn/Status.h>
 #include <qcc/Debug.h>
 
 #include <ControllerClient.h>
 #include <AllJoynStd.h>
+#include <alljoyn/AboutDataListener.h>
 
 using namespace qcc;
 using namespace ajn;
@@ -40,7 +38,7 @@ namespace lsf {
  */
 class ControllerClient::ControllerClientBusHandler :
     public SessionListener, public BusAttachment::JoinSessionAsyncCB,
-    public services::AnnounceHandler, public BusListener {
+    public AboutListener, public BusListener {
 
   public:
     /**
@@ -66,7 +64,7 @@ class ControllerClient::ControllerClientBusHandler :
     /**
      * Announce signal handler
      */
-    virtual void Announce(uint16_t version, uint16_t port, const char* busName, const ObjectDescriptions& objectDescs, const AboutData& aboutData);
+    virtual void Announced(const char* busName, uint16_t version, SessionPort port, const MsgArg& objectDescriptionArg, const MsgArg& aboutDataArg);
 
     virtual void SessionMemberRemoved(SessionId sessionId, const char* uniqueName);
 
@@ -151,12 +149,13 @@ void ControllerClient::ControllerClientBusHandler::SessionMemberRemoved(SessionI
     controllerClient.OnSessionMemberRemoved(sessionId, uniqueName);
 }
 
-void ControllerClient::ControllerClientBusHandler::Announce(
+void ControllerClient::ControllerClientBusHandler::Announced(
+    const char* busName,
     uint16_t version,
     SessionPort port,
-    const char* busName,
-    const ObjectDescriptions& objectDescs,
-    const AboutData& aboutData)
+    const MsgArg& objectDescriptionArg,
+    const MsgArg& aboutDataArg
+    )
 {
     QCC_DbgPrintf(("%s", __func__));
 
@@ -165,58 +164,34 @@ void ControllerClient::ControllerClientBusHandler::Announce(
         return;
     }
 
-    AboutData::const_iterator ait;
-    const char* deviceID = NULL;
-    const char* deviceName = NULL;
+    AboutObjectDescription objectDescs(objectDescriptionArg);
+    char* deviceID = NULL;
+    char* deviceName = NULL;
 
     controllerClient.bus.EnableConcurrentCallbacks();
 
-    ObjectDescriptions::const_iterator oit = objectDescs.find(ControllerServiceObjectPath);
-    if (oit != objectDescs.end()) {
-        QCC_DbgPrintf(("%s: About Data Dump", __func__));
-        for (ait = aboutData.begin(); ait != aboutData.end(); ait++) {
-            QCC_DbgPrintf(("%s: %s", ait->first.c_str(), ait->second.ToString().c_str()));
-        }
+    if (objectDescs.HasPath(ControllerServiceObjectPath)) {
+        AboutData aboutData(aboutDataArg);
 
-        ait = aboutData.find("DeviceId");
-        if (ait == aboutData.end()) {
-            QCC_LogError(ER_FAIL, ("%s: DeviceId missing in About Announcement", __func__));
-            return;
-        }
-        ait->second.Get("s", &deviceID);
-
-        ait = aboutData.find("DeviceName");
-        if (ait == aboutData.end()) {
-            QCC_LogError(ER_FAIL, ("%s: DeviceName missing in About Announcement", __func__));
-            return;
-        }
-        ait->second.Get("s", &deviceName);
+        aboutData.GetDeviceId(&deviceID);
+        aboutData.GetDeviceName(&deviceName);
 
         uint64_t higherBits = 0, lowerBits = 0;
-        ait = aboutData.find("RankHigherBits");
-        if (ait == aboutData.end()) {
-            QCC_LogError(ER_FAIL, ("%s: RankHigherBits missing in About Announcement", __func__));
-            return;
-        }
-        ait->second.Get("t", &higherBits);
 
-        ait = aboutData.find("RankLowerBits");
-        if (ait == aboutData.end()) {
-            QCC_LogError(ER_FAIL, ("%s: RankLowerBits missing in About Announcement", __func__));
-            return;
-        }
-        ait->second.Get("t", &lowerBits);
+        MsgArg* higherBitsArg;
+        aboutData.GetField("RankHigherBits", higherBitsArg);
+        higherBitsArg->Get("t", &higherBits);
 
+        MsgArg* lowerBitsArg;
+        aboutData.GetField("RankLowerBits", lowerBitsArg);
+        lowerBitsArg->Get("t", &lowerBits);
 
         Rank rank(higherBits, lowerBits);
 
         bool isLeader;
-        ait = aboutData.find("IsLeader");
-        if (ait == aboutData.end()) {
-            QCC_LogError(ER_FAIL, ("%s: IsLeader missing in About Announcement", __func__));
-            return;
-        }
-        ait->second.Get("b", &isLeader);
+        MsgArg* leaderArg;
+        aboutData.GetField("IsLeader", leaderArg);
+        leaderArg->Get("b", &isLeader);
 
         QCC_DbgPrintf(("%s: Received Announce: busName=%s port=%u deviceID=%s deviceName=%s rank=%s isLeader=%d", __func__,
                        busName, port, deviceID, deviceName, rank.c_str(), isLeader));
@@ -270,13 +245,17 @@ ControllerClientStatus ControllerClient::Start(void)
         }
     }
 
-    QStatus status = services::AnnouncementRegistrar::RegisterAnnounceHandler(bus, *busHandler, interfaces, sizeof(interfaces) / sizeof(interfaces[0]));
-    QCC_DbgPrintf(("%s: RegisterAnnounceHandler: %s\n", __func__, QCC_StatusText(status)));
-    if (status == ER_OK) {
+    bus.RegisterAboutListener(*busHandler);
+
+    QStatus status = bus.WhoImplements(interfaces, sizeof(interfaces) / sizeof(interfaces[0]));
+    if (ER_OK == status) {
+        QCC_DbgPrintf(("%s: WhoImplements called", __func__));
         stopped = false;
     } else {
+        QCC_LogError(status, ("%s: WhoImplements called", __func__));
         clientStatus = CONTROLLER_CLIENT_ERR_FAILURE;
     }
+
     return clientStatus;
 }
 
@@ -284,7 +263,7 @@ ControllerClient::~ControllerClient()
 {
     Stop();
 
-    services::AnnouncementRegistrar::UnRegisterAllAnnounceHandlers(bus);
+    bus.UnregisterAllAboutListeners();
 
     bus.UnregisterBusListener(*busHandler);
 
@@ -1160,10 +1139,12 @@ ControllerClientStatus ControllerClient::Stop(void)
     leadersMapLock.Unlock();
 
     ControllerClientStatus clientStatus = CONTROLLER_CLIENT_OK;
-    QStatus status = services::AnnouncementRegistrar::UnRegisterAnnounceHandler(bus, *busHandler, interfaces, sizeof(interfaces) / sizeof(interfaces[0]));
-    QCC_DbgPrintf(("%s: UnRegisterAnnounceHandler: %s\n", __func__, QCC_StatusText(status)));
+
+    QStatus status = bus.CancelWhoImplements(interfaces, sizeof(interfaces) / sizeof(interfaces[0]));
     if (status != ER_OK) {
         clientStatus = CONTROLLER_CLIENT_ERR_FAILURE;
+    } else {
+        bus.UnregisterAboutListener(*busHandler);
     }
 
     return clientStatus;

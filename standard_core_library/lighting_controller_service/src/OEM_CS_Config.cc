@@ -14,10 +14,14 @@
  *    OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  ******************************************************************************/
 
-#include <LSFPropertyStore.h>
+#include <LSFAboutDataStore.h>
 #include <OEM_CS_Config.h>
 #include <qcc/Debug.h>
 #include <qcc/Util.h>
+#include <qcc/String.h>
+#include <alljoyn/services_common/GuidUtil.h>
+
+using namespace services;
 
 namespace lsf {
 
@@ -117,36 +121,39 @@ OEM_CS_RankParam_NodeType OEM_CS_GetRankParam_NodeType(void)
 // NOTE: this function will only be called if no Factory Configuration ini file is found.
 // This file is specified on the command line and defaults to OEMConfig.ini in the current
 // working directory.
-void OEM_CS_PopulateDefaultProperties(LSFPropertyStore& propStore)
+void OEM_CS_PopulateDefaultProperties(AboutData* aboutData)
 {
     QCC_DbgTrace(("%s", __func__));
-    std::vector<qcc::String> languages;
-    languages.push_back("en");
-    languages.push_back("de-AT");
-    propStore.setSupportedLangs(languages);
 
-    // use a random AppId since we don't have one
-    qcc::String app_id = qcc::RandHexString(16);
-    uint8_t* AppId = new uint8_t[16];
-    qcc::HexStringToBytes(app_id, AppId, 16);
-    propStore.setProperty(LSFPropertyStore::APP_ID, AppId, 16, true, false, true);
+    aboutData->SetDateOfManufacture("10/1/2199");
+    aboutData->SetDefaultLanguage("en");
+    aboutData->SetHardwareVersion("355.499. b");
+    aboutData->SetModelNumber("Wxfy388i");
+    aboutData->SetSoftwareVersion("12.20.44 build 44454");
+    aboutData->SetSupportUrl("http://www.example.com");
+    aboutData->SetSupportedLanguage("en");
+    aboutData->SetSupportedLanguage("de-AT");
+    aboutData->SetAppName("LightingControllerService", "en");
+    aboutData->SetAppName("LightingControllerService", "de-AT");
+    aboutData->SetDescription("Controller Service", "en");
+    aboutData->SetDescription("Controller Service", "de-AT");
+    aboutData->SetDeviceName("My device name", "en");
+    aboutData->SetDeviceName("Mein Gerätename", "de-AT");
+    aboutData->SetManufacturer("Company A (EN)", "en");
+    aboutData->SetManufacturer("Firma A (DE-AT)", "de-AT");
 
-    propStore.setProperty(LSFPropertyStore::DEFAULT_LANG, "en", true, true, true);
-    propStore.setProperty(LSFPropertyStore::APP_NAME, "LightingControllerService", true, false, true);
-    propStore.setProperty(LSFPropertyStore::MODEL_NUMBER, "100", true, false, true);
-    propStore.setProperty(LSFPropertyStore::SOFTWARE_VERSION, "1", true, false, false);
-
-    propStore.setProperty(LSFPropertyStore::DEVICE_NAME, "English Name", "en", true, true, true);
-    propStore.setProperty(LSFPropertyStore::DEVICE_NAME, "German Name", "de-AT", true, true, true);
-
-    propStore.setProperty(LSFPropertyStore::SUPPORT_URL, "http://www.example.com", "en", true, false, true);
-    propStore.setProperty(LSFPropertyStore::SUPPORT_URL, "http://www.example.com", "de-AT", true, false, true);
-
-    propStore.setProperty(LSFPropertyStore::MANUFACTURER, "Company A (EN)", "en", true, false, true);
-    propStore.setProperty(LSFPropertyStore::MANUFACTURER, "Firma A (DE-AT)", "de-AT", true, false, true);
-
-    propStore.setProperty(LSFPropertyStore::DESCRIPTION, "Controller Service", "en", true, false, false);
-    propStore.setProperty(LSFPropertyStore::DESCRIPTION, "Controller Service", "de-AT", true, false, false);
+    qcc::String appId;
+#if !defined(LSF_OS_DARWIN)
+    GuidUtil::GetInstance()->GenerateGUID(&appId);
+#else
+    /*
+     * Anybody trying to build the Controller Service code on IOS would need
+     * to generate a new random app ID and initialize "appId".
+     * This is required because GuidUtil is not available in the services_common
+     * IOS library.
+     */
+#endif
+    aboutData->SetAppId(appId.c_str());
 }
 
 }

@@ -36,7 +36,7 @@ void ParseLampState(std::istream& stream, LampState& state)
         uint32_t colorTemp = ParseValue<uint32_t>(stream);
         uint32_t brightness = ParseValue<uint32_t>(stream);
         state = LampState(onOff, hue, saturation, colorTemp, brightness);
-        QCC_DbgPrintf(("%s: Parsed State = %s", __func__, state.c_str()));
+        //QCC_DbgPrintf(("%s: Parsed State = %s", __func__, state.c_str()));
     } else {
         state = LampState();
         QCC_DbgPrintf(("%s: Parsed Null State", __func__));

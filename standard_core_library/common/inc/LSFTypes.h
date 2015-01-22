@@ -196,24 +196,9 @@ extern const char* OnboardingServiceObjectPath;
 extern const char* OnboardingServiceInterfaceName;
 
 /**
- * About Object Path
- */
-extern const char* AboutObjectPath;
-
-/**
  * About Interface Name
  */
 extern const char* AboutInterfaceName;
-
-/**
- * About Icon Object Path
- */
-extern const char* AboutIconObjectPath;
-
-/**
- * About Icon Interface Name
- */
-extern const char* AboutIconInterfaceName;
 
 /**
  * Leader Election And State Sync Object Path

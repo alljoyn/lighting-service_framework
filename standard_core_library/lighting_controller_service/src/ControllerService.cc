@@ -27,7 +27,6 @@
 
 #include <alljoyn/notification/NotificationService.h>
 #include <string>
-#include <alljoyn/services_common/GuidUtil.h>
 
 using namespace lsf;
 using namespace ajn;
@@ -43,7 +42,7 @@ static const char* OnboardingInterfaces[] = {
 class ControllerService::ControllerListener :
     public SessionPortListener,
     public BusListener,
-    public services::AnnounceHandler,
+    public AboutListener,
     public SessionListener,
     public BusAttachment::SetLinkTimeoutAsyncCB {
   public:
@@ -86,32 +85,26 @@ class ControllerService::ControllerListener :
         controller->elector.OnSessionMemberRemoved(sessionId, uniqueName);
     }
 
-    virtual void Announce(uint16_t version, uint16_t port, const char* busName, const ObjectDescriptions& objectDescs, const AboutData& aboutData) {
+    virtual void Announced(const char* busName, uint16_t version, SessionPort port, const MsgArg& objectDescriptionArg, const MsgArg& aboutDataArg) {
         QCC_DbgTrace(("%s:version=%d, port=%d, busName=%s", __func__, version, port, busName));
         controller->bus.EnableConcurrentCallbacks();
-        ObjectDescriptions::const_iterator it = objectDescs.find(OnboardingServiceObjectPath);
-        LSFString lampID;
-        if (it != objectDescs.end()) {
-            AboutData::const_iterator ait = aboutData.find("DeviceId");
-            if (ait != aboutData.end()) {
-                const char* uniqueId;
-                ait->second.Get("s", &uniqueId);
-                lampID = uniqueId;
-            }
+        AboutObjectDescription objectDescs(objectDescriptionArg);
+        if (objectDescs.HasPath(OnboardingServiceObjectPath)) {
+            AboutData aboutData(aboutDataArg);
+            char* uniqueId = NULL;
+            aboutData.GetDeviceId(&uniqueId);
 
-            QCC_DbgPrintf(("%s: About Data Dump", __func__));
-            for (ait = aboutData.begin(); ait != aboutData.end(); ait++) {
-                QCC_DbgPrintf(("%s: %s", ait->first.c_str(), ait->second.ToString().c_str()));
-            }
+            char* deviceId = NULL;
+            controller->GetAboutDataStore().GetDeviceId(&deviceId);
 
-            qcc::String deviceId;
-            GuidUtil::GetInstance()->GetDeviceIdString(&deviceId);
-
-            if (0 == strcmp(lampID.c_str(), deviceId.c_str())) {
-                QCC_DbgPrintf(("%s: Found on-boarding daemon", __func__));
-                controller->FoundLocalOnboardingService(busName, port);
-            } else {
-                QCC_DbgPrintf(("%s: Ignoring about with onboarding interface as it is not from the on-boarding daemon", __func__));
+            if (uniqueId && deviceId) {
+                QCC_DbgPrintf(("%s: deviceId=%s uniqueId=%s", __func__, deviceId, uniqueId));
+                if (0 == strcmp(uniqueId, deviceId)) {
+                    QCC_DbgPrintf(("%s: Found on-boarding daemon", __func__));
+                    controller->FoundLocalOnboardingService(busName, port);
+                } else {
+                    QCC_DbgPrintf(("%s: Ignoring about with onboarding interface as it is not from the on-boarding daemon", __func__));
+                }
             }
         }
     }
@@ -216,20 +209,57 @@ ControllerService::ControllerService(
     presetManager(*this, &sceneManager, presetFile),
     sceneManager(*this, lampGroupManager, &masterSceneManager, sceneFile),
     masterSceneManager(*this, sceneManager, masterSceneFile),
-    internalPropertyStore(factoryConfigFile, configFile), // we don't use this!
-    propertyStore(propStore),
-    aboutService(NULL),
-    aboutIconService(bus, DeviceIconMimeType, DeviceIconURL, DeviceIcon, DeviceIconSize),
-    configService(bus, propertyStore, *this),
+    internalAboutDataStore(this, factoryConfigFile.c_str(), configFile.c_str()),
+    aboutDataStore(internalAboutDataStore),
+    aboutIcon(),
+    aboutIconObj(bus, aboutIcon),
+    aboutObj(bus, BusObject::ANNOUNCED),
+    configService(bus, aboutDataStore, *this),
     notificationSender(NULL),
     obsObject(NULL),
     isObsObjectReady(false),
     isRunning(true),
     fileWriterThread(*this),
-    firstAnnouncementSent(false),
-    rank()
+    rank(),
+    deprecatedConstructorUsed(true)
 {
-    QCC_DbgTrace(("%s:factoryConfigFile=%s, configFile=%s, lampGroupFile=%s, presetFile=%s, sceneFile=%s, masterSceneFile=%s", __func__, factoryConfigFile.c_str(), configFile.c_str(), lampGroupFile.c_str(), presetFile.c_str(), sceneFile.c_str(), masterSceneFile.c_str()));
+    QCC_LogError(ER_FAIL, ("%s: DEPRECATED CONSTRUCTOR. Please use the constructor with AboutDataStore", __func__));
+}
+
+ControllerService::ControllerService(
+    LSFAboutDataStore& aboutData,
+    const std::string& factoryConfigFile,
+    const std::string& configFile,
+    const std::string& lampGroupFile,
+    const std::string& presetFile,
+    const std::string& sceneFile,
+    const std::string& masterSceneFile) :
+    BusObject(ControllerServiceObjectPath),
+    updatesAllowed(false),
+    bus("LightingServiceController", true),
+    elector(*this),
+    serviceSession(0),
+    listener(new ControllerListener(this)),
+    lampManager(*this, presetManager),
+    lampGroupManager(*this, lampManager, &sceneManager, lampGroupFile),
+    presetManager(*this, &sceneManager, presetFile),
+    sceneManager(*this, lampGroupManager, &masterSceneManager, sceneFile),
+    masterSceneManager(*this, sceneManager, masterSceneFile),
+    internalAboutDataStore(this, factoryConfigFile.c_str(), configFile.c_str()),
+    aboutDataStore(aboutData),
+    aboutIcon(),
+    aboutIconObj(bus, aboutIcon),
+    aboutObj(bus, BusObject::ANNOUNCED),
+    configService(bus, aboutDataStore, *this),
+    notificationSender(NULL),
+    obsObject(NULL),
+    isObsObjectReady(false),
+    isRunning(true),
+    fileWriterThread(*this),
+    rank(),
+    deprecatedConstructorUsed(false)
+{
+
 }
 
 ControllerService::ControllerService(
@@ -250,21 +280,21 @@ ControllerService::ControllerService(
     presetManager(*this, &sceneManager, presetFile),
     sceneManager(*this, lampGroupManager, &masterSceneManager, sceneFile),
     masterSceneManager(*this, sceneManager, masterSceneFile),
-    internalPropertyStore(factoryConfigFile, configFile),
-    propertyStore(internalPropertyStore),
-    aboutService(NULL),
-    aboutIconService(bus, DeviceIconMimeType, DeviceIconURL, DeviceIcon, DeviceIconSize),
-    configService(bus, propertyStore, *this),
+    internalAboutDataStore(this, factoryConfigFile.c_str(), configFile.c_str()),
+    aboutDataStore(internalAboutDataStore),
+    aboutIcon(),
+    aboutIconObj(bus, aboutIcon),
+    aboutObj(bus, BusObject::ANNOUNCED),
+    configService(bus, aboutDataStore, *this),
     notificationSender(NULL),
     obsObject(NULL),
     isObsObjectReady(false),
     isRunning(true),
     fileWriterThread(*this),
-    firstAnnouncementSent(false),
-    rank()
+    rank(),
+    deprecatedConstructorUsed(false)
 {
     QCC_DbgTrace(("%s:factoryConfigFile=%s, configFile=%s, lampGroupFile=%s, presetFile=%s, sceneFile=%s, masterSceneFile=%s", __func__, factoryConfigFile.c_str(), configFile.c_str(), lampGroupFile.c_str(), presetFile.c_str(), sceneFile.c_str(), masterSceneFile.c_str()));
-    internalPropertyStore.Initialize();
 }
 
 void ControllerService::FoundLocalOnboardingService(const char* busName, SessionPort port)
@@ -376,11 +406,6 @@ ControllerService::~ControllerService()
     }
     obsObjectLock.Unlock();
 
-    if (aboutService) {
-        services::AboutServiceApi::DestroyInstance();
-        aboutService = NULL;
-    }
-
     if (notificationSender) {
         services::NotificationService::getInstance()->shutdown();
         notificationSender = NULL;
@@ -405,7 +430,7 @@ QStatus ControllerService::CreateAndAddInterface(std::string interfaceDescriptio
     if (status == ER_OK) {
         const InterfaceDescription* intf = bus.GetInterface(interfaceName);
         if (intf) {
-            AddInterface(*intf);
+            AddInterface(*intf, ANNOUNCED);
         } else {
             status = ER_BUS_UNKNOWN_INTERFACE;
             QCC_LogError(status, ("GetInterface failed for %s", interfaceName));
@@ -523,6 +548,11 @@ QStatus ControllerService::RegisterMethodHandlers(void)
 
 QStatus ControllerService::Start(const char* keyStoreFileLocation)
 {
+    if (deprecatedConstructorUsed) {
+        QCC_LogError(ER_FAIL, ("%s: Deprecated constructor was used to initialize the Controller Service. Please use the constructor with the AboutDataStore\n", __func__));
+        return ER_FAIL;
+    }
+
     QCC_DbgPrintf(("%s:%s", __func__, keyStoreFileLocation));
     QStatus status = ER_OK;
 
@@ -543,7 +573,7 @@ QStatus ControllerService::Start(const char* keyStoreFileLocation)
     /*
      * Set the rank in the property store
      */
-    propertyStore.SetRank(rank);
+    aboutDataStore.SetRank(rank);
 
     /*
      * Start the AllJoyn Bus
@@ -595,37 +625,17 @@ QStatus ControllerService::Start(const char* keyStoreFileLocation)
         return status;
     }
 
-    /*
-     * Initialize About
-     */
-    services::AboutServiceApi::Init(bus, propertyStore);
-    aboutService = services::AboutServiceApi::getInstance();
-    if (aboutService) {
-        std::vector<qcc::String> ifaces;
-        ifaces.push_back(qcc::String(ControllerServiceInterfaceName));
-        ifaces.push_back(qcc::String(ControllerServiceLampInterfaceName));
-        ifaces.push_back(qcc::String(ControllerServiceLampGroupInterfaceName));
-        ifaces.push_back(qcc::String(ControllerServicePresetInterfaceName));
-        ifaces.push_back(qcc::String(ControllerServiceSceneInterfaceName));
-        ifaces.push_back(qcc::String(ControllerServiceMasterSceneInterfaceName));
-        aboutService->AddObjectDescription(ControllerServiceObjectPath, ifaces);
-
-        ifaces.clear();
-        ifaces.push_back(AboutIconInterfaceName);
-        aboutService->AddObjectDescription(AboutIconObjectPath, ifaces);
-
-        ifaces.clear();
-        ifaces.push_back(ConfigServiceInterfaceName);
-        aboutService->AddObjectDescription(ConfigServiceObjectPath, ifaces);
-
-        status = aboutService->Register(ControllerServiceSessionPort);
-        if (status != ER_OK) {
-            QCC_LogError(status, ("%s: Failed to AddMethodHandlers", __func__));
-            return status;
-        }
-    } else {
+    status = aboutIcon.SetContent(DeviceIconMimeType.c_str(), DeviceIcon, DeviceIconSize);
+    if (ER_OK != status) {
         status = ER_FAIL;
-        QCC_LogError(status, ("%s: Failed to initialize About", __func__));
+        QCC_LogError(status, ("%s: Failed to initialize aboutIcon", __func__));
+        return status;
+    }
+
+    status = aboutIcon.SetUrl(DeviceIconMimeType.c_str(), DeviceIconURL.c_str());
+    if (ER_OK != status) {
+        status = ER_FAIL;
+        QCC_LogError(status, ("%s: Failed to initialize aboutIcon", __func__));
         return status;
     }
 
@@ -647,34 +657,13 @@ QStatus ControllerService::Start(const char* keyStoreFileLocation)
         return status;
     }
 
-    /*
-     * Register the About Service on the AllJoyn bus
-     */
-    status = bus.RegisterBusObject(*aboutService);
-    if (status != ER_OK) {
-        QCC_LogError(status, ("%s: Failed to register About Service on the AllJoyn Bus", __func__));
-        return status;
-    }
-
-    status = aboutIconService.Register();
-    if (status != ER_OK) {
-        QCC_LogError(status, ("%s: AboutIconService::Register() failed", __func__));
-        return status;
-    }
-
-    status = bus.RegisterBusObject(aboutIconService);
-    if (status != ER_OK) {
-        QCC_LogError(status, ("%s: Failed to register About Icon Service on the AllJoyn Bus", __func__));
-        return status;
-    }
-
     status = elector.Start(rank);
     if (status != ER_OK) {
         QCC_LogError(status, ("%s: Failed to start LeaderElection object", __func__));
         return status;
     }
 
-    notificationSender = services::NotificationService::getInstance()->initSend(&bus, &propertyStore);
+    notificationSender = services::NotificationService::getInstance()->initSend(&bus, &aboutDataStore);
 
     /*
      * Register the BusObject for the Controller Service
@@ -693,9 +682,13 @@ QStatus ControllerService::Start(const char* keyStoreFileLocation)
         QCC_LogError(status, ("%s: Failed to start the LampManager", __func__));
     }
 
-    status = services::AnnouncementRegistrar::RegisterAnnounceHandler(bus, *listener, OnboardingInterfaces, 2);
-    if (status != ER_OK) {
-        QCC_LogError(status, ("%s: Failed to register Announce Handler", __func__));
+    bus.RegisterAboutListener(*listener);
+
+    status = bus.WhoImplements(OnboardingInterfaces, 2);
+    if (ER_OK == status) {
+        QCC_DbgPrintf(("%s: WhoImplements called", __func__));
+    } else {
+        QCC_LogError(status, ("%s: WhoImplements called", __func__));
     }
 
     return status;
@@ -727,23 +720,16 @@ QStatus ControllerService::Stop(void)
 
     fileWriterThread.Stop();
 
-    internalPropertyStore.Stop();
-
-    QStatus status = services::AnnouncementRegistrar::UnRegisterAllAnnounceHandlers(bus);
-    if (status != ER_OK) {
-        QCC_LogError(status, ("%s: Failed to unregister all Announce Handlers", __func__));
-    }
+    bus.UnregisterAllAboutListeners();
 
     sceneManager.UnregsiterSceneEventActionObjects();
-
-    if (aboutService) {
-        aboutService->Unregister();
-    }
 
     // we need to manage the notification sender's memory
     if (notificationSender) {
         services::NotificationService::getInstance()->shutdownSender();
     }
+
+    QStatus status;
 
     if (bus.IsConnected()) {
         status = bus.Disconnect();
@@ -776,9 +762,9 @@ QStatus ControllerService::Join(void)
 
     fileWriterThread.Join();
 
-    internalPropertyStore.Join();
-
     bus.UnregisterBusListener(*listener);
+
+    bus.UnbindSessionPort(ControllerServiceSessionPort);
 
     bus.UnregisterBusObject(*this);
 
@@ -893,7 +879,7 @@ QStatus ControllerService::SendStateChangedSignal(const char* ifaceName, const c
     serviceSessionMutex.Unlock();
 
     if (ER_OK == status) {
-        QCC_DbgPrintf(("%s: Successfully sent signal with %s:%s", __func__, lampID.c_str(), lampState.c_str()));
+        //QCC_DbgPrintf(("%s: Successfully sent signal with %s:%s", __func__, lampID.c_str(), lampState.c_str()));
     } else {
         QCC_LogError(status, ("%s: Failed to send signal", __func__));
     }
@@ -937,10 +923,8 @@ void ControllerService::ObjectRegistered(void)
     QStatus status = bus.BindSessionPort(ControllerServiceSessionPort, opts, *listener);
     QCC_DbgPrintf(("BindSessionPort: %s\n", QCC_StatusText(status)));
 
-    status = aboutService->Announce();
-    QCC_DbgPrintf(("AboutService::Announce: %s\n", QCC_StatusText(status)));
-
-    firstAnnouncementSent = true;
+    status = Announce();
+    QCC_DbgPrintf(("Announce: %s\n", QCC_StatusText(status)));
 }
 
 QStatus ControllerService::Restart()
@@ -968,7 +952,7 @@ QStatus ControllerService::FactoryReset()
     obsObjectLock.Unlock();
 
     // reset user data
-    propertyStore.Reset();
+    aboutDataStore.FactoryReset();
 
     // the main thread will shut us down soon
     isRunning = false;
@@ -1369,35 +1353,12 @@ void ControllerService::LeaveSessionAsyncReplyHandler(ajn::Message& message, voi
 
 bool ControllerService::IsLeader()
 {
-    return propertyStore.IsLeader();
+    return aboutDataStore.IsLeader();
 }
 
 void ControllerService::SetIsLeader(bool val)
 {
-    propertyStore.SetIsLeader(val);
-}
-
-void ControllerService::AddObjDescriptionToAnnouncement(qcc::String path, qcc::String interface)
-{
-    QCC_DbgPrintf(("%s", __func__));
-    std::vector<qcc::String> interfaces;
-    interfaces.push_back(interface);
-    aboutService->AddObjectDescription(path, interfaces);
-    if (firstAnnouncementSent) {
-        aboutService->Announce();
-    }
-}
-
-void ControllerService::RemoveObjDescriptionFromAnnouncement(qcc::String path, qcc::String interface)
-{
-    QCC_DbgPrintf(("%s", __func__));
-    std::vector<qcc::String> interfaces;
-    interfaces.push_back(interface);
-    aboutService->RemoveObjectDescription(path, interfaces);
-
-    if (firstAnnouncementSent) {
-        aboutService->Announce();
-    }
+    aboutDataStore.SetIsLeader(val);
 }
 
 void ControllerService::SetAllowUpdates(bool allow)
@@ -1425,4 +1386,9 @@ LSFResponseCode ControllerService::CheckNumArgsInMessage(uint32_t receivedNumArg
         responseCode = LSF_ERR_REPLY_WITH_INVALID_ARGS;
     }
     return responseCode;
+}
+
+QStatus ControllerService::Announce(void)
+{
+    return aboutObj.Announce(ControllerServiceSessionPort, aboutDataStore);
 }

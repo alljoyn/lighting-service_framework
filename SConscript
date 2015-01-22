@@ -56,7 +56,7 @@ lsf_client_env.Install('$LSF_CLIENT_DISTDIR/inc', lsf_client_env.Glob('standard_
 lsf_client_env['client_srcs'] = lsf_client_env.Glob('standard_core_library/lighting_controller_client/src/*.cc')
 lsf_client_env['client_objs'] = lsf_client_env.Object(lsf_client_env['client_srcs']) 
 lighting_controller_client_static_lib = lsf_client_env.StaticLibrary('$LSF_CLIENT_DISTDIR/lib/lighting_controller_client', lsf_client_env['client_objs'] + lsf_env['common_objs']);
-lighting_controller_client_sample = lsf_client_env.Program('$LSF_CLIENT_DISTDIR/test/lighting_controller_client_sample', ['standard_core_library/lighting_controller_client/test/LightingControllerClientSample.cc'] + lsf_client_env['client_objs'] + lsf_env['common_objs'])
+lighting_controller_client_sample = lsf_client_env.Program('$LSF_CLIENT_DISTDIR/samples/lighting_controller_client_sample', ['standard_core_library/lighting_controller_client/samples/LightingControllerClientSample.cc'] + lsf_client_env['client_objs'] + lsf_env['common_objs'])
 lsf_client_env.Install('$LSF_CLIENT_DISTDIR/bin', lsf_client_env['client_objs'])
 lsf_client_env.Install('$LSF_CLIENT_DISTDIR/bin', lsf_env['common_objs'])
 
@@ -128,8 +128,8 @@ else:
 #lamp_test_env.Append(LIBPATH = '$LSF_CLIENT_DISTDIR/lib')
 #lamp_test_env.Prepend(LIBS = ['lighting_controller_client.a'])
 #lamp_test_env.Append(LINKFLAGS = ['-pthread'])
-#lamp_test_env['LSF_LAMP_TEST_DISTDIR'] = 'build/linux/standard_core_library/lighting_controller_client/test/'
-#lamp_test_env.Program('$LSF_LAMP_TEST_DISTDIR/lamp_service_test', ['standard_core_library/lighting_controller_client/test/LampServiceTest.cc'])
+#lamp_test_env['LSF_LAMP_TEST_DISTDIR'] = 'build/linux/standard_core_library/lighting_controller_client/samples/'
+#lamp_test_env.Program('$LSF_LAMP_TEST_DISTDIR/lamp_service_test', ['standard_core_library/lighting_controller_client/samples/LampServiceTest.cc'])
 
 #Build Lighting Controller Service
 lsf_service_env = lsf_env.Clone()
@@ -176,6 +176,6 @@ lamp_service_env['lamp_objs'] = objs;
 
 lamp_service = lamp_service_env.Program('$LSF_LAMP_DISTDIR/bin/lamp_service', ['thin_core_library/lamp_service/src/LampMain.c'] + lamp_service_env['lamp_objs'])
 lamp_service_env.Install('$LSF_LAMP_DISTDIR/bin', lamp_service_env['lamp_objs'])
-lamp_service_env.Install('$LSF_LAMP_DISTDIR/bin', 'thin_core_library/lamp_service/test/LaunchLampServices.sh')
+lamp_service_env.Install('$LSF_LAMP_DISTDIR/bin', 'thin_core_library/lamp_service/samples/LaunchLampServices.sh')
 
 

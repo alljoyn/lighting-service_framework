@@ -9318,7 +9318,7 @@ TEST_F(ControllerClientTest, Controller_Client_Stop) {
     localStatus = client.Start();
     ASSERT_EQ(CONTROLLER_CLIENT_ERR_RETRY, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
 
-    sleep(40);
+    sleep(41);
 
     replyReceivedFlag = false;
 

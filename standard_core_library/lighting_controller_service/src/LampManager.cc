@@ -453,7 +453,7 @@ void LampManager::ResetLampStateFieldInternal(ajn::Message& message, LSFStringLi
     PulseLampsWithPresetList pulseWithPreset;
 
     if (LSF_OK == responseCode) {
-        QCC_DbgPrintf(("%s: defaultLampState=%s", __func__, defaultLampState.c_str()));
+        //QCC_DbgPrintf(("%s: defaultLampState=%s", __func__, defaultLampState.c_str()));
         if (0 == strcmp(stateFieldName.c_str(), "OnOff")) {
             arg.Set("b", defaultLampState.onOff);
         } else if (0 == strcmp(stateFieldName.c_str(), "Hue")) {
@@ -630,7 +630,7 @@ void LampManager::TransitionLampState(ajn::Message& message)
     LSFString lampID = static_cast<LSFString>(args[0].v_string.str);
     LampState state(args[1]);
     uint32_t transitionPeriod = static_cast<uint32_t>(args[2].v_uint32);
-    QCC_DbgPrintf(("lampID=%s state=%s transitionPeriod=%d", lampID.c_str(), state.c_str(), transitionPeriod));
+    //QCC_DbgPrintf(("lampID=%s state=%s transitionPeriod=%d", lampID.c_str(), state.c_str(), transitionPeriod));
 
     if (state.nullState) {
         QCC_LogError(ER_FAIL, ("%s: State cannot be NULL", __func__));
@@ -670,9 +670,9 @@ void LampManager::PulseLampWithState(ajn::Message& message)
     uint32_t period = static_cast<uint32_t>(args[3].v_uint32);
     uint32_t duration = static_cast<uint32_t>(args[4].v_uint32);
     uint32_t numPulses = static_cast<uint32_t>(args[5].v_uint32);
-    QCC_DbgPrintf(("%s: lampID=%s, fromLampState=%s, period=%d, duration=%d, numPulses=%d",
-                   __func__, lampID.c_str(), fromLampState.c_str(), period, duration, numPulses));
-    QCC_DbgPrintf(("%s: toLampState=%s", __func__, toLampState.c_str()));
+    //QCC_DbgPrintf(("%s: lampID=%s, fromLampState=%s, period=%d, duration=%d, numPulses=%d",
+    //__func__, lampID.c_str(), fromLampState.c_str(), period, duration, numPulses));
+    //QCC_DbgPrintf(("%s: toLampState=%s", __func__, toLampState.c_str()));
 
     if (toLampState.nullState) {
         QCC_LogError(ER_FAIL, ("%s: ToLampState cannot be NULL", __func__));

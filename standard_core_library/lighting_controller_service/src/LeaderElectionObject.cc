@@ -43,14 +43,14 @@ static const char* ControllerServiceInterface[] = {
     ControllerServiceInterfaceName
 };
 
-class LeaderElectionObject::Handler : public ajn::services::AnnounceHandler,
+class LeaderElectionObject::Handler : public AboutListener,
     public BusAttachment::JoinSessionAsyncCB,
     public BusAttachment::SetLinkTimeoutAsyncCB,
     public SessionListener {
   public:
     Handler(LeaderElectionObject& elector) : elector(elector) { }
 
-    virtual void Announce(uint16_t version, uint16_t port, const char* busName, const ObjectDescriptions& objectDescs, const AboutData& aboutData);
+    virtual void Announced(const char* busName, uint16_t version, SessionPort port, const MsgArg& objectDescriptionArg, const MsgArg& aboutDataArg);
 
     virtual void JoinSessionCB(QStatus status, SessionId sessionId, const SessionOpts& opts, void* context) {
         QCC_DbgTrace(("%s: (status=%s, sessionId=%u)", __func__, QCC_StatusText(status), sessionId));
@@ -80,56 +80,39 @@ class LeaderElectionObject::Handler : public ajn::services::AnnounceHandler,
     LeaderElectionObject& elector;
 };
 
-void LeaderElectionObject::Handler::Announce(
-    uint16_t version,
-    uint16_t port,
+void LeaderElectionObject::Handler::Announced(
     const char* busName,
-    const ObjectDescriptions& objectDescs,
-    const AboutData& aboutData)
+    uint16_t version,
+    SessionPort port,
+    const MsgArg& objectDescriptionArg,
+    const MsgArg& aboutDataArg)
 {
     QCC_DbgTrace(("%s", __func__));
     elector.bus.EnableConcurrentCallbacks();
-    ObjectDescriptions::const_iterator oit = objectDescs.find(ControllerServiceObjectPath);
-    if (elector.bus.GetUniqueName() != busName && oit != objectDescs.end()) {
-        AboutData::const_iterator ait;
+    AboutObjectDescription objectDescs(objectDescriptionArg);
+
+    if (elector.bus.GetUniqueName() != busName && objectDescs.HasPath(ControllerServiceObjectPath)) {
+        AboutData aboutData(aboutDataArg);
+
         bool isLeader = false;
-        const char* deviceId;
+        char* deviceId;
 
-        QCC_DbgPrintf(("%s: About Data Dump", __func__));
-        for (ait = aboutData.begin(); ait != aboutData.end(); ait++) {
-            QCC_DbgPrintf(("%s: %s", ait->first.c_str(), ait->second.ToString().c_str()));
-        }
-
-        ait = aboutData.find("DeviceId");
-        if (ait == aboutData.end()) {
-            QCC_LogError(ER_FAIL, ("%s: DeviceId missing in About Announcement", __func__));
-            return;
-        }
-        ait->second.Get("s", &deviceId);
+        aboutData.GetDeviceId(&deviceId);
 
         uint64_t higherBits = 0, lowerBits = 0;
-        ait = aboutData.find("RankHigherBits");
-        if (ait == aboutData.end()) {
-            QCC_LogError(ER_FAIL, ("%s: RankHigherBits missing in About Announcement", __func__));
-            return;
-        }
-        ait->second.Get("t", &higherBits);
+        MsgArg* higherBitsArg;
+        aboutData.GetField("RankHigherBits", higherBitsArg);
+        higherBitsArg->Get("t", &higherBits);
 
-        ait = aboutData.find("RankLowerBits");
-        if (ait == aboutData.end()) {
-            QCC_LogError(ER_FAIL, ("%s: RankLowerBits missing in About Announcement", __func__));
-            return;
-        }
-        ait->second.Get("t", &lowerBits);
+        MsgArg* lowerBitsArg;
+        aboutData.GetField("RankLowerBits", lowerBitsArg);
+        lowerBitsArg->Get("t", &lowerBits);
 
         Rank rank(higherBits, lowerBits);
 
-        ait = aboutData.find("IsLeader");
-        if (ait == aboutData.end()) {
-            QCC_LogError(ER_FAIL, ("%s: IsLeader missing in About Announcement", __func__));
-            return;
-        }
-        ait->second.Get("b", &isLeader);
+        MsgArg* leaderArg;
+        aboutData.GetField("IsLeader", leaderArg);
+        leaderArg->Get("b", &isLeader);
 
         if ((rank > elector.GetRank()) || isLeader) {
             QCC_DbgPrintf(("%s: Received a potential leader or existent leader announcement", __func__, busName, port));
@@ -480,16 +463,20 @@ void LeaderElectionObject::Connected(void)
     if (!isRunning) {
         isRunning = true;
 
-        QStatus status = services::AnnouncementRegistrar::RegisterAnnounceHandler(bus, *handler, ControllerServiceInterface, 1);
-        if (status != ER_OK) {
-            QCC_LogError(status, ("%s: Failed to RegisterAnnounceHandler", __func__));
+        bus.RegisterAboutListener(*handler);
+
+        QStatus status = bus.WhoImplements(ControllerServiceInterface, 1);
+        if (ER_OK == status) {
+            QCC_DbgPrintf(("%s: WhoImplements called", __func__));
+            status = Thread::Start();
+            if (status != ER_OK) {
+                isRunning = false;
+                QCC_LogError(status, ("%s: Unable to start Run() thread", __func__));
+            }
+        } else {
+            QCC_LogError(status, ("%s: WhoImplements called", __func__));
         }
 
-        status = Thread::Start();
-        if (status != ER_OK) {
-            isRunning = false;
-            QCC_LogError(status, ("%s: Unable to start Run() thread", __func__));
-        }
     }
     wakeSem.Post();
     connectionStateMutex.Unlock();
@@ -1285,7 +1272,7 @@ QStatus LeaderElectionObject::Start(Rank& rank)
         return status;
     }
 
-    AddInterface(*stateSyncInterface);
+    AddInterface(*stateSyncInterface, ANNOUNCED);
 
     const MethodEntry methodEntries[] = {
         { stateSyncInterface->GetMember("GetChecksumAndModificationTimestamp"), static_cast<MessageReceiver::MethodHandler>(&LeaderElectionObject::GetChecksumAndModificationTimestamp) },
@@ -1331,12 +1318,7 @@ void LeaderElectionObject::Stop()
     QCC_DbgTrace(("%s", __func__));
     if (isRunning) {
         isRunning = false;
-
-        QStatus status = services::AnnouncementRegistrar::UnRegisterAnnounceHandler(bus, *handler, ControllerServiceInterface, 1);
-        if (status != ER_OK) {
-            QCC_LogError(status, ("%s: Failed to UnRegisterAnnounceHandler", __func__));
-        }
-
+        bus.UnregisterAboutListener(*handler);
         wakeSem.Post();
     }
 }

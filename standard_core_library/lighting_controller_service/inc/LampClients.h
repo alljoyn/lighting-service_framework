@@ -25,14 +25,14 @@
 
 #include <alljoyn/BusAttachment.h>
 #include <alljoyn/SessionListener.h>
-#include <alljoyn/about/AnnounceHandler.h>
-#include <alljoyn/about/AnnouncementRegistrar.h>
+#include <alljoyn/AboutListener.h>
 #include <LSFKeyListener.h>
 #include <Mutex.h>
 #include <Manager.h>
 #include <Thread.h>
 #include <LSFSemaphore.h>
 #include <Alarm.h>
+#include <alljoyn/AboutProxy.h>
 
 #include <string>
 #include <map>
@@ -332,11 +332,6 @@ class LampClients : public Manager, public ajn::BusAttachment::JoinSessionAsyncC
     void DisconnectFromLamps(void);
 
     /**
-     * register announce handler
-     */
-    QStatus RegisterAnnounceHandler(void);
-
-    /**
      * Alarm triggered callback
      */
     void AlarmTriggered(void);
@@ -457,6 +452,7 @@ class LampClients : public Manager, public ajn::BusAttachment::JoinSessionAsyncC
             name = "";
             port = 0;
             replaced = false;
+            aboutObject = NULL;
             ClearSessionAndObjects();
         }
 
@@ -472,7 +468,10 @@ class LampClients : public Manager, public ajn::BusAttachment::JoinSessionAsyncC
             pendingMethodCallCount = 0;
             object = ajn::ProxyBusObject();
             configObject = ajn::ProxyBusObject();
-            aboutObject = ajn::ProxyBusObject();
+            if (aboutObject) {
+                delete aboutObject;
+                aboutObject = NULL;
+            }
             connectionState = DISCONNECTED;
         }
 
@@ -490,7 +489,7 @@ class LampClients : public Manager, public ajn::BusAttachment::JoinSessionAsyncC
             sessionID = sessionId;
             object = ProxyBusObject(bus, busName.c_str(), LampServiceObjectPath, sessionId);
             configObject = ProxyBusObject(bus, busName.c_str(), ConfigServiceObjectPath, sessionId);
-            aboutObject = ProxyBusObject(bus, busName.c_str(), AboutObjectPath, sessionId);
+            aboutObject = new AboutProxy(bus, busName.c_str(), sessionId);
         }
 
         bool IsConnected(void) {
@@ -508,7 +507,7 @@ class LampClients : public Manager, public ajn::BusAttachment::JoinSessionAsyncC
         LSFString lampId;
         ajn::ProxyBusObject object;
         ajn::ProxyBusObject configObject;
-        ajn::ProxyBusObject aboutObject;
+        AboutProxy* aboutObject;
         LSFString busName;
         LSFString name;
         uint16_t port;

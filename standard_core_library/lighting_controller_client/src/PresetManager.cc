@@ -103,7 +103,7 @@ ControllerClientStatus PresetManager::SetPresetName(const LSFString& presetID, c
 
 ControllerClientStatus PresetManager::CreatePreset(const LampState& preset, const LSFString& presetName, const LSFString& language)
 {
-    QCC_DbgPrintf(("%s: preset=%s", __func__, preset.c_str()));
+    //QCC_DbgPrintf(("%s: preset=%s", __func__, preset.c_str()));
 
     MsgArg arg[3];
     preset.Get(&arg[0], true);
@@ -119,7 +119,7 @@ ControllerClientStatus PresetManager::CreatePreset(const LampState& preset, cons
 
 ControllerClientStatus PresetManager::UpdatePreset(const LSFString& presetID, const LampState& preset)
 {
-    QCC_DbgPrintf(("%s: presetID=%s preset=%s", __func__, presetID.c_str(), preset.c_str()));
+    //QCC_DbgPrintf(("%s: presetID=%s preset=%s", __func__, presetID.c_str(), preset.c_str()));
     MsgArg args[2];
     args[0].Set("s", presetID.c_str());
     preset.Get(&args[1]);
@@ -174,7 +174,7 @@ void PresetManager::GetDefaultLampStateReply(ajn::Message& message)
 
 ControllerClientStatus PresetManager::SetDefaultLampState(const LampState& defaultLampState)
 {
-    QCC_DbgPrintf(("%s: defaultLampState=%s", __func__, defaultLampState.c_str()));
+    //QCC_DbgPrintf(("%s: defaultLampState=%s", __func__, defaultLampState.c_str()));
 
     MsgArg arg;
     defaultLampState.Get(&arg);

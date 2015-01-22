@@ -30,8 +30,6 @@
 #include <alljoyn/BusAttachment.h>
 #include <alljoyn/ProxyBusObject.h>
 #include <alljoyn/notification/NotificationSender.h>
-#include <alljoyn/about/AboutService.h>
-#include <alljoyn/about/AboutIconService.h>
 #include <alljoyn/config/ConfigService.h>
 
 
@@ -39,7 +37,6 @@
 #include <Mutex.h>
 
 #include <PersistenceThread.h>
-#include <LSFPropertyStore.h>
 #include <LampManager.h>
 #include <LampGroupManager.h>
 #include <PresetManager.h>
@@ -48,8 +45,18 @@
 #include <LeaderElectionObject.h>
 #include <LampClients.h>
 #include <ControllerServiceRank.h>
+#include <LSFAboutDataStore.h>
+#include <alljoyn/AboutIconObj.h>
+#include <alljoyn/AboutObj.h>
+#include <alljoyn/AboutIcon.h>
+#include <alljoyn/AboutData.h>
 
 namespace lsf {
+
+/*
+ * Pre-Declaration of a deprecated 14.06 release specific class
+ */
+class LSFPropertyStore;
 
 /**
  * This class functions as the message dispatcher. It receives the messages from AllJoyn \n
@@ -78,8 +85,9 @@ class ControllerService : public ajn::BusObject, public ajn::services::ConfigSer
         const std::string& presetFile,
         const std::string& sceneFile,
         const std::string& masterSceneFile);
+
     /**
-     * Constructor
+     * Deprecated Constructor
      * @param propStore - path of property store
      * @param factoryConfigFile - path of factory config file
      * @param configFile - path of config file
@@ -90,6 +98,25 @@ class ControllerService : public ajn::BusObject, public ajn::services::ConfigSer
      */
     ControllerService(
         LSFPropertyStore& propStore,
+        const std::string& factoryConfigFile,
+        const std::string& configFile,
+        const std::string& lampGroupFile,
+        const std::string& presetFile,
+        const std::string& sceneFile,
+        const std::string& masterSceneFile);
+
+    /**
+     * Constructor
+     * @param aboutData - About Data passed in by the application
+     * @param factoryConfigFile - path of factory config file
+     * @param configFile - path of config file
+     * @param lampGroupFile - path of lamp group file
+     * @param presetFile - path of pre-set file
+     * @param sceneFile - path of scene file
+     * @param masterSceneFile - path of master scene file
+     */
+    ControllerService(
+        LSFAboutDataStore& aboutData,
         const std::string& factoryConfigFile,
         const std::string& configFile,
         const std::string& lampGroupFile,
@@ -296,14 +323,6 @@ class ControllerService : public ajn::BusObject, public ajn::services::ConfigSer
      */
     void SetIsLeader(bool val);
     /**
-     * Add Obj Description To Announcement
-     */
-    void AddObjDescriptionToAnnouncement(qcc::String path, qcc::String interface);
-    /**
-     * Remove Obj Description From Announcement
-     */
-    void RemoveObjDescriptionFromAnnouncement(qcc::String path, qcc::String interface);
-    /**
      * Set Allow Updates
      */
     void SetAllowUpdates(bool allow);
@@ -332,6 +351,16 @@ class ControllerService : public ajn::BusObject, public ajn::services::ConfigSer
      * code accordingly
      */
     LSFResponseCode CheckNumArgsInMessage(uint32_t receivedNumArgs, uint32_t expectedNumArgs);
+
+    /**
+     * Send out a Controller Service announcement
+     */
+    QStatus Announce(void);
+
+    /**
+     * Return the aboutDataStore instance
+     */
+    LSFAboutDataStore& GetAboutDataStore(void) { return aboutDataStore; };
 
   private:
 
@@ -385,10 +414,11 @@ class ControllerService : public ajn::BusObject, public ajn::services::ConfigSer
 
     void FoundLocalOnboardingService(const char* busName, ajn::SessionPort port);
 
-    LSFPropertyStore internalPropertyStore;
-    LSFPropertyStore& propertyStore;
-    ajn::services::AboutServiceApi* aboutService;
-    ajn::services::AboutIconService aboutIconService;
+    LSFAboutDataStore internalAboutDataStore;
+    LSFAboutDataStore& aboutDataStore;
+    AboutIcon aboutIcon;
+    AboutIconObj aboutIconObj;
+    AboutObj aboutObj;
     ajn::services::ConfigService configService;
     ajn::services::NotificationSender* notificationSender;
 
@@ -457,9 +487,10 @@ class ControllerService : public ajn::BusObject, public ajn::services::ConfigSer
 
 
     PersistenceThread fileWriterThread;
-    bool firstAnnouncementSent;
 
     ControllerServiceRank rank;
+
+    bool deprecatedConstructorUsed;
 };
 /**
  * controller service management class. \n
@@ -480,8 +511,9 @@ class ControllerServiceManager {
         controllerService(factoryConfigFile, configFile, lampGroupFile, presetFile, sceneFile, masterSceneFile) {
 
     }
+
     /**
-     * Constructor
+     * Deprecated Constructor
      * @param propStore - path of property store
      * @param factoryConfigFile - path of factory config file
      * @param configFile - path of config file
@@ -499,8 +531,30 @@ class ControllerServiceManager {
         const std::string& sceneFile,
         const std::string& masterSceneFile) :
         controllerService(propStore, factoryConfigFile, configFile, lampGroupFile, presetFile, sceneFile, masterSceneFile) {
+    }
+
+    /**
+     * Constructor
+     * @param aboutData - About Data passed in by the application
+     * @param factoryConfigFile - path of factory config file
+     * @param configFile - path of config file
+     * @param lampGroupFile - path of lamp group file
+     * @param presetFile - path of pre-set file
+     * @param sceneFile - path of scene file
+     * @param masterSceneFile - path of master scene file
+     */
+    ControllerServiceManager(
+        LSFAboutDataStore& aboutData,
+        const std::string& factoryConfigFile,
+        const std::string& configFile,
+        const std::string& lampGroupFile,
+        const std::string& presetFile,
+        const std::string& sceneFile,
+        const std::string& masterSceneFile) :
+        controllerService(aboutData, factoryConfigFile, configFile, lampGroupFile, presetFile, sceneFile, masterSceneFile) {
 
     }
+
     /**
      * ControllerServiceManager destructor
      */
@@ -539,9 +593,9 @@ class ControllerServiceManager {
         return controllerService.IsRunning();
     }
     /**
-     * Get Controller Service
+     * Get a pointer to Controller Service
      */
-    ControllerService& GetControllerService(void) { return controllerService; };
+    ControllerService* GetControllerServicePtr(void) { return &controllerService; };
 
   private:
     ControllerService controllerService;

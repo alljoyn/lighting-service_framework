@@ -583,7 +583,7 @@ void LampGroupManager::TransitionLampGroupState(Message& message)
     LSFString lampGroupId = static_cast<LSFString>(args[0].v_string.str);
     LampState state(args[1]);
     uint32_t transitionPeriod = static_cast<uint32_t>(args[2].v_uint32);
-    QCC_DbgPrintf(("%s: lampGroupId=%s state=%s transitionPeriod=%d", __func__, lampGroupId.c_str(), state.c_str(), transitionPeriod));
+    //QCC_DbgPrintf(("%s: lampGroupId=%s state=%s transitionPeriod=%d", __func__, lampGroupId.c_str(), state.c_str(), transitionPeriod));
 
     if (state.nullState) {
         QCC_LogError(ER_FAIL, ("%s: State cannot be NULL", __func__));
@@ -630,9 +630,9 @@ void LampGroupManager::PulseLampGroupWithState(ajn::Message& message)
     uint32_t period = static_cast<uint32_t>(args[3].v_uint32);
     uint32_t duration = static_cast<uint32_t>(args[4].v_uint32);
     uint32_t numPulses = static_cast<uint32_t>(args[5].v_uint32);
-    QCC_DbgPrintf(("%s: lampGroupID=%s, fromLampGroupState=%s, period=%d, duration=%d, numPulses=%d",
-                   __func__, lampGroupID.c_str(), fromLampGroupState.c_str(), period, duration, numPulses));
-    QCC_DbgPrintf(("%s: toLampGroupState=%s", __func__, toLampGroupState.c_str()));
+    //QCC_DbgPrintf(("%s: lampGroupID=%s, fromLampGroupState=%s, period=%d, duration=%d, numPulses=%d",
+    //__func__, lampGroupID.c_str(), fromLampGroupState.c_str(), period, duration, numPulses));
+    //QCC_DbgPrintf(("%s: toLampGroupState=%s", __func__, toLampGroupState.c_str()));
 
     if (toLampGroupState.nullState) {
         QCC_LogError(ER_FAIL, ("%s: ToLampGroupState cannot be NULL", __func__));

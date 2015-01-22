@@ -146,7 +146,7 @@ LSFResponseCode PresetManager::GetPresetInternal(const LSFString& presetID, Lamp
             PresetMap::iterator it = presets.find(presetID);
             if (it != presets.end()) {
                 preset = it->second.second;
-                QCC_DbgPrintf(("%s: Found Preset %s", __func__, preset.c_str()));
+                //QCC_DbgPrintf(("%s: Found Preset %s", __func__, preset.c_str()));
                 responseCode = LSF_OK;
             }
             status = presetsLock.Unlock();
@@ -619,7 +619,7 @@ LSFResponseCode PresetManager::GetDefaultLampStateInternal(LampState& preset)
 
 LSFResponseCode PresetManager::SetDefaultLampStateInternal(LampState& preset)
 {
-    QCC_DbgPrintf(("%s: preset=%s", __func__, preset.c_str()));
+    //QCC_DbgPrintf(("%s: preset=%s", __func__, preset.c_str()));
     LSFResponseCode responseCode = LSF_OK;
     QStatus tempStatus = presetsLock.Lock();
     LSFString presetID = defaultLampStateID;
@@ -739,7 +739,7 @@ void PresetManager::ReplaceMap(std::istringstream& stream)
 
                 std::pair<LSFString, LampState> thePair = std::make_pair(presetName, state);
                 presets[presetId] = thePair;
-                QCC_DbgPrintf(("%s: Added ID=%s, Name=%s, State=%s", __func__, presetId.c_str(), presets[presetId].first.c_str(), presets[presetId].second.c_str()));
+                //QCC_DbgPrintf(("%s: Added ID=%s, Name=%s, State=%s", __func__, presetId.c_str(), presets[presetId].first.c_str(), presets[presetId].second.c_str()));
             }
         }
     }

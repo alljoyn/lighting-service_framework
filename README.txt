@@ -80,11 +80,11 @@ home/padmapri/workspace/core/service_framework where $HOME = /home/padmapri/, th
 
 As regards the home directory path, if $HOME is specified in the environment, that is considered as the path or if this is absent “/” is considered as home.
 
-In a fourth terminal, from under the directory core/service_framework/build/linux/standard_core_library/lighting_controller_client/test, run the Lighting Controller Client Test App:
+In a fourth terminal, from under the directory core/service_framework/build/linux/standard_core_library/lighting_controller_client/samples, run the Lighting Controller Client Test App:
 
 ./lighting_controller_client_sample
 
-The Lighting Controller Client Test App should provide a drop down menu of commands that you can exercise to run the end to end test. You should also see the replies and the signals received back from the Controller Service on the terminal running the Lighting Controller Client Test App.
+The Lighting Controller Client Test App should provide a drop down menu of commands that you can exercise to run the end to end samples. You should also see the replies and the signals received back from the Controller Service on the terminal running the Lighting Controller Client Test App.
 
 NOTE: In order to verify ApplyScene and ApplyMasterScene,
 

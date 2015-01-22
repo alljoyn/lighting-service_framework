@@ -25,14 +25,13 @@
 #include <alljoyn/InterfaceDescription.h>
 #include <alljoyn/DBusStd.h>
 #include <alljoyn/AllJoynStd.h>
+#include <alljoyn/AboutListener.h>
 #include <qcc/Util.h>
 #include <qcc/Log.h>
 #include <qcc/String.h>
 #include <qcc/StringUtil.h>
 
 #include <alljoyn/config/ConfigClient.h>
-#include <alljoyn/about/AnnounceHandler.h>
-#include <alljoyn/about/AnnouncementRegistrar.h>
 #include <alljoyn/notification/NotificationReceiver.h>
 #include <LSFTypes.h>
 #include <LSFKeyListener.h>
@@ -81,13 +80,13 @@ static const char* interfaces[] =
     ConfigServiceInterfaceName
 };
 
-class MyTestHandler : public services::AnnounceHandler, public SessionListener, services::NotificationReceiver {
+class MyTestHandler : public AboutListener, public SessionListener, services::NotificationReceiver {
   public:
 
-    MyTestHandler(BusAttachment& bus) : services::AnnounceHandler(), bus(bus), _object(NULL)
+    MyTestHandler(BusAttachment& bus) : bus(bus), _object(NULL)
     {
         QCC_DbgTrace(("%s", __func__));
-        ajn::services::AnnouncementRegistrar::RegisterAnnounceHandler(bus, *this, sizeof(interfaces) / sizeof(interfaces[0]));
+        bus.RegisterAboutListener(*this);
 
         // to receive notifications:
         services::NotificationService::getInstance()->initReceive(&bus, this);
@@ -125,15 +124,18 @@ class MyTestHandler : public services::AnnounceHandler, public SessionListener, 
         QCC_DbgPrintf(("SIGNAL: org.allseen.LSF.LampService.LampsStateChanged from /org/allseen/LSF/Lamp\n"));
     }
 
-    virtual void Announce(uint16_t version, uint16_t port, const char* busName, const ObjectDescriptions& objectDescs, const AboutData& aboutData);
-    QCC_DbgTrace(("%s", __func__));
+    virtual void Announced(const char* busName, uint16_t version, SessionPort port, const MsgArg& objectDescriptionArg, const MsgArg& aboutDataArg)
+    {
+        QCC_DbgTrace(("%s", __func__));
+    }
+
     BusAttachment& bus;
     qcc::String _lampID;
     ProxyBusObject* _object;
     ProxyBusObject* _config;
 };
 
-void MyTestHandler::Announce(uint16_t version, uint16_t port, const char* busName, const ObjectDescriptions& objectDescs, const AboutData& aboutData)
+void MyTestHandler::Announced(const char* busName, uint16_t version, SessionPort port, const MsgArg& objectDescriptionArg, const MsgArg& aboutDataArg)
 {
     QCC_DbgTrace(("%s", __func__));
     bus.EnableConcurrentCallbacks();

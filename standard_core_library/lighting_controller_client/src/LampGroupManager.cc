@@ -174,7 +174,7 @@ ControllerClientStatus LampGroupManager::ResetLampGroupStateField(const LSFStrin
 
 ControllerClientStatus LampGroupManager::TransitionLampGroupState(const LSFString& lampGroupID, const LampState& state, const uint32_t& transitionPeriod)
 {
-    QCC_DbgPrintf(("%s: lampGroupID=%s state=%s transitionPeriod=%d", __func__, lampGroupID.c_str(), state.c_str(), transitionPeriod));
+    //QCC_DbgPrintf(("%s: lampGroupID=%s state=%s transitionPeriod=%d", __func__, lampGroupID.c_str(), state.c_str(), transitionPeriod));
     MsgArg args[3];
     args[0].Set("s", lampGroupID.c_str());
     state.Get(&args[1]);

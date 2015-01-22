@@ -30,47 +30,40 @@ using namespace ajn;
 lsf::Mutex l_methodCallCountMutex;
 uint32_t l_methodCallCount = 0;
 
-class LampClients::ServiceHandler : public services::AnnounceHandler {
+class LampClients::ServiceHandler : public AboutListener {
   public:
     ServiceHandler(LampClients& mgr) : manager(mgr) { }
 
-    virtual void Announce(uint16_t version, uint16_t port, const char* busName, const ObjectDescriptions& objectDescs, const AboutData& aboutData);
+    virtual void Announced(const char* busName, uint16_t version, SessionPort port, const MsgArg& objectDescriptionArg, const MsgArg& aboutDataArg);
 
     LampClients& manager;
 };
 
-void LampClients::ServiceHandler::Announce(
-    uint16_t version,
-    uint16_t port,
+void LampClients::ServiceHandler::Announced(
     const char* busName,
-    const ObjectDescriptions& objectDescs,
-    const AboutData& aboutData)
+    uint16_t version,
+    SessionPort port,
+    const MsgArg& objectDescriptionArg,
+    const MsgArg& aboutDataArg)
 {
     QCC_DbgPrintf(("%s:version=%u, port=%u, busName=%s", __func__, version, port, busName));
     LSFString lampID;
     LSFString lampName;
     LSFString busname = LSFString(busName);
 
-    ObjectDescriptions::const_iterator oit = objectDescs.find(LampServiceObjectPath);
-    if (oit != objectDescs.end()) {
-        AboutData::const_iterator ait = aboutData.find("DeviceId");
-        if (ait != aboutData.end()) {
-            const char* uniqueId;
-            ait->second.Get("s", &uniqueId);
-            lampID = uniqueId;
-        }
+    AboutObjectDescription objectDescs(objectDescriptionArg);
 
-        ait = aboutData.find("DeviceName");
-        if (ait != aboutData.end()) {
-            const char* name;
-            ait->second.Get("s", &name);
-            lampName = name;
-        }
+    if (objectDescs.HasPath(LampServiceObjectPath)) {
 
-        QCC_DbgPrintf(("%s: About Data Dump", __func__));
-        for (ait = aboutData.begin(); ait != aboutData.end(); ait++) {
-            QCC_DbgPrintf(("%s: %s", ait->first.c_str(), ait->second.ToString().c_str()));
-        }
+        AboutData aboutData(aboutDataArg);
+        char* uniqueId;
+        aboutData.GetDeviceId(&uniqueId);
+        lampID = uniqueId;
+
+        char* uniqueName;
+        aboutData.GetDeviceName(&uniqueName);
+        lampName = uniqueName;
+
     }
 
     if (!lampID.empty()) {
@@ -192,13 +185,17 @@ QStatus LampClients::Start(const char* keyStoreFileLocation)
     QCC_DbgPrintf(("EnablePeerSecurity(): %s\n", QCC_StatusText(status)));
 
     if (ER_OK == status) {
-        status = RegisterAnnounceHandler();
-    }
+        controllerService.GetBusAttachment().RegisterAboutListener(*serviceHandler);
 
-    if (ER_OK == status) {
-        isRunning = true;
-        status = Thread::Start();
-        QCC_DbgPrintf(("%s: Thread::Start(): %s\n", __func__, QCC_StatusText(status)));
+        status = controllerService.GetBusAttachment().WhoImplements(interfaces, sizeof(interfaces) / sizeof(interfaces[0]));
+        if (ER_OK == status) {
+            QCC_DbgPrintf(("%s: WhoImplements called", __func__));
+            isRunning = true;
+            status = Thread::Start();
+            QCC_DbgPrintf(("%s: Thread::Start(): %s\n", __func__, QCC_StatusText(status)));
+        } else {
+            QCC_LogError(status, ("%s: WhoImplements called", __func__));
+        }
     }
 
     return status;
@@ -494,11 +491,11 @@ LSFResponseCode LampClients::DoMethodCallAsync(QueuedMethodCall* queuedCall)
                                 ctx,
                                 OEM_CS_LAMP_METHOD_CALL_TIMEOUT
                                 );
-                        } else if (0 == strcmp(element.interface.c_str(), AboutInterfaceName)) {
+                        } else if ((0 == strcmp(element.interface.c_str(), AboutInterfaceName)) && (lit->second->aboutObject != NULL)) {
                             QCC_DbgPrintf(("%s: About Call", __func__));
                             QCC_DbgPrintf(("%s: Calling %s on lamp %s for method call %s and count %u", __func__,
                                            element.method.c_str(), (*it).c_str(), queuedCall->inMsg->GetMemberName(), queuedCall->methodCallCount));
-                            status = lit->second->aboutObject.MethodCallAsync(
+                            status = lit->second->aboutObject->MethodCallAsync(
                                 element.interface.c_str(),
                                 element.method.c_str(),
                                 this,
@@ -1251,38 +1248,32 @@ void LampClients::IntrospectCB(QStatus status, ajn::ProxyBusObject* obj, void* c
     }
 
     if (ER_OK == tempStatus) {
-        intf = controllerService.GetBusAttachment().GetInterface(AboutInterfaceName);
-        tempStatus = connection->aboutObject.AddInterface(*intf);
-        QCC_DbgPrintf(("%s: connection->aboutObject.AddInterface returns %s\n", __func__, QCC_StatusText(tempStatus)));
+        if (!lampStateChangedSignalHandlerRegistered) {
+            intf = connection->object.GetInterface(LampServiceStateInterfaceName);
+            if (intf) {
+                const InterfaceDescription::Member* sig = intf->GetMember("LampStateChanged");
+                if (sig) {
+                    tempStatus = controllerService.GetBusAttachment().RegisterSignalHandler(this, static_cast<MessageReceiver::SignalHandler>(&LampClients::LampStateChangedSignalHandler), sig, LampServiceObjectPath);
+                    QCC_DbgPrintf(("%s: RegisterSignalHandler returns %s\n", __func__, QCC_StatusText(tempStatus)));
 
-        if (ER_OK == tempStatus) {
-            if (!lampStateChangedSignalHandlerRegistered) {
-                intf = connection->object.GetInterface(LampServiceStateInterfaceName);
-                if (intf) {
-                    const InterfaceDescription::Member* sig = intf->GetMember("LampStateChanged");
-                    if (sig) {
-                        tempStatus = controllerService.GetBusAttachment().RegisterSignalHandler(this, static_cast<MessageReceiver::SignalHandler>(&LampClients::LampStateChangedSignalHandler), sig, LampServiceObjectPath);
-                        QCC_DbgPrintf(("%s: RegisterSignalHandler returns %s\n", __func__, QCC_StatusText(tempStatus)));
-
-                        if (ER_OK == tempStatus) {
-                            lampStateChangedSignalHandlerRegistered = true;
-                        }
+                    if (ER_OK == tempStatus) {
+                        lampStateChangedSignalHandlerRegistered = true;
                     }
                 }
             }
+        }
 
-            if (ER_OK == tempStatus) {
-                tempStatus = joinSessionCBListLock.Lock();
-                if (ER_OK != tempStatus) {
-                    QCC_LogError(tempStatus, ("%s: joinSessionCBListLock.Lock() failed", __func__));
-                } else {
-                    joinSessionCBList.insert(std::make_pair(connection->lampId, ER_OK));
-                    QCC_DbgPrintf(("%s: Add %s to joinSessionCBList", __func__, connection->lampId.c_str()));
-                    if (ER_OK != joinSessionCBListLock.Unlock()) {
-                        QCC_LogError(tempStatus, ("%s: joinSessionCBListLock.Unlock() failed", __func__));
-                    }
-                    wakeUp.Post();
+        if (ER_OK == tempStatus) {
+            tempStatus = joinSessionCBListLock.Lock();
+            if (ER_OK != tempStatus) {
+                QCC_LogError(tempStatus, ("%s: joinSessionCBListLock.Lock() failed", __func__));
+            } else {
+                joinSessionCBList.insert(std::make_pair(connection->lampId, ER_OK));
+                QCC_DbgPrintf(("%s: Add %s to joinSessionCBList", __func__, connection->lampId.c_str()));
+                if (ER_OK != joinSessionCBListLock.Unlock()) {
+                    QCC_LogError(tempStatus, ("%s: joinSessionCBListLock.Unlock() failed", __func__));
                 }
+                wakeUp.Post();
             }
         }
     }
@@ -1302,18 +1293,6 @@ void LampClients::IntrospectCB(QStatus status, ajn::ProxyBusObject* obj, void* c
             wakeUp.Post();
         }
     }
-}
-
-QStatus LampClients::RegisterAnnounceHandler(void)
-{
-    QCC_DbgPrintf(("%s", __func__));
-    QStatus status = services::AnnouncementRegistrar::RegisterAnnounceHandler(controllerService.GetBusAttachment(), *serviceHandler, interfaces, sizeof(interfaces) / sizeof(interfaces[0]));
-    if (ER_OK == status) {
-        QCC_DbgPrintf(("%s: RegisterAnnounceHandler successful", __func__));
-    } else {
-        QCC_LogError(status, ("%s: RegisterAnnounceHandler unsuccessful", __func__));
-    }
-    return status;
 }
 
 void LampClients::AlarmTriggered(void)

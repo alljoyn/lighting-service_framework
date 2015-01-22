@@ -23,6 +23,7 @@
  *    OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  ******************************************************************************/
 #include <LSFTypes.h>
+#include <alljoyn/AboutData.h>
 
 namespace lsf {
 
@@ -73,19 +74,14 @@ void OEM_CS_GetFactorySetDefaultLampState(LampState& defaultState);
 void OEM_CS_GetSyncTimeStamp(uint64_t& timeStamp);
 
 /**
- * LSFPropertyStore pre-declaration
- */
-class LSFPropertyStore;
-
-/**
  * If no Factory Configuration ini file is found,
  * this function will be called to populate
  * the default values.
  *
- * @param  propStore The property store
+ * @param  aboutData The About Data
  * @return None
  */
-void OEM_CS_PopulateDefaultProperties(LSFPropertyStore& propStore);
+void OEM_CS_PopulateDefaultProperties(AboutData* aboutData);
 
 /**
  * Pure virtual base class implemented by Controller Service and the reference for which is passed in
