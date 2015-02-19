@@ -21,8 +21,8 @@
 #include <alljoyn/Status.h>
 #include <qcc/Debug.h>
 
-#include <ControllerClient.h>
-#include <AllJoynStd.h>
+#include <alljoyn/lighting/ControllerClient.h>
+#include <alljoyn/AllJoynStd.h>
 
 using namespace qcc;
 using namespace ajn;

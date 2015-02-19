@@ -14,13 +14,13 @@
  *    OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  ******************************************************************************/
 
-#include <LampClients.h>
+#include <alljoyn/lighting/LampClients.h>
 #include <alljoyn/Status.h>
 #include <alljoyn/AllJoynStd.h>
 #include <qcc/Debug.h>
 #include <algorithm>
-#include <ControllerService.h>
-#include <OEM_CS_Config.h>
+#include <alljoyn/lighting/ControllerService.h>
+#include <alljoyn/lighting/OEM_CS_Config.h>
 
 using namespace lsf;
 using namespace ajn;

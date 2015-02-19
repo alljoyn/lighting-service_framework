@@ -14,16 +14,16 @@
  *    OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  ******************************************************************************/
 
-#include <LSFResponseCodes.h>
+#include <alljoyn/lighting/LSFResponseCodes.h>
 #include <qcc/StringUtil.h>
 #include <qcc/Debug.h>
-#include <LSFTypes.h>
-#include <OEM_CS_Config.h>
+#include <alljoyn/lighting/LSFTypes.h>
+#include <alljoyn/lighting/OEM_CS_Config.h>
 
-#include <ControllerService.h>
-#include <ServiceDescription.h>
-#include <DeviceIcon.h>
-#include <AllJoynStd.h>
+#include <alljoyn/lighting/ControllerService.h>
+#include <alljoyn/lighting/ServiceDescription.h>
+#include <alljoyn/lighting/DeviceIcon.h>
+#include <alljoyn/AllJoynStd.h>
 
 #include <alljoyn/notification/NotificationService.h>
 #include <string>

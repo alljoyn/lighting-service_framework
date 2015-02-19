@@ -13,9 +13,9 @@
  *    ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  *    OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  ******************************************************************************/
-#include <LSFPropertyStore.h>
-#include <PropertyParser.h>
-#include <OEM_CS_Config.h>
+#include <alljoyn/lighting/LSFPropertyStore.h>
+#include <alljoyn/lighting/PropertyParser.h>
+#include <alljoyn/lighting/OEM_CS_Config.h>
 #include <fstream>
 #include <iostream>
 #include <sys/stat.h>
