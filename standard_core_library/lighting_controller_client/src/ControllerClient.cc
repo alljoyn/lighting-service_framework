@@ -245,12 +245,13 @@ ControllerClientStatus ControllerClient::Start(void)
         }
     }
 
+    stopped = false;
+
     bus.RegisterAboutListener(*busHandler);
 
     QStatus status = bus.WhoImplements(interfaces, sizeof(interfaces) / sizeof(interfaces[0]));
     if (ER_OK == status) {
         QCC_DbgPrintf(("%s: WhoImplements called", __func__));
-        stopped = false;
     } else {
         QCC_LogError(status, ("%s: WhoImplements called", __func__));
         clientStatus = CONTROLLER_CLIENT_ERR_FAILURE;

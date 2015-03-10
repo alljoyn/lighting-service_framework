@@ -41,20 +41,20 @@ LSFAboutDataStore::LSFAboutDataStore(ControllerService* controllerService, const
     Initialize(factoryConfigFile, configFile);
 }
 
-LSFAboutDataStore::LSFAboutDataStore(const char* factoryConfigFile, const char* configFile) :
+LSFAboutDataStore::LSFAboutDataStore(const char* factoryConfigFile, const char* configFile, const char* deviceId) :
     AboutDataStoreInterface(factoryConfigFile, configFile), m_controllerService(NULL), m_IsInitialized(false)
 {
     QCC_DbgTrace(("%s", __func__));
-    Initialize(factoryConfigFile, configFile);
+    Initialize(factoryConfigFile, configFile, deviceId);
 }
 
-QStatus LSFAboutDataStore::Initialize(const char* factoryConfigFile, const char* configFile)
+QStatus LSFAboutDataStore::Initialize(const char* factoryConfigFile, const char* configFile, const char* deviceId)
 {
     QCC_DbgTrace(("%s", __func__));
     m_configFileName.assign(configFile);
     m_factoryConfigFileName.assign(factoryConfigFile);
 
-    QStatus status = InitializeFactorySettings();
+    QStatus status = InitializeFactorySettings(deviceId);
 
     if (status == ER_OK) {
         status = InitializeConfigSettings();
@@ -74,7 +74,7 @@ LSFAboutDataStore::~LSFAboutDataStore()
 
 }
 
-QStatus LSFAboutDataStore::InitializeFactorySettings(void)
+QStatus LSFAboutDataStore::InitializeFactorySettings(const char* passedInDeviceId)
 {
     QCC_DbgTrace(("%s", __func__));
 
@@ -86,30 +86,34 @@ QStatus LSFAboutDataStore::InitializeFactorySettings(void)
 
     std::ifstream factoryFile(m_factoryConfigFileName.c_str(), std::ios::binary);
     if (!factoryFile) {
-        QCC_DbgTrace(("%s: aboutData is NULL", __func__));
         /* A factory config file does not exist. So create one using hard-coded
            defaults */
         OEM_CS_PopulateDefaultProperties(&factorySettings);
 
-        /*
-         * Deliberately set the Device ID after
-         * reading the default properties from the OEM as we do not
-         * want the OEMs to override this values because this
-         * values - if not set appropriately can cause issues in the
-         * Controller Service operation
-         */
-        qcc::String deviceId;
-#if !defined(LSF_OS_DARWIN)
-        GuidUtil::GetInstance()->GetDeviceIdString(&deviceId);
-#else
-        /*
-         * Anybody trying to build the Controller Service code on IOS would need
-         * to generate a new random device ID and initialize "deviceId".
-         * This is required because GuidUtil is not available in the services_common
-         * IOS library.
-         */
-#endif
-        factorySettings.SetDeviceId(deviceId.c_str());
+        if (passedInDeviceId == NULL) {
+            /*
+             * Deliberately set the Device ID after
+             * reading the default properties from the OEM as we do not
+             * want the OEMs to override this values because this
+             * values - if not set appropriately can cause issues in the
+             * Controller Service operation
+             */
+            qcc::String deviceId;
+    #if !defined(LSF_OS_DARWIN)
+            GuidUtil::GetInstance()->GetDeviceIdString(&deviceId);
+    #else
+            /*
+             * Anybody trying to build the Controller Service code on IOS would need
+             * to generate a new random device ID and initialize "deviceId".
+             * This is required because GuidUtil is not available in the services_common
+             * IOS library.
+             */
+    #endif
+            factorySettings.SetDeviceId(deviceId.c_str());
+        } else {
+            factorySettings.SetDeviceId(passedInDeviceId);
+            QCC_DbgTrace(("%s: Set DeviceID to the passed in value %s", __func__, passedInDeviceId));
+        }
 
         if (factorySettings.IsValid()) {
             status = ER_OK;
@@ -171,7 +175,6 @@ QStatus LSFAboutDataStore::InitializeConfigSettings(void)
         }
         configFile.close();
     } else {
-        QCC_DbgTrace(("%s: aboutData is NULL", __func__));
         /* There is no config file. We need to create one using factory settings */
         std::ifstream factoryFile(m_factoryConfigFileName.c_str(), std::ios::binary);
         std::string str((std::istreambuf_iterator<char>(factoryFile)),

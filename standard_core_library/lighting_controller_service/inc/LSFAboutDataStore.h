@@ -49,8 +49,9 @@ class LSFAboutDataStore : public AboutDataStoreInterface {
      * LSFAboutDataStore - constructor
      * @param factoryConfigFile
      * @param configFile
+     * @param deviceID
      */
-    LSFAboutDataStore(const char* factoryConfigFile, const char* configFile);
+    LSFAboutDataStore(const char* factoryConfigFile, const char* configFile, const char* deviceId);
 
     /**
      * LSFAboutDataStore - destructor
@@ -134,7 +135,7 @@ class LSFAboutDataStore : public AboutDataStoreInterface {
 
     Mutex editLock;
 
-    QStatus Initialize(const char* factoryConfigFile, const char* configFile);
+    QStatus Initialize(const char* factoryConfigFile, const char* configFile, const char* deviceId = NULL);
 
     QStatus IsLanguageSupported(const char* languageTag);
 
@@ -146,7 +147,7 @@ class LSFAboutDataStore : public AboutDataStoreInterface {
     /**
      * Initialize Factory Settings
      */
-    QStatus InitializeFactorySettings(void);
+    QStatus InitializeFactorySettings(const char* passedInDeviceId = NULL);
 
     /**
      * Write about data store as an xml config file
