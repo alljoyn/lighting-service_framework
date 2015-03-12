@@ -104,6 +104,8 @@ class LeaderElectionObject : public ajn::BusObject, public Thread, public AlarmL
 
     void Disconnected(void);
 
+    uint32_t GetLeaderElectionAndStateSyncInterfaceVersion(void);
+
   private:
 
     /**

@@ -209,6 +209,8 @@ ControllerService::ControllerService(
     presetManager(*this, &sceneManager, presetFile),
     sceneManager(*this, lampGroupManager, &masterSceneManager, sceneFile),
     masterSceneManager(*this, sceneManager, masterSceneFile),
+    transitionEffectManager(*this, &sceneManager, ""),
+    pulseEffectManager(*this, &sceneManager, ""),
     internalAboutDataStore(this, factoryConfigFile.c_str(), configFile.c_str()),
     aboutDataStore(internalAboutDataStore),
     aboutIcon(),
@@ -232,6 +234,8 @@ ControllerService::ControllerService(
     const std::string& configFile,
     const std::string& lampGroupFile,
     const std::string& presetFile,
+    const std::string& transitionEffectFile,
+    const std::string& pulseEffectFile,
     const std::string& sceneFile,
     const std::string& masterSceneFile) :
     BusObject(ControllerServiceObjectPath),
@@ -245,6 +249,8 @@ ControllerService::ControllerService(
     presetManager(*this, &sceneManager, presetFile),
     sceneManager(*this, lampGroupManager, &masterSceneManager, sceneFile),
     masterSceneManager(*this, sceneManager, masterSceneFile),
+    transitionEffectManager(*this, &sceneManager, transitionEffectFile),
+    pulseEffectManager(*this, &sceneManager, pulseEffectFile),
     internalAboutDataStore(this, factoryConfigFile.c_str(), configFile.c_str()),
     aboutDataStore(aboutData),
     aboutIcon(),
@@ -280,6 +286,47 @@ ControllerService::ControllerService(
     presetManager(*this, &sceneManager, presetFile),
     sceneManager(*this, lampGroupManager, &masterSceneManager, sceneFile),
     masterSceneManager(*this, sceneManager, masterSceneFile),
+    transitionEffectManager(*this, &sceneManager, ""),
+    pulseEffectManager(*this, &sceneManager, ""),
+    internalAboutDataStore(this, factoryConfigFile.c_str(), configFile.c_str()),
+    aboutDataStore(internalAboutDataStore),
+    aboutIcon(),
+    aboutIconObj(bus, aboutIcon),
+    aboutObj(bus, BusObject::ANNOUNCED),
+    configService(bus, aboutDataStore, *this),
+    notificationSender(NULL),
+    obsObject(NULL),
+    isObsObjectReady(false),
+    isRunning(true),
+    fileWriterThread(*this),
+    rank(),
+    deprecatedConstructorUsed(true)
+{
+    QCC_DbgTrace(("%s:factoryConfigFile=%s, configFile=%s, lampGroupFile=%s, presetFile=%s, sceneFile=%s, masterSceneFile=%s", __func__, factoryConfigFile.c_str(), configFile.c_str(), lampGroupFile.c_str(), presetFile.c_str(), sceneFile.c_str(), masterSceneFile.c_str()));
+}
+
+ControllerService::ControllerService(
+    const std::string& factoryConfigFile,
+    const std::string& configFile,
+    const std::string& lampGroupFile,
+    const std::string& presetFile,
+    const std::string& transitionEffectFile,
+    const std::string& pulseEffectFile,
+    const std::string& sceneFile,
+    const std::string& masterSceneFile) :
+    BusObject(ControllerServiceObjectPath),
+    updatesAllowed(false),
+    bus("LightingServiceController", true),
+    elector(*this),
+    serviceSession(0),
+    listener(new ControllerListener(this)),
+    lampManager(*this, presetManager),
+    lampGroupManager(*this, lampManager, &sceneManager, lampGroupFile),
+    presetManager(*this, &sceneManager, presetFile),
+    sceneManager(*this, lampGroupManager, &masterSceneManager, sceneFile),
+    masterSceneManager(*this, sceneManager, masterSceneFile),
+    transitionEffectManager(*this, &sceneManager, transitionEffectFile),
+    pulseEffectManager(*this, &sceneManager, pulseEffectFile),
     internalAboutDataStore(this, factoryConfigFile.c_str(), configFile.c_str()),
     aboutDataStore(internalAboutDataStore),
     aboutIcon(),
@@ -294,7 +341,9 @@ ControllerService::ControllerService(
     rank(),
     deprecatedConstructorUsed(false)
 {
-    QCC_DbgTrace(("%s:factoryConfigFile=%s, configFile=%s, lampGroupFile=%s, presetFile=%s, sceneFile=%s, masterSceneFile=%s", __func__, factoryConfigFile.c_str(), configFile.c_str(), lampGroupFile.c_str(), presetFile.c_str(), sceneFile.c_str(), masterSceneFile.c_str()));
+    QCC_DbgTrace(("%s:factoryConfigFile=%s, configFile=%s, lampGroupFile=%s, presetFile=%s, sceneFile=%s, masterSceneFile=%s transitionEffectFile=%s pulseEffectFile=%s", __func__,
+                  factoryConfigFile.c_str(), configFile.c_str(), lampGroupFile.c_str(), presetFile.c_str(), sceneFile.c_str(), masterSceneFile.c_str(),
+                  transitionEffectFile.c_str(), pulseEffectFile.c_str()));
 }
 
 void ControllerService::FoundLocalOnboardingService(const char* busName, SessionPort port)
@@ -323,6 +372,8 @@ void ControllerService::Initialize()
     presetManager.ReadSavedData();
     sceneManager.ReadSavedData();
     masterSceneManager.ReadSavedData();
+    transitionEffectManager.ReadSavedData();
+    pulseEffectManager.ReadSavedData();
 
     messageHandlersLock.Lock();
     AddMethodHandler("LightingResetControllerService", this, &ControllerService::LightingResetControllerService);
@@ -370,6 +421,20 @@ void ControllerService::Initialize()
     AddMethodHandler("UpdatePreset", &presetManager, &PresetManager::UpdatePreset);
     AddMethodHandler("DeletePreset", &presetManager, &PresetManager::DeletePreset);
     AddMethodHandler("GetPreset", &presetManager, &PresetManager::GetPreset);
+    AddMethodHandler("GetAllTransitionEffectIDs", &transitionEffectManager, &TransitionEffectManager::GetAllTransitionEffectIDs);
+    AddMethodHandler("GetTransitionEffectName", &transitionEffectManager, &TransitionEffectManager::GetTransitionEffectName);
+    AddMethodHandler("SetTransitionEffectName", &transitionEffectManager, &TransitionEffectManager::SetTransitionEffectName);
+    AddMethodHandler("CreateTransitionEffect", &transitionEffectManager, &TransitionEffectManager::CreateTransitionEffect);
+    AddMethodHandler("UpdateTransitionEffect", &transitionEffectManager, &TransitionEffectManager::UpdateTransitionEffect);
+    AddMethodHandler("DeleteTransitionEffect", &transitionEffectManager, &TransitionEffectManager::DeleteTransitionEffect);
+    AddMethodHandler("GetTransitionEffect", &transitionEffectManager, &TransitionEffectManager::GetTransitionEffect);
+    AddMethodHandler("GetAllPulseEffectIDs", &pulseEffectManager, &PulseEffectManager::GetAllPulseEffectIDs);
+    AddMethodHandler("GetPulseEffectName", &pulseEffectManager, &PulseEffectManager::GetPulseEffectName);
+    AddMethodHandler("SetPulseEffectName", &pulseEffectManager, &PulseEffectManager::SetPulseEffectName);
+    AddMethodHandler("CreatePulseEffect", &pulseEffectManager, &PulseEffectManager::CreatePulseEffect);
+    AddMethodHandler("UpdatePulseEffect", &pulseEffectManager, &PulseEffectManager::UpdatePulseEffect);
+    AddMethodHandler("DeletePulseEffect", &pulseEffectManager, &PulseEffectManager::DeletePulseEffect);
+    AddMethodHandler("GetPulseEffect", &pulseEffectManager, &PulseEffectManager::GetPulseEffect);
     AddMethodHandler("GetAllSceneIDs", &sceneManager, &SceneManager::GetAllSceneIDs);
     AddMethodHandler("GetSceneName", &sceneManager, &SceneManager::GetSceneName);
     AddMethodHandler("SetSceneName", &sceneManager, &SceneManager::SetSceneName);
@@ -468,6 +533,8 @@ QStatus ControllerService::RegisterMethodHandlers(void)
     const InterfaceDescription* controllerServiceLampInterface = bus.GetInterface(ControllerServiceLampInterfaceName);
     const InterfaceDescription* controllerServiceLampGroupInterface = bus.GetInterface(ControllerServiceLampGroupInterfaceName);
     const InterfaceDescription* controllerServicePresetInterface = bus.GetInterface(ControllerServicePresetInterfaceName);
+    const InterfaceDescription* controllerServiceTransitionEffectInterface = bus.GetInterface(ControllerServiceTransitionEffectInterfaceName);
+    const InterfaceDescription* controllerServicePulseEffectInterface = bus.GetInterface(ControllerServicePulseEffectInterfaceName);
     const InterfaceDescription* controllerServiceSceneInterface = bus.GetInterface(ControllerServiceSceneInterfaceName);
     const InterfaceDescription* controllerServiceMasterSceneInterface = bus.GetInterface(ControllerServiceMasterSceneInterfaceName);
 
@@ -520,6 +587,20 @@ QStatus ControllerService::RegisterMethodHandlers(void)
         { controllerServicePresetInterface->GetMember("UpdatePreset"), static_cast<MessageReceiver::MethodHandler>(&ControllerService::MethodCallDispatcher) },
         { controllerServicePresetInterface->GetMember("DeletePreset"), static_cast<MessageReceiver::MethodHandler>(&ControllerService::MethodCallDispatcher) },
         { controllerServicePresetInterface->GetMember("GetPreset"), static_cast<MessageReceiver::MethodHandler>(&ControllerService::MethodCallDispatcher) },
+        { controllerServiceTransitionEffectInterface->GetMember("GetAllTransitionEffectIDs"), static_cast<MessageReceiver::MethodHandler>(&ControllerService::MethodCallDispatcher) },
+        { controllerServiceTransitionEffectInterface->GetMember("GetTransitionEffectName"), static_cast<MessageReceiver::MethodHandler>(&ControllerService::MethodCallDispatcher) },
+        { controllerServiceTransitionEffectInterface->GetMember("SetTransitionEffectName"), static_cast<MessageReceiver::MethodHandler>(&ControllerService::MethodCallDispatcher) },
+        { controllerServiceTransitionEffectInterface->GetMember("CreateTransitionEffect"), static_cast<MessageReceiver::MethodHandler>(&ControllerService::MethodCallDispatcher) },
+        { controllerServiceTransitionEffectInterface->GetMember("UpdateTransitionEffect"), static_cast<MessageReceiver::MethodHandler>(&ControllerService::MethodCallDispatcher) },
+        { controllerServiceTransitionEffectInterface->GetMember("DeleteTransitionEffect"), static_cast<MessageReceiver::MethodHandler>(&ControllerService::MethodCallDispatcher) },
+        { controllerServiceTransitionEffectInterface->GetMember("GetTransitionEffect"), static_cast<MessageReceiver::MethodHandler>(&ControllerService::MethodCallDispatcher) },
+        { controllerServicePulseEffectInterface->GetMember("GetAllPulseEffectIDs"), static_cast<MessageReceiver::MethodHandler>(&ControllerService::MethodCallDispatcher) },
+        { controllerServicePulseEffectInterface->GetMember("GetPulseEffectName"), static_cast<MessageReceiver::MethodHandler>(&ControllerService::MethodCallDispatcher) },
+        { controllerServicePulseEffectInterface->GetMember("SetPulseEffectName"), static_cast<MessageReceiver::MethodHandler>(&ControllerService::MethodCallDispatcher) },
+        { controllerServicePulseEffectInterface->GetMember("CreatePulseEffect"), static_cast<MessageReceiver::MethodHandler>(&ControllerService::MethodCallDispatcher) },
+        { controllerServicePulseEffectInterface->GetMember("UpdatePulseEffect"), static_cast<MessageReceiver::MethodHandler>(&ControllerService::MethodCallDispatcher) },
+        { controllerServicePulseEffectInterface->GetMember("DeletePulseEffect"), static_cast<MessageReceiver::MethodHandler>(&ControllerService::MethodCallDispatcher) },
+        { controllerServicePulseEffectInterface->GetMember("GetPulseEffect"), static_cast<MessageReceiver::MethodHandler>(&ControllerService::MethodCallDispatcher) },
         { controllerServiceSceneInterface->GetMember("GetAllSceneIDs"), static_cast<MessageReceiver::MethodHandler>(&ControllerService::MethodCallDispatcher) },
         { controllerServiceSceneInterface->GetMember("GetSceneName"), static_cast<MessageReceiver::MethodHandler>(&ControllerService::MethodCallDispatcher) },
         { controllerServiceSceneInterface->GetMember("SetSceneName"), static_cast<MessageReceiver::MethodHandler>(&ControllerService::MethodCallDispatcher) },
@@ -604,7 +685,9 @@ QStatus ControllerService::Start(const char* keyStoreFileLocation)
         { ControllerServiceLampGroupDescription, ControllerServiceLampGroupInterfaceName },
         { ControllerServicePresetDescription, ControllerServicePresetInterfaceName },
         { ControllerServiceSceneDescription, ControllerServiceSceneInterfaceName },
-        { ControllerServiceMasterSceneDescription, ControllerServiceMasterSceneInterfaceName }
+        { ControllerServiceMasterSceneDescription, ControllerServiceMasterSceneInterfaceName },
+        { ControllerServiceTransitionEffectDescription, ControllerServiceTransitionEffectInterfaceName },
+        { ControllerServicePulseEffectDescription, ControllerServicePulseEffectInterfaceName }
     };
 
     status = CreateAndAddInterfaces(interfaceEntries, sizeof(interfaceEntries) / sizeof(InterfaceEntry));
@@ -664,6 +747,11 @@ QStatus ControllerService::Start(const char* keyStoreFileLocation)
     }
 
     notificationSender = services::NotificationService::getInstance()->initSend(&bus, &aboutDataStore);
+    if (notificationSender == NULL) {
+        status = ER_INIT_FAILED;
+        QCC_LogError(status, ("%s: Failed to initialize Notification Sender", __func__));
+        return status;
+    }
 
     /*
      * Register the BusObject for the Controller Service
@@ -1069,6 +1157,16 @@ void ControllerService::LightingResetControllerService(Message& msg)
     }
     numResets++;
 
+    if (LSF_OK != transitionEffectManager.Reset()) {
+        failure++;
+    }
+    numResets++;
+
+    if (LSF_OK != pulseEffectManager.Reset()) {
+        failure++;
+    }
+    numResets++;
+
     if (failure) {
         if (failure == numResets) {
             responseCode = LSF_ERR_FAILURE;
@@ -1267,7 +1365,11 @@ QStatus ControllerService::Get(const char*ifcName, const char*propName, MsgArg& 
         } else if (0 == strcmp(ifcName, ControllerServiceMasterSceneInterfaceName)) {
             status = val.Set("u", masterSceneManager.GetControllerServiceMasterSceneInterfaceVersion());
         } else if (0 == strcmp(ifcName, LeaderElectionAndStateSyncInterfaceName)) {
-            //TODO: Add support to return LSFTypes::LeaderElectionAndStateSyncInterfaceVersion
+            status = val.Set("u", elector.GetLeaderElectionAndStateSyncInterfaceVersion());
+        } else if (0 == strcmp(ifcName, ControllerServiceTransitionEffectInterfaceName)) {
+            status = val.Set("u", transitionEffectManager.GetControllerServiceTransitionEffectInterfaceVersion());
+        } else if (0 == strcmp(ifcName, ControllerServicePulseEffectInterfaceName)) {
+            status = val.Set("u", pulseEffectManager.GetControllerServicePulseEffectInterfaceVersion());
         } else {
             status = ER_BUS_OBJECT_NO_SUCH_INTERFACE;
         }

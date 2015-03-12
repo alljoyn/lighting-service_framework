@@ -5,7 +5,7 @@
  */
 /**
  * @file
- * This file provides definitions for present manager
+ * This file provides definitions for preset manager
  */
 /******************************************************************************
  * Copyright AllSeen Alliance. All rights reserved.
@@ -35,8 +35,8 @@ namespace lsf {
 
 class SceneManager;
 /**
- * class manages the pre-set of the lamps. \n
- * Pre-set is the ability to save lamp states and to use them when required later on.
+ * class manages the preset of the lamps. \n
+ * preset is the ability to save lamp states and to use them when required later on.
  */
 class PresetManager : public Manager {
     friend class LampManager;
@@ -45,11 +45,11 @@ class PresetManager : public Manager {
      * class constructor. \n
      * @param controllerSvc - reference to controller service instance
      * @param sceneMgrPtr - pointer to scene manager
-     * @param presetFile - The full path of pre-set file to be the persistent data
+     * @param presetFile - The full path of preset file to be the persistent data
      */
     PresetManager(ControllerService& controllerSvc, SceneManager* sceneMgrPtr, const std::string& presetFile);
     /**
-     * Clears the pre-sets data. \n
+     * Clears the presets data. \n
      * Send signal to the controller clients 'org.allseen.LSF.ControllerService.Preset' 'PresetsDeleted'. \n
      * @return LSF_OK on success. \n
      */
@@ -57,27 +57,27 @@ class PresetManager : public Manager {
     /**
      * Reset to default state. \n
      * Send signal to the controller clients 'org.allseen.LSF.ControllerService.Preset' 'DefaultLampStateChanged'. \n
-     * Removing pre-set with id 'DefaultLampState' \n
+     * Removing preset with id 'DefaultLampState' \n
      * response code LSF_OK on success. \n
      */
     LSFResponseCode ResetDefaultState(void);
     /**
-     * Get all pre-set ids. \n
-     * Return asynchronous all pre-set ids which are not the default lamp state. \n
+     * Get all preset ids. \n
+     * Return asynchronous all preset ids which are not the default lamp state. \n
      * response code LSF_OK on success. \n
      */
     void GetAllPresetIDs(ajn::Message& msg);
     /**
-     * Get pre-set name. \n
+     * Get preset name. \n
      * @param msg type Message with MsgArg unique id. \n
-     * Return asynchronously the pre-set name, id, language and response code. \n
+     * Return asynchronously the preset name, id, language and response code. \n
      * response code LSF_OK on success. \n
      */
     void GetPresetName(ajn::Message& msg);
     /**
-     * Set pre-set name. \n
-     * @param msg type Message with MsgArg pre-set unique id. \n
-     * Return asynchronously the pre-set new name, id, language and response code. \n
+     * Set preset name. \n
+     * @param msg type Message with MsgArg preset unique id. \n
+     * Return asynchronously the preset new name, id, language and response code. \n
      * Send signal to the controller clients 'org.allseen.LSF.ControllerService.Preset' 'PresetsNameChanged'. \n
      * response code LSF_OK on success. \n
      *      LSF_ERR_INVALID_ARGS - language not supported, name is too long. \n
@@ -86,9 +86,9 @@ class PresetManager : public Manager {
      */
     void SetPresetName(ajn::Message& msg);
     /**
-     * Create new pre-set. \n
+     * Create new preset. \n
      * @param msg type Message with MsgArgs: LampState, name, language. \n
-     * Return asynchronously the pre-set response code and auto generated unique id. \n
+     * Return asynchronously the preset response code and auto generated unique id. \n
      * Send signal to the controller clients 'org.allseen.LSF.ControllerService.Preset' 'PresetsCreated'. \n
      * response code LSF_OK on success. \n
      *      LSF_ERR_INVALID_ARGS - language not supported, name is too long. \n
@@ -98,9 +98,9 @@ class PresetManager : public Manager {
      */
     void CreatePreset(ajn::Message& msg);
     /**
-     * Update existing pre-set. \n
-     * @param msg type Message with MsgArgs: pre-set id. \n
-     * Return asynchronously the pre-set response code and unique id. \n
+     * Update existing preset. \n
+     * @param msg type Message with MsgArgs: preset id. \n
+     * Return asynchronously the preset response code and unique id. \n
      * Send signal to the controller clients 'org.allseen.LSF.ControllerService.Preset' 'PresetsUpdated'. \n
      * response code LSF_OK on success. \n
      *      LSF_ERR_INVALID_ARGS - language not supported, name is too long. \n
@@ -108,34 +108,34 @@ class PresetManager : public Manager {
      */
     void UpdatePreset(ajn::Message& msg);
     /**
-     * Delete existing pre-set. \n
-     * @param msg type Message with MsgArgs: pre-set id. \n
-     * Return asynchronously the pre-set response code and unique id. \n
+     * Delete existing preset. \n
+     * @param msg type Message with MsgArgs: preset id. \n
+     * Return asynchronously the preset response code and unique id. \n
      * Send signal to the controller clients 'org.allseen.LSF.ControllerService.Preset' 'PresetsDeleted'. \n
      * response code LSF_OK on success. \n
-     *      LSF_ERR_NOT_FOUND - pre-set with requested id is not found. \n
+     *      LSF_ERR_NOT_FOUND - preset with requested id is not found. \n
      */
     void DeletePreset(ajn::Message& msg);
     /**
-     * Get existing pre-set. \n
-     * @param msg type Message with MsgArgs: pre-set id. \n
-     * Return asynchronously the pre-set response code, unique id and requested lamp state \n
+     * Get existing preset. \n
+     * @param msg type Message with MsgArgs: preset id. \n
+     * Return asynchronously the preset response code, unique id and requested lamp state \n
      * response code LSF_OK on success. \n
-     *      LSF_ERR_NOT_FOUND - pre-set with requested id is not found. \n
+     *      LSF_ERR_NOT_FOUND - preset with requested id is not found. \n
      */
     void GetPreset(ajn::Message& msg);
     /**
-     * Get existing pre-set. \n
-     * @param presetID - The pre-set unique id. \n
+     * Get existing preset. \n
+     * @param presetID - The preset unique id. \n
      * @param state - The requested lamp state filled synchronously as reference to object. \n
      * @return \n
      * response code LSF_OK on success. \n
-     *      LSF_ERR_NOT_FOUND - pre-set with requested id is not found. \n
+     *      LSF_ERR_NOT_FOUND - preset with requested id is not found. \n
      */
     LSFResponseCode GetPresetInternal(const LSFString& presetID, LampState& state);
     /**
-     * Get default pre-set. \n
-     * Return asynchronously the pre-set response code and lamp state which id is 'DefaultLampState'. \n
+     * Get default preset. \n
+     * Return asynchronously the preset response code and lamp state which id is 'DefaultLampState'. \n
      * response code LSF_OK on success. \n
      */
     void GetDefaultLampState(ajn::Message& msg);
@@ -145,13 +145,13 @@ class PresetManager : public Manager {
      * Creating it if it is not already exists. In this case the name and the id are the same. \n
      * @param msg type Message with MsgArg: lamp state. \n
      * Send signal to the controller clients 'org.allseen.LSF.ControllerService.Preset' 'DefaultLampStateChanged'. \n
-     * Return asynchronously the pre-set response code. \n
+     * Return asynchronously the preset response code. \n
      * response code LSF_OK on success. \n
      *      LSF_ERR_RESOURCES - blob is too big. \n
      */
     void SetDefaultLampState(ajn::Message& msg);
     /**
-     * Get all presents. \n
+     * Get all presets. \n
      * @param presetMap - the requested presets filled synchronously as reference to LampState. \n
      * response code LSF_OK on success. \n
      */

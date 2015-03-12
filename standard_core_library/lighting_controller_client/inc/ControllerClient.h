@@ -41,6 +41,8 @@
 #include <LampManager.h>
 #include <LampGroupManager.h>
 #include <PresetManager.h>
+#include <TransitionEffectManager.h>
+#include <PulseEffectManager.h>
 #include <SceneManager.h>
 #include <MasterSceneManager.h>
 #include <ControllerServiceManager.h>
@@ -101,6 +103,8 @@ class ControllerClient : public ajn::MessageReceiver {
     friend class PresetManager;
     friend class SceneManager;
     friend class MasterSceneManager;
+    friend class TransitionEffectManager;
+    friend class PulseEffectManager;
 
     class ControllerClientBusHandler;
 
@@ -344,6 +348,16 @@ class ControllerClient : public ajn::MessageReceiver {
      * Pointer to the Scene Manager
      */
     MasterSceneManager* masterSceneManagerPtr;
+
+    /**
+     * Pointer to the Transition Effect Manager
+     */
+    TransitionEffectManager* transitionEffectManagerPtr;
+
+    /**
+     * Pointer to the Pulse Effect Manager
+     */
+    PulseEffectManager* pulseEffectManagerPtr;
 
     /**
      * Constructor

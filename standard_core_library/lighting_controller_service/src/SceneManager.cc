@@ -312,6 +312,20 @@ LSFResponseCode SceneManager::IsDependentOnLampGroup(LSFString& lampGroupID)
     return responseCode;
 }
 
+LSFResponseCode SceneManager::IsDependentOnTransitionEffect(LSFString& transitionEffectID)
+{
+    QCC_DbgTrace(("%s", __func__));
+    LSFResponseCode responseCode = LSF_OK;
+    return responseCode;
+}
+
+LSFResponseCode SceneManager::IsDependentOnPulseEffect(LSFString& pulseEffectID)
+{
+    QCC_DbgTrace(("%s", __func__));
+    LSFResponseCode responseCode = LSF_OK;
+    return responseCode;
+}
+
 void SceneManager::GetAllSceneIDs(Message& message)
 {
     QCC_DbgPrintf(("%s: %s", __func__, message->ToString().c_str()));

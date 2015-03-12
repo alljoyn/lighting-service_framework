@@ -27,7 +27,7 @@
 typedef uint32_t LampFaultCode;
 
 /**
- * Maximum length of any LSF entity (Lamp, Lamp Group, Scene, Preset, Master Scene) Name
+ * Maximum length of any LSF entity (Lamp, Lamp Group, Scene, Preset, Master Scene, Static Effect, Transition Effect, Pulse Effect, Scene Element) Name
  */
 #define LSF_MAX_NAME_LENGTH 254
 

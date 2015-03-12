@@ -47,7 +47,7 @@ class PresetManagerCallback {
     /**
      * Response to PresetManager::GetPreset. \n
      * response code LSF_OK on success. \n
-     *      LSF_ERR_NOT_FOUND - pre-set with requested id is not found. \n
+     *      LSF_ERR_NOT_FOUND - preset with requested id is not found. \n
      * @param responseCode    The return code
      * @param presetID    The id of the Preset
      * @param preset The state information
@@ -130,7 +130,7 @@ class PresetManagerCallback {
     /**
      * Response to PresetManager::DeletePreset. \n
      * response code LSF_OK on success. \n
-     *      LSF_ERR_NOT_FOUND - pre-set with requested id is not found. \n
+     *      LSF_ERR_NOT_FOUND - preset with requested id is not found. \n
      * @param responseCode    The return code
      * @param presetID    The id of the Preset
      */
@@ -179,27 +179,27 @@ class PresetManager : public Manager {
     PresetManager(ControllerClient& controller, PresetManagerCallback& callback);
 
     /**
-     * Get all pre-set ids. \n
-     * Return asynchronous all pre-set ids which are not the default lamp state. \n
+     * Get all preset ids. \n
+     * Return asynchronous all preset ids which are not the default lamp state. \n
      * Response in PresetManagerCallback::GetAllPresetIDsReplyCB. \n
      * @return CONTROLLER_CLIENT_OK on success to send the request. \n
      */
     ControllerClientStatus GetAllPresetIDs(void);
 
     /**
-     * Get existing pre-set. \n
+     * Get existing preset. \n
      * Response in PresetManagerCallback::GetPresetReplyCB. \n
-     * @param presetID type LSFString which is pre-set id. \n
-     * Return asynchronously the pre-set response code, unique id and requested lamp state \n
+     * @param presetID type LSFString which is preset id. \n
+     * Return asynchronously the preset response code, unique id and requested lamp state \n
      * response code LSF_OK on success. \n
-     *      LSF_ERR_NOT_FOUND - pre-set with requested id is not found. \n
+     *      LSF_ERR_NOT_FOUND - preset with requested id is not found. \n
      */
     ControllerClientStatus GetPreset(const LSFString& presetID);
 
     /**
      * Get the name of a Preset. \n
      * Response in PresetManagerCallback::GetPresetNameReplyCB. \n
-     * Return asynchronously the pre-set name, id, language and response code. \n
+     * Return asynchronously the preset name, id, language and response code. \n
      *
      * @param presetID    The id of the Preset
      * @param language
@@ -208,7 +208,7 @@ class PresetManager : public Manager {
 
     /**
      * Set the name of a Preset. \n
-     * Return asynchronously the pre-set new name, id, language and response code. \n
+     * Return asynchronously the preset new name, id, language and response code. \n
      * Response in PresetManagerCallback::SetPresetNameReplyCB
      *
      * @param presetID    The id of the Preset
@@ -220,7 +220,7 @@ class PresetManager : public Manager {
     /**
      * Create a new preset. \n
      * Response in PresetManagerCallback::CreatePresetReplyCB. \n
-     * Return asynchronously the pre-set response code and auto generated unique id. \n
+     * Return asynchronously the preset response code and auto generated unique id. \n
      *
      * @param preset The new state information
      * @param presetName
@@ -231,7 +231,7 @@ class PresetManager : public Manager {
     /**
      * Update an existing Preset. \n
      * Response in PresetManagerCallback::UpdatePresetReplyCB. \n
-     * Return asynchronously the pre-set response code and unique id. \n
+     * Return asynchronously the preset response code and unique id. \n
      *
      * @param presetID    The id of the Preset
      * @param preset The new state information
@@ -240,7 +240,7 @@ class PresetManager : public Manager {
 
     /**
      * Delete a preset. \n
-     * Return asynchronously the pre-set response code and unique id. \n
+     * Return asynchronously the preset response code and unique id. \n
      * Response in PresetManagerCallback::DeletePresetReplyCB. \n
      *
      * @param presetID    The id of the Preset to delete
@@ -249,7 +249,7 @@ class PresetManager : public Manager {
 
     /**
      * Get the default Lamp State. \n
-     * Return asynchronously the pre-set response code and lamp state which id is 'DefaultLampState'. \n
+     * Return asynchronously the preset response code and lamp state which id is 'DefaultLampState'. \n
      * Response comes in LampManagerCallback::GetDefaultLampStateReplyCB. \n
      *
      * @return

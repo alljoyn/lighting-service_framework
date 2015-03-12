@@ -82,7 +82,7 @@ class SceneManagerCallback {
     virtual void ScenesNameChangedCB(const LSFStringList& sceneIDs) { }
 
     /**
-     * Response to SceneManager::SetSceneName.
+     * Response to SceneManager::CreateScene.
      *
      * @param responseCode    The response code: \n
      *  LSF_OK - operation succeeded \n
@@ -92,6 +92,18 @@ class SceneManagerCallback {
      * @param sceneID    The id of the new Scene
      */
     virtual void CreateSceneReplyCB(const LSFResponseCode& responseCode, const LSFString& sceneID) { }
+
+    /**
+     * Response to SceneManager::CreateSceneWithSceneElements.
+     *
+     * @param responseCode    The response code: \n
+     *  LSF_OK - operation succeeded \n
+     *  LSF_ERR_INVALID_ARGS - Language not supported, scene name is empty, Invalid Scene components specified, ame length exceeds \n
+     *  LSF_ERR_RESOURCES - Could not allocate memory \n
+     *  LSF_ERR_NO_SLOT - No slot for new Scene \n
+     * @param sceneID    The id of the new Scene
+     */
+    virtual void CreateSceneWithSceneElementsReplyCB(const LSFResponseCode& responseCode, const LSFString& sceneID) { }
 
     /**
      *  This signal is fired any time a scene is been created.
@@ -107,6 +119,14 @@ class SceneManagerCallback {
      * @param sceneID    The id of the scene that was updated
      */
     virtual void UpdateSceneReplyCB(const LSFResponseCode& responseCode, const LSFString& sceneID) { }
+
+    /**
+     * Response to SceneManager::UpdateSceneWithSceneElements.
+     *
+     * @param responseCode    The response code
+     * @param sceneID    The id of the scene that was updated
+     */
+    virtual void UpdateSceneWithSceneElementsReplyCB(const LSFResponseCode& responseCode, const LSFString& sceneID) { }
 
     /**
      * This signal is fired any time a scene has been updated.
@@ -142,6 +162,17 @@ class SceneManagerCallback {
      * @param data  The scene data
      */
     virtual void GetSceneReplyCB(const LSFResponseCode& responseCode, const LSFString& sceneID, const Scene& data) { }
+
+    /**
+     * Response to SceneManager::GetSceneWithSceneElements.
+     *
+     * @param responseCode    The response code: \n
+     *  return LSF_OK \n
+     *  return LSF_ERR_NOT_FOUND - scene not found \n
+     * @param sceneID           The id of the scene
+     * @param sceneElementIDs   The list of scene elements IDs that comprise the scene
+     */
+    virtual void GetSceneWithSceneElementsReplyCB(const LSFResponseCode& responseCode, const LSFString& sceneID, const LSFStringList& sceneElementIDs) { }
 
     /**
      * Response to SceneManager::ApplyScene.
@@ -213,6 +244,16 @@ class SceneManager : public Manager {
     ControllerClientStatus CreateScene(const Scene& scene, const LSFString& sceneName, const LSFString& language = LSFString("en"));
 
     /**
+     *  Create a new Scene with Scene Elements. \n
+     *  Response in SceneManagerCallback::CreateSceneWithSceneElementsReplyCB
+     *
+     * @param sceneElementIDs       The list of scene element IDs that comprise the Scene
+     * @param sceneName             The scene name
+     * @param language              The scene language
+     */
+    ControllerClientStatus CreateSceneWithSceneElements(const LSFStringList& sceneElementIDs, const LSFString& sceneName, const LSFString& language = LSFString("en"));
+
+    /**
      * Modify an existing scene. \n
      * Response in SceneManagerCallback::UpdateSceneReplyCB \n
      *
@@ -220,6 +261,15 @@ class SceneManager : public Manager {
      * @param scene      The scene to modify with
      */
     ControllerClientStatus UpdateScene(const LSFString& sceneID, const Scene& scene);
+
+    /**
+     * Modify an existing scene with scene elements. \n
+     * Response in SceneManagerCallback::UpdateSceneWithSceneElementsReplyCB \n
+     *
+     * @param sceneID           The id of the scene to modify
+     * @param sceneElementIDs   The updated scene elements IDs list
+     */
+    ControllerClientStatus UpdateSceneWithSceneElements(const LSFString& sceneID, const LSFStringList& sceneElementIDs);
 
     /**
      * Delete an existing scene. \n
@@ -236,6 +286,14 @@ class SceneManager : public Manager {
      * @param sceneID    The id of the scene to find
      */
     ControllerClientStatus GetScene(const LSFString& sceneID);
+
+    /**
+     * Get the information about the specified scene. \n
+     * Response in SceneManagerCallback::GetSceneWithSceneElementsReplyCB
+     *
+     * @param sceneID    The id of the scene to find
+     */
+    ControllerClientStatus GetSceneWithSceneElements(const LSFString& sceneID);
 
     /**
      * Apply a scene. \n
@@ -285,6 +343,8 @@ class SceneManager : public Manager {
 
     void GetSceneReply(ajn::Message& message);
 
+    void GetSceneWithSceneElementsReply(ajn::Message& message);
+
     void ApplySceneReply(LSFResponseCode& responseCode, LSFString& lsfId) {
         callback.ApplySceneReplyCB(responseCode, lsfId);
     }
@@ -305,8 +365,16 @@ class SceneManager : public Manager {
         callback.CreateSceneReplyCB(responseCode, lsfId);
     }
 
+    void CreateSceneWithSceneElementsReply(LSFResponseCode& responseCode, LSFString& lsfId) {
+        callback.CreateSceneWithSceneElementsReplyCB(responseCode, lsfId);
+    }
+
     void UpdateSceneReply(LSFResponseCode& responseCode, LSFString& lsfId) {
         callback.UpdateSceneReplyCB(responseCode, lsfId);
+    }
+
+    void UpdateSceneWithSceneElementsReply(LSFResponseCode& responseCode, LSFString& lsfId) {
+        callback.UpdateSceneWithSceneElementsReplyCB(responseCode, lsfId);
     }
 
     SceneManagerCallback& callback;

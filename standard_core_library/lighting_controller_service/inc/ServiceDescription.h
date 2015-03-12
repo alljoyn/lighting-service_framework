@@ -31,6 +31,8 @@ extern const std::string ControllerServiceDescription;
 extern const std::string ControllerServiceLampDescription;
 extern const std::string ControllerServiceLampGroupDescription;
 extern const std::string ControllerServicePresetDescription;
+extern const std::string ControllerServiceTransitionEffectDescription;
+extern const std::string ControllerServicePulseEffectDescription;
 extern const std::string ControllerServiceSceneDescription;
 extern const std::string ControllerServiceMasterSceneDescription;
 extern const std::string LeaderElectionAndStateSyncDescription;

@@ -19,7 +19,10 @@
 #include <PresetManager.h>
 #include <SceneManager.h>
 #include <MasterSceneManager.h>
+#include <TransitionEffectManager.h>
+#include <PulseEffectManager.h>
 #include <ControllerServiceManager.h>
+#include <LSFTypes.h>
 
 #include <qcc/StringUtil.h>
 #include <alljoyn/BusAttachment.h>
@@ -54,9 +57,17 @@ static bool getSceneDataSetName = false;
 static bool getMasterSceneDataSetMasterScene = false;
 static bool getMasterSceneDataSetName = false;
 
+static bool getTransitionEffectDataSetTransitionEffect = false;
+static bool getTransitionEffectDataSetName = false;
+
+static bool getPulseEffectDataSetPulseEffect = false;
+static bool getPulseEffectDataSetName = false;
+
 LSFString nestedLampGroupIDForDependencyCheck;
 LSFString lampGroupIDForDependencyCheck;
 LSFString presetIDForDependencyCheck;
+LSFString transitionEffectIDForDependencyCheck;
+LSFString pulseEffectIDForDependencyCheck;
 LSFString sceneIDForDependencyCheck;
 
 class ControllerClientCallbackHandler : public ControllerClientCallback {
@@ -973,6 +984,240 @@ class PresetManagerCallbackHandler : public PresetManagerCallback {
     LSFStringList presetDeletedList;
 };
 
+class TransitionEffectManagerCallbackHandler : public TransitionEffectManagerCallback {
+  public:
+
+    TransitionEffectManagerCallbackHandler() :
+        createTransitionEffectReplyCBStatus(LSF_ERR_UNEXPECTED),
+        createTransitionEffectReplyCBID(),
+        updateTransitionEffectReplyCBStatus(LSF_ERR_UNEXPECTED),
+        updateTransitionEffectReplyCBID(),
+        deleteTransitionEffectReplyCBStatus(LSF_ERR_UNEXPECTED),
+        deleteTransitionEffectReplyCBID(),
+        getAllTransitionEffectIDsReplyCBStatus(LSF_ERR_UNEXPECTED),
+        getTransitionEffectNameReplyCBStatus(LSF_ERR_UNEXPECTED),
+        getTransitionEffectNameReplyCBTransitionEffectID(),
+        getTransitionEffectNameReplyCBLanguage(),
+        getTransitionEffectNameReplyCBTransitionEffectName(),
+        setTransitionEffectNameReplyCBStatus(LSF_ERR_UNEXPECTED),
+        setTransitionEffectNameReplyCBTransitionEffectID(),
+        setTransitionEffectNameReplyCBLanguage(),
+        getTransitionEffectReplyCBStatus(LSF_ERR_UNEXPECTED),
+        getTransitionEffectReplyCBTransitionEffectID(),
+        getTransitionEffectReplyCBTransitionEffect(),
+        transitionEffectList(),
+        transitionEffectNameChangedList(),
+        transitionEffectUpdatedList(),
+        transitionEffectDeletedList() { }
+
+    void GetTransitionEffectReplyCB(const LSFResponseCode& responseCode, const LSFString& transitionEffectID, const TransitionEffect& transitionEffect) {
+        getTransitionEffectReplyCBStatus = responseCode;
+        getTransitionEffectReplyCBTransitionEffectID = transitionEffectID;
+        getTransitionEffectReplyCBTransitionEffect = transitionEffect;
+        replyReceivedFlag = true;
+        getTransitionEffectDataSetTransitionEffect = true;
+    }
+
+    void GetAllTransitionEffectIDsReplyCB(const LSFResponseCode& responseCode, const LSFStringList& transitionEffectIDs) {
+        getAllTransitionEffectIDsReplyCBStatus = responseCode;
+        transitionEffectList = transitionEffectIDs;
+        replyReceivedFlag = true;
+    }
+
+    void GetTransitionEffectNameReplyCB(const LSFResponseCode& responseCode, const LSFString& transitionEffectID, const LSFString& language, const LSFString& transitionEffectName) {
+        getTransitionEffectNameReplyCBStatus = responseCode;
+        getTransitionEffectNameReplyCBTransitionEffectID = transitionEffectID;
+        getTransitionEffectNameReplyCBLanguage = language;
+        getTransitionEffectNameReplyCBTransitionEffectName = transitionEffectName;
+        replyReceivedFlag = true;
+        getTransitionEffectDataSetName = true;
+    }
+
+    void SetTransitionEffectNameReplyCB(const LSFResponseCode& responseCode, const LSFString& transitionEffectID, const LSFString& language) {
+        setTransitionEffectNameReplyCBStatus = responseCode;
+        setTransitionEffectNameReplyCBTransitionEffectID = transitionEffectID;
+        setTransitionEffectNameReplyCBLanguage = language;
+        replyReceivedFlag = true;
+    }
+
+    void TransitionEffectsNameChangedCB(const LSFStringList& transitionEffectIDs) {
+        transitionEffectNameChangedList = transitionEffectIDs;
+        signalReceivedFlag = true;
+    }
+
+    void CreateTransitionEffectReplyCB(const LSFResponseCode& responseCode, const LSFString& transitionEffectID) {
+        createTransitionEffectReplyCBStatus = responseCode;
+        createTransitionEffectReplyCBID = transitionEffectID;
+        replyReceivedFlag = true;
+    }
+
+    void TransitionEffectsCreatedCB(const LSFStringList& transitionEffectIDs) {
+        transitionEffectList = transitionEffectIDs;
+        signalReceivedFlag = true;
+    }
+
+    void UpdateTransitionEffectReplyCB(const LSFResponseCode& responseCode, const LSFString& transitionEffectID) {
+        updateTransitionEffectReplyCBStatus = responseCode;
+        updateTransitionEffectReplyCBID = transitionEffectID;
+        replyReceivedFlag = true;
+    }
+
+    void TransitionEffectsUpdatedCB(const LSFStringList& transitionEffectIDs) {
+        transitionEffectUpdatedList = transitionEffectIDs;
+        signalReceivedFlag = true;
+    }
+
+    void DeleteTransitionEffectReplyCB(const LSFResponseCode& responseCode, const LSFString& transitionEffectID) {
+        deleteTransitionEffectReplyCBStatus = responseCode;
+        deleteTransitionEffectReplyCBID = transitionEffectID;
+        replyReceivedFlag = true;
+    }
+
+    void TransitionEffectsDeletedCB(const LSFStringList& transitionEffectIDs) {
+        transitionEffectDeletedList = transitionEffectIDs;
+        signalReceivedFlag = true;
+    }
+
+    LSFResponseCode createTransitionEffectReplyCBStatus;
+    LSFString createTransitionEffectReplyCBID;
+    LSFResponseCode updateTransitionEffectReplyCBStatus;
+    LSFString updateTransitionEffectReplyCBID;
+    LSFResponseCode deleteTransitionEffectReplyCBStatus;
+    LSFString deleteTransitionEffectReplyCBID;
+    LSFResponseCode getAllTransitionEffectIDsReplyCBStatus;
+    LSFResponseCode getTransitionEffectNameReplyCBStatus;
+    LSFString getTransitionEffectNameReplyCBTransitionEffectID;
+    LSFString getTransitionEffectNameReplyCBLanguage;
+    LSFString getTransitionEffectNameReplyCBTransitionEffectName;
+    LSFResponseCode setTransitionEffectNameReplyCBStatus;
+    LSFString setTransitionEffectNameReplyCBTransitionEffectID;
+    LSFString setTransitionEffectNameReplyCBLanguage;
+    LSFResponseCode getTransitionEffectReplyCBStatus;
+    LSFString getTransitionEffectReplyCBTransitionEffectID;
+    TransitionEffect getTransitionEffectReplyCBTransitionEffect;
+    LSFStringList transitionEffectList;
+    LSFStringList transitionEffectNameChangedList;
+    LSFStringList transitionEffectUpdatedList;
+    LSFStringList transitionEffectDeletedList;
+};
+
+class PulseEffectManagerCallbackHandler : public PulseEffectManagerCallback {
+  public:
+
+    PulseEffectManagerCallbackHandler() :
+        createPulseEffectReplyCBStatus(LSF_ERR_UNEXPECTED),
+        createPulseEffectReplyCBID(),
+        updatePulseEffectReplyCBStatus(LSF_ERR_UNEXPECTED),
+        updatePulseEffectReplyCBID(),
+        deletePulseEffectReplyCBStatus(LSF_ERR_UNEXPECTED),
+        deletePulseEffectReplyCBID(),
+        getAllPulseEffectIDsReplyCBStatus(LSF_ERR_UNEXPECTED),
+        getPulseEffectNameReplyCBStatus(LSF_ERR_UNEXPECTED),
+        getPulseEffectNameReplyCBPulseEffectID(),
+        getPulseEffectNameReplyCBLanguage(),
+        getPulseEffectNameReplyCBPulseEffectName(),
+        setPulseEffectNameReplyCBStatus(LSF_ERR_UNEXPECTED),
+        setPulseEffectNameReplyCBPulseEffectID(),
+        setPulseEffectNameReplyCBLanguage(),
+        getPulseEffectReplyCBStatus(LSF_ERR_UNEXPECTED),
+        getPulseEffectReplyCBPulseEffectID(),
+        getPulseEffectReplyCBPulseEffect(),
+        pulseEffectList(),
+        pulseEffectNameChangedList(),
+        pulseEffectUpdatedList(),
+        pulseEffectDeletedList() { }
+
+    void GetPulseEffectReplyCB(const LSFResponseCode& responseCode, const LSFString& pulseEffectID, const PulseEffect& pulseEffect) {
+        getPulseEffectReplyCBStatus = responseCode;
+        getPulseEffectReplyCBPulseEffectID = pulseEffectID;
+        getPulseEffectReplyCBPulseEffect = pulseEffect;
+        replyReceivedFlag = true;
+        getPulseEffectDataSetPulseEffect = true;
+    }
+
+    void GetAllPulseEffectIDsReplyCB(const LSFResponseCode& responseCode, const LSFStringList& pulseEffectIDs) {
+        getAllPulseEffectIDsReplyCBStatus = responseCode;
+        pulseEffectList = pulseEffectIDs;
+        replyReceivedFlag = true;
+    }
+
+    void GetPulseEffectNameReplyCB(const LSFResponseCode& responseCode, const LSFString& pulseEffectID, const LSFString& language, const LSFString& pulseEffectName) {
+        getPulseEffectNameReplyCBStatus = responseCode;
+        getPulseEffectNameReplyCBPulseEffectID = pulseEffectID;
+        getPulseEffectNameReplyCBLanguage = language;
+        getPulseEffectNameReplyCBPulseEffectName = pulseEffectName;
+        replyReceivedFlag = true;
+        getPulseEffectDataSetName = true;
+    }
+
+    void SetPulseEffectNameReplyCB(const LSFResponseCode& responseCode, const LSFString& pulseEffectID, const LSFString& language) {
+        setPulseEffectNameReplyCBStatus = responseCode;
+        setPulseEffectNameReplyCBPulseEffectID = pulseEffectID;
+        setPulseEffectNameReplyCBLanguage = language;
+        replyReceivedFlag = true;
+    }
+
+    void PulseEffectsNameChangedCB(const LSFStringList& pulseEffectIDs) {
+        pulseEffectNameChangedList = pulseEffectIDs;
+        signalReceivedFlag = true;
+    }
+
+    void CreatePulseEffectReplyCB(const LSFResponseCode& responseCode, const LSFString& pulseEffectID) {
+        createPulseEffectReplyCBStatus = responseCode;
+        createPulseEffectReplyCBID = pulseEffectID;
+        replyReceivedFlag = true;
+    }
+
+    void PulseEffectsCreatedCB(const LSFStringList& pulseEffectIDs) {
+        pulseEffectList = pulseEffectIDs;
+        signalReceivedFlag = true;
+    }
+
+    void UpdatePulseEffectReplyCB(const LSFResponseCode& responseCode, const LSFString& pulseEffectID) {
+        updatePulseEffectReplyCBStatus = responseCode;
+        updatePulseEffectReplyCBID = pulseEffectID;
+        replyReceivedFlag = true;
+    }
+
+    void PulseEffectsUpdatedCB(const LSFStringList& pulseEffectIDs) {
+        pulseEffectUpdatedList = pulseEffectIDs;
+        signalReceivedFlag = true;
+    }
+
+    void DeletePulseEffectReplyCB(const LSFResponseCode& responseCode, const LSFString& pulseEffectID) {
+        deletePulseEffectReplyCBStatus = responseCode;
+        deletePulseEffectReplyCBID = pulseEffectID;
+        replyReceivedFlag = true;
+    }
+
+    void PulseEffectsDeletedCB(const LSFStringList& pulseEffectIDs) {
+        pulseEffectDeletedList = pulseEffectIDs;
+        signalReceivedFlag = true;
+    }
+
+    LSFResponseCode createPulseEffectReplyCBStatus;
+    LSFString createPulseEffectReplyCBID;
+    LSFResponseCode updatePulseEffectReplyCBStatus;
+    LSFString updatePulseEffectReplyCBID;
+    LSFResponseCode deletePulseEffectReplyCBStatus;
+    LSFString deletePulseEffectReplyCBID;
+    LSFResponseCode getAllPulseEffectIDsReplyCBStatus;
+    LSFResponseCode getPulseEffectNameReplyCBStatus;
+    LSFString getPulseEffectNameReplyCBPulseEffectID;
+    LSFString getPulseEffectNameReplyCBLanguage;
+    LSFString getPulseEffectNameReplyCBPulseEffectName;
+    LSFResponseCode setPulseEffectNameReplyCBStatus;
+    LSFString setPulseEffectNameReplyCBPulseEffectID;
+    LSFString setPulseEffectNameReplyCBLanguage;
+    LSFResponseCode getPulseEffectReplyCBStatus;
+    LSFString getPulseEffectReplyCBPulseEffectID;
+    PulseEffect getPulseEffectReplyCBPulseEffect;
+    LSFStringList pulseEffectList;
+    LSFStringList pulseEffectNameChangedList;
+    LSFStringList pulseEffectUpdatedList;
+    LSFStringList pulseEffectDeletedList;
+};
+
 class SceneManagerCallbackHandler : public SceneManagerCallback {
   public:
 
@@ -1259,7 +1504,9 @@ class ControllerClientTest : public testing::Test {
         lampGroupManager(client, lampGroupManagerCBHandler),
         presetManager(client, presetManagerCBHandler),
         sceneManager(client, sceneManagerCBHandler),
-        masterSceneManager(client, masterSceneManagerCBHandler) { }
+        masterSceneManager(client, masterSceneManagerCBHandler),
+        transitionEffectManager(client, transitionEffectManagerCBHandler),
+        pulseEffectManager(client, pulseEffectManagerCBHandler) { }
 
     virtual void SetUp() {
         QStatus status = ER_OK;
@@ -1283,6 +1530,8 @@ class ControllerClientTest : public testing::Test {
     PresetManagerCallbackHandler presetManagerCBHandler;
     SceneManagerCallbackHandler sceneManagerCBHandler;
     MasterSceneManagerCallbackHandler masterSceneManagerCBHandler;
+    TransitionEffectManagerCallbackHandler transitionEffectManagerCBHandler;
+    PulseEffectManagerCallbackHandler pulseEffectManagerCBHandler;
 
     ControllerClient client;
     ControllerServiceManager controllerServiceManager;
@@ -1291,6 +1540,8 @@ class ControllerClientTest : public testing::Test {
     PresetManager presetManager;
     SceneManager sceneManager;
     MasterSceneManager masterSceneManager;
+    TransitionEffectManager transitionEffectManager;
+    PulseEffectManager pulseEffectManager;
 };
 
 TEST_F(ControllerClientTest, Controller_Client_Start_And_Connected) {
@@ -4318,6 +4569,1415 @@ TEST_F(ControllerClientTest, Controller_Client_GetPreset) {
     EXPECT_EQ(state.saturation, presetManagerCBHandler.getPresetReplyCBPreset.saturation);
     EXPECT_EQ(state.colorTemp, presetManagerCBHandler.getPresetReplyCBPreset.colorTemp);
     EXPECT_EQ(state.brightness, presetManagerCBHandler.getPresetReplyCBPreset.brightness);
+}
+
+TEST_F(ControllerClientTest, Controller_Client_CreateTransitionEffectWithState) {
+    replyReceivedFlag = false;
+
+    ControllerClientStatus localStatus = CONTROLLER_CLIENT_OK;
+    localStatus = client.Start();
+    ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
+
+    //wait to receive a callback from the controller client
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (replyReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(LSF_OK, controllerClientCBHandler.connectedToControllerServiceCBStatus);
+
+    replyReceivedFlag = false;
+    signalReceivedFlag = false;
+
+    localStatus = CONTROLLER_CLIENT_OK;
+    LampState lampState(true, 10, 10, 10, 10);
+    uint32_t transitionPeriod = 50;
+    TransitionEffect transitionEffect(lampState, transitionPeriod);
+    LSFString name = LSFString("SampleTransitionEffect");
+    localStatus = transitionEffectManager.CreateTransitionEffect(transitionEffect, name);
+    ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
+
+    //wait to receive reply
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (replyReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(LSF_OK, transitionEffectManagerCBHandler.createTransitionEffectReplyCBStatus);
+
+    //wait to receive signal
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (signalReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(transitionEffectManagerCBHandler.createTransitionEffectReplyCBID, transitionEffectManagerCBHandler.transitionEffectList.front());
+}
+
+TEST_F(ControllerClientTest, Controller_Client_CreateTransitionEffectWithPreset) {
+    replyReceivedFlag = false;
+
+    ControllerClientStatus localStatus = CONTROLLER_CLIENT_OK;
+    localStatus = client.Start();
+    ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
+
+    //wait to receive a callback from the controller client
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (replyReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(LSF_OK, controllerClientCBHandler.connectedToControllerServiceCBStatus);
+
+    replyReceivedFlag = false;
+    signalReceivedFlag = false;
+
+    localStatus = CONTROLLER_CLIENT_OK;
+    LampState preset(true, 10, 10, 10, 10);
+    LSFString name = LSFString("SamplePreset");
+    localStatus = presetManager.CreatePreset(preset, name);
+    ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
+
+    //wait to receive reply
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (replyReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(LSF_OK, presetManagerCBHandler.createPresetReplyCBStatus);
+
+    //wait to receive signal
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (signalReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(presetManagerCBHandler.createPresetReplyCBID, presetManagerCBHandler.presetList.front());
+
+    replyReceivedFlag = false;
+
+    localStatus = CONTROLLER_CLIENT_OK;
+    localStatus = presetManager.GetAllPresetIDs();
+    ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
+
+    //wait to receive reply
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (replyReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(LSF_OK, presetManagerCBHandler.getAllPresetIDsReplyCBStatus);
+
+    replyReceivedFlag = false;
+    signalReceivedFlag = false;
+
+    localStatus = CONTROLLER_CLIENT_OK;
+    uint32_t transitionPeriod = 50;
+    TransitionEffect transitionEffect(presetManagerCBHandler.presetList.front(), transitionPeriod);
+    name = LSFString("SampleTransitionEffect");
+    localStatus = transitionEffectManager.CreateTransitionEffect(transitionEffect, name);
+    ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
+
+    //wait to receive reply
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (replyReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(LSF_OK, transitionEffectManagerCBHandler.createTransitionEffectReplyCBStatus);
+
+    //wait to receive signal
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (signalReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(transitionEffectManagerCBHandler.createTransitionEffectReplyCBID, transitionEffectManagerCBHandler.transitionEffectList.front());
+}
+
+TEST_F(ControllerClientTest, Controller_Client_GetAllTransitionEffectIDs) {
+    replyReceivedFlag = false;
+
+    ControllerClientStatus localStatus = CONTROLLER_CLIENT_OK;
+    localStatus = client.Start();
+    ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
+
+    //wait to receive a callback from the controller client
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (replyReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(LSF_OK, controllerClientCBHandler.connectedToControllerServiceCBStatus);
+
+    replyReceivedFlag = false;
+
+    localStatus = CONTROLLER_CLIENT_OK;
+    localStatus = transitionEffectManager.GetAllTransitionEffectIDs();
+    ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
+
+    //wait to receive reply
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (replyReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(LSF_OK, transitionEffectManagerCBHandler.getAllTransitionEffectIDsReplyCBStatus);
+
+    size_t listSize = 1;
+    EXPECT_LT(listSize, transitionEffectManagerCBHandler.transitionEffectList.size());
+}
+
+TEST_F(ControllerClientTest, Controller_Client_GetTransitionEffectDataSet) {
+    replyReceivedFlag = false;
+
+    ControllerClientStatus localStatus = CONTROLLER_CLIENT_OK;
+    localStatus = client.Start();
+    ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
+
+    //wait to receive a callback from the controller client
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (replyReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(LSF_OK, controllerClientCBHandler.connectedToControllerServiceCBStatus);
+
+    replyReceivedFlag = false;
+
+    localStatus = CONTROLLER_CLIENT_OK;
+    localStatus = transitionEffectManager.GetAllTransitionEffectIDs();
+    ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
+
+    //wait to receive reply
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (replyReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(LSF_OK, transitionEffectManagerCBHandler.getAllTransitionEffectIDsReplyCBStatus);
+
+    size_t listSize = 1;
+    EXPECT_LT(listSize, transitionEffectManagerCBHandler.transitionEffectList.size());
+
+    getTransitionEffectDataSetName = false;
+    getTransitionEffectDataSetTransitionEffect = false;
+
+    localStatus = CONTROLLER_CLIENT_OK;
+    LSFString transitionEffectID = transitionEffectManagerCBHandler.transitionEffectList.front();
+    localStatus = transitionEffectManager.GetTransitionEffectDataSet(transitionEffectID);
+    ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
+
+    //wait to receive reply
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (getTransitionEffectDataSetName) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(LSF_OK, transitionEffectManagerCBHandler.getTransitionEffectNameReplyCBStatus);
+    EXPECT_EQ(transitionEffectID, transitionEffectManagerCBHandler.getTransitionEffectNameReplyCBTransitionEffectID);
+
+    LSFString language("en");
+    EXPECT_EQ(language, transitionEffectManagerCBHandler.getTransitionEffectNameReplyCBLanguage);
+
+    LSFString name("SampleTransitionEffect");
+    EXPECT_EQ(name, transitionEffectManagerCBHandler.getTransitionEffectNameReplyCBTransitionEffectName);
+
+    //wait to receive reply
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (getTransitionEffectDataSetTransitionEffect) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(LSF_OK, transitionEffectManagerCBHandler.getTransitionEffectReplyCBStatus);
+    EXPECT_EQ(transitionEffectID, transitionEffectManagerCBHandler.getTransitionEffectReplyCBTransitionEffectID);
+
+    uint32_t period = 50;
+    if (!transitionEffectManagerCBHandler.getTransitionEffectReplyCBTransitionEffect.state.nullState) {
+        LampState state(true, 10, 10, 10, 10);
+        EXPECT_EQ(state.onOff, transitionEffectManagerCBHandler.getTransitionEffectReplyCBTransitionEffect.state.onOff);
+        EXPECT_EQ(state.hue, transitionEffectManagerCBHandler.getTransitionEffectReplyCBTransitionEffect.state.hue);
+        EXPECT_EQ(state.saturation, transitionEffectManagerCBHandler.getTransitionEffectReplyCBTransitionEffect.state.saturation);
+        EXPECT_EQ(state.colorTemp, transitionEffectManagerCBHandler.getTransitionEffectReplyCBTransitionEffect.state.colorTemp);
+        EXPECT_EQ(state.brightness, transitionEffectManagerCBHandler.getTransitionEffectReplyCBTransitionEffect.state.brightness);
+        LSFString presetId = LSFString("");
+        EXPECT_EQ(presetId, transitionEffectManagerCBHandler.getTransitionEffectReplyCBTransitionEffect.presetID);
+    } else {
+        LampState state;
+        EXPECT_EQ(state.onOff, transitionEffectManagerCBHandler.getTransitionEffectReplyCBTransitionEffect.state.onOff);
+        EXPECT_EQ(state.hue, transitionEffectManagerCBHandler.getTransitionEffectReplyCBTransitionEffect.state.hue);
+        EXPECT_EQ(state.saturation, transitionEffectManagerCBHandler.getTransitionEffectReplyCBTransitionEffect.state.saturation);
+        EXPECT_EQ(state.colorTemp, transitionEffectManagerCBHandler.getTransitionEffectReplyCBTransitionEffect.state.colorTemp);
+        EXPECT_EQ(state.brightness, transitionEffectManagerCBHandler.getTransitionEffectReplyCBTransitionEffect.state.brightness);
+        replyReceivedFlag = false;
+
+        localStatus = CONTROLLER_CLIENT_OK;
+        localStatus = presetManager.GetAllPresetIDs();
+        ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
+
+        //wait to receive reply
+        for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+            if (replyReceivedFlag) {
+                break;
+            }
+            sleep(2);
+        }
+
+        EXPECT_EQ(LSF_OK, presetManagerCBHandler.getAllPresetIDsReplyCBStatus);
+        LSFString presetId = presetManagerCBHandler.presetList.front();
+        EXPECT_EQ(presetId, transitionEffectManagerCBHandler.getTransitionEffectReplyCBTransitionEffect.presetID);
+    }
+
+    EXPECT_EQ(period, transitionEffectManagerCBHandler.getTransitionEffectReplyCBTransitionEffect.transitionPeriod);
+}
+
+TEST_F(ControllerClientTest, Controller_Client_GetTransitionEffectName) {
+    replyReceivedFlag = false;
+
+    ControllerClientStatus localStatus = CONTROLLER_CLIENT_OK;
+    localStatus = client.Start();
+    ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
+
+    //wait to receive a callback from the controller client
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (replyReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(LSF_OK, controllerClientCBHandler.connectedToControllerServiceCBStatus);
+
+    replyReceivedFlag = false;
+
+    localStatus = CONTROLLER_CLIENT_OK;
+    localStatus = transitionEffectManager.GetAllTransitionEffectIDs();
+    ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
+
+    //wait to receive reply
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (replyReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(LSF_OK, transitionEffectManagerCBHandler.getAllTransitionEffectIDsReplyCBStatus);
+
+    size_t listSize = 1;
+    EXPECT_LT(listSize, transitionEffectManagerCBHandler.transitionEffectList.size());
+
+    replyReceivedFlag = false;
+
+    localStatus = CONTROLLER_CLIENT_OK;
+    LSFString transitionEffectID = transitionEffectManagerCBHandler.transitionEffectList.front();
+    localStatus = transitionEffectManager.GetTransitionEffectName(transitionEffectID);
+    ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
+
+    //wait to receive reply
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (replyReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(LSF_OK, transitionEffectManagerCBHandler.getTransitionEffectNameReplyCBStatus);
+    EXPECT_EQ(transitionEffectID, transitionEffectManagerCBHandler.getTransitionEffectNameReplyCBTransitionEffectID);
+
+    LSFString language("en");
+    EXPECT_EQ(language, transitionEffectManagerCBHandler.getTransitionEffectNameReplyCBLanguage);
+
+    LSFString name("SampleTransitionEffect");
+    EXPECT_EQ(name, transitionEffectManagerCBHandler.getTransitionEffectNameReplyCBTransitionEffectName);
+}
+
+TEST_F(ControllerClientTest, Controller_Client_SetTransitionEffectName) {
+    replyReceivedFlag = false;
+
+    ControllerClientStatus localStatus = CONTROLLER_CLIENT_OK;
+    localStatus = client.Start();
+    ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
+
+    //wait to receive a callback from the controller client
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (replyReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(LSF_OK, controllerClientCBHandler.connectedToControllerServiceCBStatus);
+
+    replyReceivedFlag = false;
+
+    localStatus = CONTROLLER_CLIENT_OK;
+    localStatus = transitionEffectManager.GetAllTransitionEffectIDs();
+    ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
+
+    //wait to receive reply
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (replyReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(LSF_OK, transitionEffectManagerCBHandler.getAllTransitionEffectIDsReplyCBStatus);
+
+    size_t listSize = 1;
+    EXPECT_LT(listSize, transitionEffectManagerCBHandler.transitionEffectList.size());
+
+    replyReceivedFlag = false;
+    signalReceivedFlag = false;
+
+    localStatus = CONTROLLER_CLIENT_OK;
+    LSFString transitionEffectID = transitionEffectManagerCBHandler.transitionEffectList.front();
+    LSFString newName("New Name");
+    localStatus = transitionEffectManager.SetTransitionEffectName(transitionEffectID, newName);
+    ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
+
+    //wait to receive reply
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (replyReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(LSF_OK, transitionEffectManagerCBHandler.setTransitionEffectNameReplyCBStatus);
+    EXPECT_EQ(transitionEffectID, transitionEffectManagerCBHandler.setTransitionEffectNameReplyCBTransitionEffectID);
+
+    LSFString language("en");
+    EXPECT_EQ(language, transitionEffectManagerCBHandler.setTransitionEffectNameReplyCBLanguage);
+
+    //wait to receive signal
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (signalReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(transitionEffectID, transitionEffectManagerCBHandler.transitionEffectNameChangedList.front());
+}
+
+TEST_F(ControllerClientTest, Controller_Client_UpdateTransitionEffect) {
+    replyReceivedFlag = false;
+
+    ControllerClientStatus localStatus = CONTROLLER_CLIENT_OK;
+    localStatus = client.Start();
+    ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
+
+    //wait to receive a callback from the controller client
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (replyReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(LSF_OK, controllerClientCBHandler.connectedToControllerServiceCBStatus);
+
+    replyReceivedFlag = false;
+
+    localStatus = CONTROLLER_CLIENT_OK;
+    localStatus = transitionEffectManager.GetAllTransitionEffectIDs();
+    ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
+
+    //wait to receive reply
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (replyReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(LSF_OK, transitionEffectManagerCBHandler.getAllTransitionEffectIDsReplyCBStatus);
+
+    size_t listSize = 1;
+    EXPECT_LT(listSize, transitionEffectManagerCBHandler.transitionEffectList.size());
+
+    replyReceivedFlag = false;
+
+    localStatus = CONTROLLER_CLIENT_OK;
+    localStatus = presetManager.GetAllPresetIDs();
+    ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
+
+    //wait to receive reply
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (replyReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(LSF_OK, presetManagerCBHandler.getAllPresetIDsReplyCBStatus);
+
+    replyReceivedFlag = false;
+    signalReceivedFlag = false;
+
+    localStatus = CONTROLLER_CLIENT_OK;
+    uint32_t period = 30;
+    TransitionEffect transitionEffect(presetManagerCBHandler.presetList.front(), period);
+    LSFString transitionEffectID = transitionEffectManagerCBHandler.transitionEffectList.front();
+    localStatus = transitionEffectManager.UpdateTransitionEffect(transitionEffectID, transitionEffect);
+    ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
+
+    //wait to receive reply
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (replyReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(LSF_OK, transitionEffectManagerCBHandler.updateTransitionEffectReplyCBStatus);
+    EXPECT_EQ(transitionEffectID, transitionEffectManagerCBHandler.updateTransitionEffectReplyCBID);
+
+    //wait to receive signal
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (signalReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(transitionEffectManagerCBHandler.updateTransitionEffectReplyCBID, transitionEffectManagerCBHandler.transitionEffectUpdatedList.front());
+}
+
+TEST_F(ControllerClientTest, Controller_Client_DeleteTransitionEffect) {
+    replyReceivedFlag = false;
+
+    ControllerClientStatus localStatus = CONTROLLER_CLIENT_OK;
+    localStatus = client.Start();
+    ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
+
+    //wait to receive a callback from the controller client
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (replyReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(LSF_OK, controllerClientCBHandler.connectedToControllerServiceCBStatus);
+
+    replyReceivedFlag = false;
+
+    localStatus = CONTROLLER_CLIENT_OK;
+    localStatus = transitionEffectManager.GetAllTransitionEffectIDs();
+    ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
+
+    //wait to receive reply
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (replyReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(LSF_OK, transitionEffectManagerCBHandler.getAllTransitionEffectIDsReplyCBStatus);
+
+    size_t listSize = 1;
+    EXPECT_LT(listSize, transitionEffectManagerCBHandler.transitionEffectList.size());
+
+    replyReceivedFlag = false;
+    signalReceivedFlag = false;
+
+    localStatus = CONTROLLER_CLIENT_OK;
+    LSFString transitionEffectID = transitionEffectManagerCBHandler.transitionEffectList.front();
+    localStatus = transitionEffectManager.DeleteTransitionEffect(transitionEffectID);
+    ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
+
+    //wait to receive reply
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (replyReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(LSF_OK, transitionEffectManagerCBHandler.deleteTransitionEffectReplyCBStatus);
+    EXPECT_EQ(transitionEffectID, transitionEffectManagerCBHandler.deleteTransitionEffectReplyCBID);
+
+    //wait to receive signal
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (signalReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(transitionEffectManagerCBHandler.deleteTransitionEffectReplyCBID, transitionEffectManagerCBHandler.transitionEffectDeletedList.front());
+}
+
+TEST_F(ControllerClientTest, Controller_Client_GetTransitionEffect) {
+    replyReceivedFlag = false;
+
+    ControllerClientStatus localStatus = CONTROLLER_CLIENT_OK;
+    localStatus = client.Start();
+    ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
+
+    //wait to receive a callback from the controller client
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (replyReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(LSF_OK, controllerClientCBHandler.connectedToControllerServiceCBStatus);
+
+    replyReceivedFlag = false;
+
+    localStatus = CONTROLLER_CLIENT_OK;
+    localStatus = transitionEffectManager.GetAllTransitionEffectIDs();
+    ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
+
+    //wait to receive reply
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (replyReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(LSF_OK, transitionEffectManagerCBHandler.getAllTransitionEffectIDsReplyCBStatus);
+
+    size_t listSize = 1;
+    EXPECT_EQ(listSize, transitionEffectManagerCBHandler.transitionEffectList.size());
+
+    replyReceivedFlag = false;
+
+    localStatus = CONTROLLER_CLIENT_OK;
+    LSFString transitionEffectID = transitionEffectManagerCBHandler.transitionEffectList.front();
+    localStatus = transitionEffectManager.GetTransitionEffect(transitionEffectID);
+    ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
+
+    //wait to receive reply
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (replyReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(LSF_OK, transitionEffectManagerCBHandler.getTransitionEffectReplyCBStatus);
+    EXPECT_EQ(transitionEffectID, transitionEffectManagerCBHandler.getTransitionEffectReplyCBTransitionEffectID);
+
+    uint32_t period = 50;
+    if (!transitionEffectManagerCBHandler.getTransitionEffectReplyCBTransitionEffect.state.nullState) {
+        LampState state(true, 10, 10, 10, 10);
+        EXPECT_EQ(state.onOff, transitionEffectManagerCBHandler.getTransitionEffectReplyCBTransitionEffect.state.onOff);
+        EXPECT_EQ(state.hue, transitionEffectManagerCBHandler.getTransitionEffectReplyCBTransitionEffect.state.hue);
+        EXPECT_EQ(state.saturation, transitionEffectManagerCBHandler.getTransitionEffectReplyCBTransitionEffect.state.saturation);
+        EXPECT_EQ(state.colorTemp, transitionEffectManagerCBHandler.getTransitionEffectReplyCBTransitionEffect.state.colorTemp);
+        EXPECT_EQ(state.brightness, transitionEffectManagerCBHandler.getTransitionEffectReplyCBTransitionEffect.state.brightness);
+        LSFString presetId = LSFString("");
+        EXPECT_EQ(presetId, transitionEffectManagerCBHandler.getTransitionEffectReplyCBTransitionEffect.presetID);
+    } else {
+        LampState state;
+        EXPECT_EQ(state.onOff, transitionEffectManagerCBHandler.getTransitionEffectReplyCBTransitionEffect.state.onOff);
+        EXPECT_EQ(state.hue, transitionEffectManagerCBHandler.getTransitionEffectReplyCBTransitionEffect.state.hue);
+        EXPECT_EQ(state.saturation, transitionEffectManagerCBHandler.getTransitionEffectReplyCBTransitionEffect.state.saturation);
+        EXPECT_EQ(state.colorTemp, transitionEffectManagerCBHandler.getTransitionEffectReplyCBTransitionEffect.state.colorTemp);
+        EXPECT_EQ(state.brightness, transitionEffectManagerCBHandler.getTransitionEffectReplyCBTransitionEffect.state.brightness);
+        replyReceivedFlag = false;
+
+        localStatus = CONTROLLER_CLIENT_OK;
+        localStatus = presetManager.GetAllPresetIDs();
+        ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
+
+        //wait to receive reply
+        for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+            if (replyReceivedFlag) {
+                break;
+            }
+            sleep(2);
+        }
+
+        EXPECT_EQ(LSF_OK, presetManagerCBHandler.getAllPresetIDsReplyCBStatus);
+        LSFString presetId = presetManagerCBHandler.presetList.front();
+        EXPECT_EQ(presetId, transitionEffectManagerCBHandler.getTransitionEffectReplyCBTransitionEffect.presetID);
+    }
+
+    EXPECT_EQ(period, transitionEffectManagerCBHandler.getTransitionEffectReplyCBTransitionEffect.transitionPeriod);
+}
+
+TEST_F(ControllerClientTest, Controller_Client_CreatePulseEffectWithState) {
+    replyReceivedFlag = false;
+
+    ControllerClientStatus localStatus = CONTROLLER_CLIENT_OK;
+    localStatus = client.Start();
+    ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
+
+    //wait to receive a callback from the controller client
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (replyReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(LSF_OK, controllerClientCBHandler.connectedToControllerServiceCBStatus);
+
+    replyReceivedFlag = false;
+    signalReceivedFlag = false;
+
+    localStatus = CONTROLLER_CLIENT_OK;
+    LampState fromLampState(true, 10, 10, 10, 10);
+    LampState toLampState(false, 5, 5, 5, 5);
+    uint32_t pulsePeriod = 50;
+    uint32_t pulseDuration = 25;
+    uint32_t numPulses = 5;
+    PulseEffect pulseEffect(toLampState, pulsePeriod, pulseDuration, numPulses, fromLampState);
+    LSFString name = LSFString("SamplePulseEffect");
+    localStatus = pulseEffectManager.CreatePulseEffect(pulseEffect, name);
+    ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
+
+    //wait to receive reply
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (replyReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(LSF_OK, pulseEffectManagerCBHandler.createPulseEffectReplyCBStatus);
+
+    //wait to receive signal
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (signalReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(pulseEffectManagerCBHandler.createPulseEffectReplyCBID, pulseEffectManagerCBHandler.pulseEffectList.front());
+}
+
+TEST_F(ControllerClientTest, Controller_Client_CreatePulseEffectWithPreset) {
+    replyReceivedFlag = false;
+
+    ControllerClientStatus localStatus = CONTROLLER_CLIENT_OK;
+    localStatus = client.Start();
+    ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
+
+    //wait to receive a callback from the controller client
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (replyReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(LSF_OK, controllerClientCBHandler.connectedToControllerServiceCBStatus);
+
+    replyReceivedFlag = false;
+    signalReceivedFlag = false;
+
+    localStatus = CONTROLLER_CLIENT_OK;
+    LampState fromPreset(true, 10, 10, 10, 10);
+    LSFString name = LSFString("SamplePreset");
+    localStatus = presetManager.CreatePreset(fromPreset, name);
+    ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
+
+    //wait to receive reply
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (replyReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(LSF_OK, presetManagerCBHandler.createPresetReplyCBStatus);
+
+    //wait to receive signal
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (signalReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(presetManagerCBHandler.createPresetReplyCBID, presetManagerCBHandler.presetList.front());
+
+    replyReceivedFlag = false;
+
+    localStatus = CONTROLLER_CLIENT_OK;
+    LampState toPreset(false, 5, 5, 5, 5);
+    name = LSFString("SamplePreset");
+    localStatus = presetManager.CreatePreset(toPreset, name);
+    ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
+
+    //wait to receive reply
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (replyReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(LSF_OK, presetManagerCBHandler.createPresetReplyCBStatus);
+
+    //wait to receive signal
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (signalReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(presetManagerCBHandler.createPresetReplyCBID, presetManagerCBHandler.presetList.front());
+
+    replyReceivedFlag = false;
+
+    localStatus = CONTROLLER_CLIENT_OK;
+    localStatus = presetManager.GetAllPresetIDs();
+    ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
+
+    //wait to receive reply
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (replyReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(LSF_OK, presetManagerCBHandler.getAllPresetIDsReplyCBStatus);
+
+    replyReceivedFlag = false;
+    signalReceivedFlag = false;
+
+    localStatus = CONTROLLER_CLIENT_OK;
+    uint32_t pulsePeriod = 50;
+    uint32_t pulseDuration = 25;
+    uint32_t numPulses = 5;
+    LSFString fromPresetStr = presetManagerCBHandler.presetList.front();
+    presetManagerCBHandler.presetList.pop_front();
+    LSFString toPresetStr = presetManagerCBHandler.presetList.front();
+    PulseEffect pulseEffect(fromPresetStr, pulsePeriod, pulseDuration, numPulses, toPresetStr);
+    name = LSFString("SamplePulseEffect");
+    localStatus = pulseEffectManager.CreatePulseEffect(pulseEffect, name);
+    ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
+
+    //wait to receive reply
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (replyReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(LSF_OK, pulseEffectManagerCBHandler.createPulseEffectReplyCBStatus);
+
+    //wait to receive signal
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (signalReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(pulseEffectManagerCBHandler.createPulseEffectReplyCBID, pulseEffectManagerCBHandler.pulseEffectList.front());
+}
+
+TEST_F(ControllerClientTest, Controller_Client_GetAllPulseEffectIDs) {
+    replyReceivedFlag = false;
+
+    ControllerClientStatus localStatus = CONTROLLER_CLIENT_OK;
+    localStatus = client.Start();
+    ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
+
+    //wait to receive a callback from the controller client
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (replyReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(LSF_OK, controllerClientCBHandler.connectedToControllerServiceCBStatus);
+
+    replyReceivedFlag = false;
+
+    localStatus = CONTROLLER_CLIENT_OK;
+    localStatus = pulseEffectManager.GetAllPulseEffectIDs();
+    ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
+
+    //wait to receive reply
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (replyReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(LSF_OK, pulseEffectManagerCBHandler.getAllPulseEffectIDsReplyCBStatus);
+
+    size_t listSize = 1;
+    EXPECT_LT(listSize, pulseEffectManagerCBHandler.pulseEffectList.size());
+}
+
+TEST_F(ControllerClientTest, Controller_Client_GetPulseEffectDataSet) {
+    replyReceivedFlag = false;
+
+    ControllerClientStatus localStatus = CONTROLLER_CLIENT_OK;
+    localStatus = client.Start();
+    ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
+
+    //wait to receive a callback from the controller client
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (replyReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(LSF_OK, controllerClientCBHandler.connectedToControllerServiceCBStatus);
+
+    replyReceivedFlag = false;
+
+    localStatus = CONTROLLER_CLIENT_OK;
+    localStatus = pulseEffectManager.GetAllPulseEffectIDs();
+    ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
+
+    //wait to receive reply
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (replyReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(LSF_OK, pulseEffectManagerCBHandler.getAllPulseEffectIDsReplyCBStatus);
+
+    size_t listSize = 1;
+    EXPECT_LT(listSize, pulseEffectManagerCBHandler.pulseEffectList.size());
+
+    getPulseEffectDataSetName = false;
+    getPulseEffectDataSetPulseEffect = false;
+
+    localStatus = CONTROLLER_CLIENT_OK;
+    LSFString pulseEffectID = pulseEffectManagerCBHandler.pulseEffectList.front();
+    localStatus = pulseEffectManager.GetPulseEffectDataSet(pulseEffectID);
+    ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
+
+    //wait to receive reply
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (getPulseEffectDataSetName) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(LSF_OK, pulseEffectManagerCBHandler.getPulseEffectNameReplyCBStatus);
+    EXPECT_EQ(pulseEffectID, pulseEffectManagerCBHandler.getPulseEffectNameReplyCBPulseEffectID);
+
+    LSFString language("en");
+    EXPECT_EQ(language, pulseEffectManagerCBHandler.getPulseEffectNameReplyCBLanguage);
+
+    LSFString name("SamplePulseEffect");
+    EXPECT_EQ(name, pulseEffectManagerCBHandler.getPulseEffectNameReplyCBPulseEffectName);
+
+    //wait to receive reply
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (getPulseEffectDataSetPulseEffect) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(LSF_OK, pulseEffectManagerCBHandler.getPulseEffectReplyCBStatus);
+    EXPECT_EQ(pulseEffectID, pulseEffectManagerCBHandler.getPulseEffectReplyCBPulseEffectID);
+
+    uint32_t pulsePeriod = 50;
+    uint32_t pulseDuration = 25;
+    uint32_t numPulses = 5;
+    if (!pulseEffectManagerCBHandler.getPulseEffectReplyCBPulseEffect.fromState.nullState) {
+        LampState fromState(true, 10, 10, 10, 10);
+        LampState toState(false, 5, 5, 5, 5);
+        EXPECT_EQ(fromState.onOff, pulseEffectManagerCBHandler.getPulseEffectReplyCBPulseEffect.fromState.onOff);
+        EXPECT_EQ(fromState.hue, pulseEffectManagerCBHandler.getPulseEffectReplyCBPulseEffect.fromState.hue);
+        EXPECT_EQ(fromState.saturation, pulseEffectManagerCBHandler.getPulseEffectReplyCBPulseEffect.fromState.saturation);
+        EXPECT_EQ(fromState.colorTemp, pulseEffectManagerCBHandler.getPulseEffectReplyCBPulseEffect.fromState.colorTemp);
+        EXPECT_EQ(fromState.brightness, pulseEffectManagerCBHandler.getPulseEffectReplyCBPulseEffect.fromState.brightness);
+        EXPECT_EQ(toState.onOff, pulseEffectManagerCBHandler.getPulseEffectReplyCBPulseEffect.toState.onOff);
+        EXPECT_EQ(toState.hue, pulseEffectManagerCBHandler.getPulseEffectReplyCBPulseEffect.toState.hue);
+        EXPECT_EQ(toState.saturation, pulseEffectManagerCBHandler.getPulseEffectReplyCBPulseEffect.toState.saturation);
+        EXPECT_EQ(toState.colorTemp, pulseEffectManagerCBHandler.getPulseEffectReplyCBPulseEffect.toState.colorTemp);
+        EXPECT_EQ(toState.brightness, pulseEffectManagerCBHandler.getPulseEffectReplyCBPulseEffect.toState.brightness);
+        LSFString fromPresetId = LSFString("");
+        LSFString toPresetId = LSFString("");
+        EXPECT_EQ(fromPresetId, pulseEffectManagerCBHandler.getPulseEffectReplyCBPulseEffect.fromPreset);
+        EXPECT_EQ(toPresetId, pulseEffectManagerCBHandler.getPulseEffectReplyCBPulseEffect.toPreset);
+    } else {
+        LampState state;
+        EXPECT_EQ(state.onOff, pulseEffectManagerCBHandler.getPulseEffectReplyCBPulseEffect.fromState.onOff);
+        EXPECT_EQ(state.hue, pulseEffectManagerCBHandler.getPulseEffectReplyCBPulseEffect.fromState.hue);
+        EXPECT_EQ(state.saturation, pulseEffectManagerCBHandler.getPulseEffectReplyCBPulseEffect.fromState.saturation);
+        EXPECT_EQ(state.colorTemp, pulseEffectManagerCBHandler.getPulseEffectReplyCBPulseEffect.fromState.colorTemp);
+        EXPECT_EQ(state.brightness, pulseEffectManagerCBHandler.getPulseEffectReplyCBPulseEffect.fromState.brightness);
+        EXPECT_EQ(state.onOff, pulseEffectManagerCBHandler.getPulseEffectReplyCBPulseEffect.toState.onOff);
+        EXPECT_EQ(state.hue, pulseEffectManagerCBHandler.getPulseEffectReplyCBPulseEffect.toState.hue);
+        EXPECT_EQ(state.saturation, pulseEffectManagerCBHandler.getPulseEffectReplyCBPulseEffect.toState.saturation);
+        EXPECT_EQ(state.colorTemp, pulseEffectManagerCBHandler.getPulseEffectReplyCBPulseEffect.toState.colorTemp);
+        EXPECT_EQ(state.brightness, pulseEffectManagerCBHandler.getPulseEffectReplyCBPulseEffect.toState.brightness);
+        replyReceivedFlag = false;
+
+        localStatus = CONTROLLER_CLIENT_OK;
+        localStatus = presetManager.GetAllPresetIDs();
+        ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
+
+        //wait to receive reply
+        for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+            if (replyReceivedFlag) {
+                break;
+            }
+            sleep(2);
+        }
+
+        EXPECT_EQ(LSF_OK, presetManagerCBHandler.getAllPresetIDsReplyCBStatus);
+        LSFString toPresetId = presetManagerCBHandler.presetList.front();
+        presetManagerCBHandler.presetList.pop_front();
+        LSFString fromPresetId = presetManagerCBHandler.presetList.front();
+        EXPECT_EQ(fromPresetId, pulseEffectManagerCBHandler.getPulseEffectReplyCBPulseEffect.fromPreset);
+        EXPECT_EQ(toPresetId, pulseEffectManagerCBHandler.getPulseEffectReplyCBPulseEffect.toPreset);
+    }
+
+    EXPECT_EQ(pulsePeriod, pulseEffectManagerCBHandler.getPulseEffectReplyCBPulseEffect.pulsePeriod);
+    EXPECT_EQ(pulseDuration, pulseEffectManagerCBHandler.getPulseEffectReplyCBPulseEffect.pulseDuration);
+    EXPECT_EQ(numPulses, pulseEffectManagerCBHandler.getPulseEffectReplyCBPulseEffect.numPulses);
+}
+
+TEST_F(ControllerClientTest, Controller_Client_GetPulseEffectName) {
+    replyReceivedFlag = false;
+
+    ControllerClientStatus localStatus = CONTROLLER_CLIENT_OK;
+    localStatus = client.Start();
+    ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
+
+    //wait to receive a callback from the controller client
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (replyReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(LSF_OK, controllerClientCBHandler.connectedToControllerServiceCBStatus);
+
+    replyReceivedFlag = false;
+
+    localStatus = CONTROLLER_CLIENT_OK;
+    localStatus = pulseEffectManager.GetAllPulseEffectIDs();
+    ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
+
+    //wait to receive reply
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (replyReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(LSF_OK, pulseEffectManagerCBHandler.getAllPulseEffectIDsReplyCBStatus);
+
+    size_t listSize = 1;
+    EXPECT_LT(listSize, pulseEffectManagerCBHandler.pulseEffectList.size());
+
+    replyReceivedFlag = false;
+
+    localStatus = CONTROLLER_CLIENT_OK;
+    LSFString pulseEffectID = pulseEffectManagerCBHandler.pulseEffectList.front();
+    localStatus = pulseEffectManager.GetPulseEffectName(pulseEffectID);
+    ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
+
+    //wait to receive reply
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (replyReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(LSF_OK, pulseEffectManagerCBHandler.getPulseEffectNameReplyCBStatus);
+    EXPECT_EQ(pulseEffectID, pulseEffectManagerCBHandler.getPulseEffectNameReplyCBPulseEffectID);
+
+    LSFString language("en");
+    EXPECT_EQ(language, pulseEffectManagerCBHandler.getPulseEffectNameReplyCBLanguage);
+
+    LSFString name("SamplePulseEffect");
+    EXPECT_EQ(name, pulseEffectManagerCBHandler.getPulseEffectNameReplyCBPulseEffectName);
+}
+
+TEST_F(ControllerClientTest, Controller_Client_SetPulseEffectName) {
+    replyReceivedFlag = false;
+
+    ControllerClientStatus localStatus = CONTROLLER_CLIENT_OK;
+    localStatus = client.Start();
+    ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
+
+    //wait to receive a callback from the controller client
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (replyReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(LSF_OK, controllerClientCBHandler.connectedToControllerServiceCBStatus);
+
+    replyReceivedFlag = false;
+
+    localStatus = CONTROLLER_CLIENT_OK;
+    localStatus = pulseEffectManager.GetAllPulseEffectIDs();
+    ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
+
+    //wait to receive reply
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (replyReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(LSF_OK, pulseEffectManagerCBHandler.getAllPulseEffectIDsReplyCBStatus);
+
+    size_t listSize = 1;
+    EXPECT_LT(listSize, pulseEffectManagerCBHandler.pulseEffectList.size());
+
+    replyReceivedFlag = false;
+    signalReceivedFlag = false;
+
+    localStatus = CONTROLLER_CLIENT_OK;
+    LSFString pulseEffectID = pulseEffectManagerCBHandler.pulseEffectList.front();
+    LSFString newName("New Name");
+    localStatus = pulseEffectManager.SetPulseEffectName(pulseEffectID, newName);
+    ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
+
+    //wait to receive reply
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (replyReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(LSF_OK, pulseEffectManagerCBHandler.setPulseEffectNameReplyCBStatus);
+    EXPECT_EQ(pulseEffectID, pulseEffectManagerCBHandler.setPulseEffectNameReplyCBPulseEffectID);
+
+    LSFString language("en");
+    EXPECT_EQ(language, pulseEffectManagerCBHandler.setPulseEffectNameReplyCBLanguage);
+
+    //wait to receive signal
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (signalReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(pulseEffectID, pulseEffectManagerCBHandler.pulseEffectNameChangedList.front());
+}
+
+TEST_F(ControllerClientTest, Controller_Client_UpdatePulseEffect) {
+    replyReceivedFlag = false;
+
+    ControllerClientStatus localStatus = CONTROLLER_CLIENT_OK;
+    localStatus = client.Start();
+    ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
+
+    //wait to receive a callback from the controller client
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (replyReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(LSF_OK, controllerClientCBHandler.connectedToControllerServiceCBStatus);
+
+    replyReceivedFlag = false;
+
+    localStatus = CONTROLLER_CLIENT_OK;
+    localStatus = pulseEffectManager.GetAllPulseEffectIDs();
+    ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
+
+    //wait to receive reply
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (replyReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(LSF_OK, pulseEffectManagerCBHandler.getAllPulseEffectIDsReplyCBStatus);
+
+    size_t listSize = 1;
+    EXPECT_LT(listSize, pulseEffectManagerCBHandler.pulseEffectList.size());
+
+    replyReceivedFlag = false;
+
+    localStatus = CONTROLLER_CLIENT_OK;
+    localStatus = presetManager.GetAllPresetIDs();
+    ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
+
+    //wait to receive reply
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (replyReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(LSF_OK, presetManagerCBHandler.getAllPresetIDsReplyCBStatus);
+
+    replyReceivedFlag = false;
+    signalReceivedFlag = false;
+
+    localStatus = CONTROLLER_CLIENT_OK;
+    uint32_t pulsePeriod = 50;
+    uint32_t pulseDuration = 25;
+    uint32_t numPulses = 5;
+    LSFString fromPresetId = presetManagerCBHandler.presetList.front();
+    presetManagerCBHandler.presetList.pop_front();
+    LSFString toPresetId = presetManagerCBHandler.presetList.front();
+    PulseEffect pulseEffect(toPresetId, pulsePeriod, pulseDuration, numPulses, fromPresetId);
+    LSFString pulseEffectID = pulseEffectManagerCBHandler.pulseEffectList.front();
+    localStatus = pulseEffectManager.UpdatePulseEffect(pulseEffectID, pulseEffect);
+    ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
+
+    //wait to receive reply
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (replyReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(LSF_OK, pulseEffectManagerCBHandler.updatePulseEffectReplyCBStatus);
+    EXPECT_EQ(pulseEffectID, pulseEffectManagerCBHandler.updatePulseEffectReplyCBID);
+
+    //wait to receive signal
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (signalReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(pulseEffectManagerCBHandler.updatePulseEffectReplyCBID, pulseEffectManagerCBHandler.pulseEffectUpdatedList.front());
+}
+
+TEST_F(ControllerClientTest, Controller_Client_DeletePulseEffect) {
+    replyReceivedFlag = false;
+
+    ControllerClientStatus localStatus = CONTROLLER_CLIENT_OK;
+    localStatus = client.Start();
+    ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
+
+    //wait to receive a callback from the controller client
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (replyReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(LSF_OK, controllerClientCBHandler.connectedToControllerServiceCBStatus);
+
+    replyReceivedFlag = false;
+
+    localStatus = CONTROLLER_CLIENT_OK;
+    localStatus = pulseEffectManager.GetAllPulseEffectIDs();
+    ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
+
+    //wait to receive reply
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (replyReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(LSF_OK, pulseEffectManagerCBHandler.getAllPulseEffectIDsReplyCBStatus);
+
+    size_t listSize = 1;
+    EXPECT_LT(listSize, pulseEffectManagerCBHandler.pulseEffectList.size());
+
+    replyReceivedFlag = false;
+    signalReceivedFlag = false;
+
+    localStatus = CONTROLLER_CLIENT_OK;
+    LSFString pulseEffectID = pulseEffectManagerCBHandler.pulseEffectList.front();
+    localStatus = pulseEffectManager.DeletePulseEffect(pulseEffectID);
+    ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
+
+    //wait to receive reply
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (replyReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(LSF_OK, pulseEffectManagerCBHandler.deletePulseEffectReplyCBStatus);
+    EXPECT_EQ(pulseEffectID, pulseEffectManagerCBHandler.deletePulseEffectReplyCBID);
+
+    //wait to receive signal
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (signalReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(pulseEffectManagerCBHandler.deletePulseEffectReplyCBID, pulseEffectManagerCBHandler.pulseEffectDeletedList.front());
+}
+
+TEST_F(ControllerClientTest, Controller_Client_GetPulseEffect) {
+    replyReceivedFlag = false;
+
+    ControllerClientStatus localStatus = CONTROLLER_CLIENT_OK;
+    localStatus = client.Start();
+    ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
+
+    //wait to receive a callback from the controller client
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (replyReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(LSF_OK, controllerClientCBHandler.connectedToControllerServiceCBStatus);
+
+    replyReceivedFlag = false;
+
+    localStatus = CONTROLLER_CLIENT_OK;
+    localStatus = pulseEffectManager.GetAllPulseEffectIDs();
+    ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
+
+    //wait to receive reply
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (replyReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(LSF_OK, pulseEffectManagerCBHandler.getAllPulseEffectIDsReplyCBStatus);
+
+    size_t listSize = 1;
+    EXPECT_EQ(listSize, pulseEffectManagerCBHandler.pulseEffectList.size());
+
+    replyReceivedFlag = false;
+
+    localStatus = CONTROLLER_CLIENT_OK;
+    LSFString pulseEffectID = pulseEffectManagerCBHandler.pulseEffectList.front();
+    localStatus = pulseEffectManager.GetPulseEffect(pulseEffectID);
+    ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
+
+    //wait to receive reply
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (replyReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(LSF_OK, pulseEffectManagerCBHandler.getPulseEffectReplyCBStatus);
+    EXPECT_EQ(pulseEffectID, pulseEffectManagerCBHandler.getPulseEffectReplyCBPulseEffectID);
+
+    uint32_t pulsePeriod = 50;
+    uint32_t pulseDuration = 25;
+    uint32_t numPulses = 5;
+    if (!pulseEffectManagerCBHandler.getPulseEffectReplyCBPulseEffect.fromState.nullState) {
+        LampState fromState(true, 10, 10, 10, 10);
+        LampState toState(false, 5, 5, 5, 5);
+        EXPECT_EQ(fromState.onOff, pulseEffectManagerCBHandler.getPulseEffectReplyCBPulseEffect.fromState.onOff);
+        EXPECT_EQ(fromState.hue, pulseEffectManagerCBHandler.getPulseEffectReplyCBPulseEffect.fromState.hue);
+        EXPECT_EQ(fromState.saturation, pulseEffectManagerCBHandler.getPulseEffectReplyCBPulseEffect.fromState.saturation);
+        EXPECT_EQ(fromState.colorTemp, pulseEffectManagerCBHandler.getPulseEffectReplyCBPulseEffect.fromState.colorTemp);
+        EXPECT_EQ(fromState.brightness, pulseEffectManagerCBHandler.getPulseEffectReplyCBPulseEffect.fromState.brightness);
+        EXPECT_EQ(toState.onOff, pulseEffectManagerCBHandler.getPulseEffectReplyCBPulseEffect.toState.onOff);
+        EXPECT_EQ(toState.hue, pulseEffectManagerCBHandler.getPulseEffectReplyCBPulseEffect.toState.hue);
+        EXPECT_EQ(toState.saturation, pulseEffectManagerCBHandler.getPulseEffectReplyCBPulseEffect.toState.saturation);
+        EXPECT_EQ(toState.colorTemp, pulseEffectManagerCBHandler.getPulseEffectReplyCBPulseEffect.toState.colorTemp);
+        EXPECT_EQ(toState.brightness, pulseEffectManagerCBHandler.getPulseEffectReplyCBPulseEffect.toState.brightness);
+        LSFString fromPresetId = LSFString("");
+        LSFString toPresetId = LSFString("");
+        EXPECT_EQ(fromPresetId, pulseEffectManagerCBHandler.getPulseEffectReplyCBPulseEffect.fromPreset);
+        EXPECT_EQ(toPresetId, pulseEffectManagerCBHandler.getPulseEffectReplyCBPulseEffect.toPreset);
+    } else {
+        LampState state;
+        EXPECT_EQ(state.onOff, pulseEffectManagerCBHandler.getPulseEffectReplyCBPulseEffect.fromState.onOff);
+        EXPECT_EQ(state.hue, pulseEffectManagerCBHandler.getPulseEffectReplyCBPulseEffect.fromState.hue);
+        EXPECT_EQ(state.saturation, pulseEffectManagerCBHandler.getPulseEffectReplyCBPulseEffect.fromState.saturation);
+        EXPECT_EQ(state.colorTemp, pulseEffectManagerCBHandler.getPulseEffectReplyCBPulseEffect.fromState.colorTemp);
+        EXPECT_EQ(state.brightness, pulseEffectManagerCBHandler.getPulseEffectReplyCBPulseEffect.fromState.brightness);
+        EXPECT_EQ(state.onOff, pulseEffectManagerCBHandler.getPulseEffectReplyCBPulseEffect.toState.onOff);
+        EXPECT_EQ(state.hue, pulseEffectManagerCBHandler.getPulseEffectReplyCBPulseEffect.toState.hue);
+        EXPECT_EQ(state.saturation, pulseEffectManagerCBHandler.getPulseEffectReplyCBPulseEffect.toState.saturation);
+        EXPECT_EQ(state.colorTemp, pulseEffectManagerCBHandler.getPulseEffectReplyCBPulseEffect.toState.colorTemp);
+        EXPECT_EQ(state.brightness, pulseEffectManagerCBHandler.getPulseEffectReplyCBPulseEffect.toState.brightness);
+        replyReceivedFlag = false;
+
+        localStatus = CONTROLLER_CLIENT_OK;
+        localStatus = presetManager.GetAllPresetIDs();
+        ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
+
+        //wait to receive reply
+        for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+            if (replyReceivedFlag) {
+                break;
+            }
+            sleep(2);
+        }
+
+        EXPECT_EQ(LSF_OK, presetManagerCBHandler.getAllPresetIDsReplyCBStatus);
+        LSFString toPresetId = presetManagerCBHandler.presetList.front();
+        presetManagerCBHandler.presetList.pop_front();
+        LSFString fromPresetId = presetManagerCBHandler.presetList.front();
+        EXPECT_EQ(fromPresetId, pulseEffectManagerCBHandler.getPulseEffectReplyCBPulseEffect.fromPreset);
+        EXPECT_EQ(toPresetId, pulseEffectManagerCBHandler.getPulseEffectReplyCBPulseEffect.toPreset);
+    }
+
+    EXPECT_EQ(pulsePeriod, pulseEffectManagerCBHandler.getPulseEffectReplyCBPulseEffect.pulsePeriod);
+    EXPECT_EQ(pulseDuration, pulseEffectManagerCBHandler.getPulseEffectReplyCBPulseEffect.pulseDuration);
+    EXPECT_EQ(numPulses, pulseEffectManagerCBHandler.getPulseEffectReplyCBPulseEffect.numPulses);
 }
 
 TEST_F(ControllerClientTest, Controller_Client_CreateLampGroup) {

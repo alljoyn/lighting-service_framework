@@ -342,7 +342,7 @@ void PresetManager::CreatePreset(Message& msg)
         QCC_LogError(ER_FAIL, ("%s: Language %s not supported", __func__, language.c_str()));
         responseCode = LSF_ERR_INVALID_ARGS;
     } else if (name.empty()) {
-        QCC_LogError(ER_FAIL, ("%s: scene name is empty", __func__));
+        QCC_LogError(ER_FAIL, ("%s: preset name is empty", __func__));
         responseCode = LSF_ERR_EMPTY_NAME;
     } else if (preset.nullState) {
         QCC_LogError(ER_FAIL, ("%s: Cannot save NULL state as a Preset", __func__, language.c_str()));

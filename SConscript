@@ -144,6 +144,14 @@ lighting_controller_service = lsf_service_env.Program('$LSF_SERVICE_DISTDIR/bin/
 lsf_service_env.Install('$LSF_SERVICE_DISTDIR/bin', lsf_service_env['service_objs'])
 lsf_service_env.Install('$LSF_SERVICE_DISTDIR/bin', lsf_env['common_objs'])
 
+# Set cross compiler vars for ajtcl ahead of Lamp Service compilation
+# in order to compile for openwrt mips platforms
+if lsf_env['OS'] == 'openwrt':
+    os.environ['CROSS_PREFIX'] = "mips-openwrt-linux-uclibc-"
+    os.environ['CROSS_PATH'] = lsf_env['TARGET_PATH']
+    os.environ['CROSS_FLAGS'] = lsf_env['TARGET_CFLAGS']
+    os.environ['CROSS_LINKFLAGS'] = lsf_env['TARGET_LINKFLAGS']
+
 #Build Lamp Service
 lamp_service_env = SConscript('../ajtcl/SConscript')
 lamp_service_env.Append(LIBPATH = [ lamp_service_env.Dir('../ajtcl') ])

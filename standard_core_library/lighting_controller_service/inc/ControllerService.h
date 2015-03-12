@@ -40,6 +40,8 @@
 #include <LampManager.h>
 #include <LampGroupManager.h>
 #include <PresetManager.h>
+#include <TransitionEffectManager.h>
+#include <PulseEffectManager.h>
 #include <SceneManager.h>
 #include <MasterSceneManager.h>
 #include <LeaderElectionObject.h>
@@ -70,11 +72,11 @@ class ControllerService : public ajn::BusObject, public ajn::services::ConfigSer
   public:
 
     /**
-     * Constructor
+     * Deprecated Constructor
      * @param factoryConfigFile - path of factory config file
      * @param configFile - path of config file
      * @param lampGroupFile - path of lamp group file
-     * @param presetFile - path of pre-set file
+     * @param presetFile - path of preset file
      * @param sceneFile - path of scene file
      * @param masterSceneFile - path of master scene file
      */
@@ -87,12 +89,33 @@ class ControllerService : public ajn::BusObject, public ajn::services::ConfigSer
         const std::string& masterSceneFile);
 
     /**
+     * Constructor
+     * @param factoryConfigFile - path of factory config file
+     * @param configFile - path of config file
+     * @param lampGroupFile - path of lamp group file
+     * @param presetFile - path of preset file
+     * @param transitionEffectFile - path of transitionEffect file
+     * @param pulseEffectFile - path of pulseEffect file
+     * @param sceneFile - path of scene file
+     * @param masterSceneFile - path of master scene file
+     */
+    ControllerService(
+        const std::string& factoryConfigFile,
+        const std::string& configFile,
+        const std::string& lampGroupFile,
+        const std::string& presetFile,
+        const std::string& transitionEffectFile,
+        const std::string& pulseEffectFile,
+        const std::string& sceneFile,
+        const std::string& masterSceneFile);
+
+    /**
      * Deprecated Constructor
      * @param propStore - path of property store
      * @param factoryConfigFile - path of factory config file
      * @param configFile - path of config file
      * @param lampGroupFile - path of lamp group file
-     * @param presetFile - path of pre-set file
+     * @param presetFile - path of preset file
      * @param sceneFile - path of scene file
      * @param masterSceneFile - path of master scene file
      */
@@ -111,7 +134,9 @@ class ControllerService : public ajn::BusObject, public ajn::services::ConfigSer
      * @param factoryConfigFile - path of factory config file
      * @param configFile - path of config file
      * @param lampGroupFile - path of lamp group file
-     * @param presetFile - path of pre-set file
+     * @param presetFile - path of preset file
+     * @param transitionEffectFile - path of transitionEffect file
+     * @param pulseEffectFile - path of pulseEffect file
      * @param sceneFile - path of scene file
      * @param masterSceneFile - path of master scene file
      */
@@ -121,6 +146,8 @@ class ControllerService : public ajn::BusObject, public ajn::services::ConfigSer
         const std::string& configFile,
         const std::string& lampGroupFile,
         const std::string& presetFile,
+        const std::string& transitionEffectFile,
+        const std::string& pulseEffectFile,
         const std::string& sceneFile,
         const std::string& masterSceneFile);
 
@@ -185,6 +212,16 @@ class ControllerService : public ajn::BusObject, public ajn::services::ConfigSer
      * @return MasterSceneManager
      */
     MasterSceneManager& GetMasterSceneManager(void) { return masterSceneManager; };
+    /**
+     * Get reference to Transition Effect Manager object
+     * @return TransitionEffectManager
+     */
+    TransitionEffectManager& GetTransitionEffectManager(void) { return transitionEffectManager; };
+    /**
+     * Get reference to Pulse Effect Manager object
+     * @return PulseEffectManager
+     */
+    PulseEffectManager& GetPulseEffectManager(void) { return pulseEffectManager; };
     /**
      * Send Method Reply \n
      * Reply for asynchronous method call \n
@@ -286,7 +323,7 @@ class ControllerService : public ajn::BusObject, public ajn::services::ConfigSer
     /**
      * Schedule File Read Write \n
      * a trigger to synchronize all lighting service meta data with persistent storage.\n
-     * Meta data includes lamp groups, scenes, master scenes and pre-sets.
+     * Meta data includes lamp groups, scenes, master scenes, presets, transition effects and pulse effects.
      * @param manager - parameter not in use
      */
     void ScheduleFileReadWrite(Manager* manager);
@@ -406,6 +443,8 @@ class ControllerService : public ajn::BusObject, public ajn::services::ConfigSer
     PresetManager presetManager;
     SceneManager sceneManager;
     MasterSceneManager masterSceneManager;
+    TransitionEffectManager transitionEffectManager;
+    PulseEffectManager pulseEffectManager;
 
     void OnAccepMultipointSessionJoiner(const char* joiner);
     void SessionLost(ajn::SessionId sessionId);
@@ -499,7 +538,7 @@ class ControllerService : public ajn::BusObject, public ajn::services::ConfigSer
 class ControllerServiceManager {
   public:
     /**
-     * ControllerServiceManager constructor
+     * Deprecated ControllerServiceManager constructor
      */
     ControllerServiceManager(
         const std::string& factoryConfigFile,
@@ -509,6 +548,21 @@ class ControllerServiceManager {
         const std::string& sceneFile,
         const std::string& masterSceneFile) :
         controllerService(factoryConfigFile, configFile, lampGroupFile, presetFile, sceneFile, masterSceneFile) {
+    }
+
+    /**
+     * ControllerServiceManager constructor
+     */
+    ControllerServiceManager(
+        const std::string& factoryConfigFile,
+        const std::string& configFile,
+        const std::string& lampGroupFile,
+        const std::string& presetFile,
+        const std::string& transitionEffectFile,
+        const std::string& pulseEffectFile,
+        const std::string& sceneFile,
+        const std::string& masterSceneFile) :
+        controllerService(factoryConfigFile, configFile, lampGroupFile, presetFile, transitionEffectFile, pulseEffectFile, sceneFile, masterSceneFile) {
 
     }
 
@@ -518,7 +572,7 @@ class ControllerServiceManager {
      * @param factoryConfigFile - path of factory config file
      * @param configFile - path of config file
      * @param lampGroupFile - path of lamp group file
-     * @param presetFile - path of pre-set file
+     * @param presetFile - path of preset file
      * @param sceneFile - path of scene file
      * @param masterSceneFile - path of master scene file
      */
@@ -539,7 +593,9 @@ class ControllerServiceManager {
      * @param factoryConfigFile - path of factory config file
      * @param configFile - path of config file
      * @param lampGroupFile - path of lamp group file
-     * @param presetFile - path of pre-set file
+     * @param presetFile - path of preset file
+     * @param transitionEffectFile - path of transitionEffect file
+     * @param pulseEffectFile - path of pulseEffect file
      * @param sceneFile - path of scene file
      * @param masterSceneFile - path of master scene file
      */
@@ -549,9 +605,11 @@ class ControllerServiceManager {
         const std::string& configFile,
         const std::string& lampGroupFile,
         const std::string& presetFile,
+        const std::string& transitionEffectFile,
+        const std::string& pulseEffectFile,
         const std::string& sceneFile,
         const std::string& masterSceneFile) :
-        controllerService(aboutData, factoryConfigFile, configFile, lampGroupFile, presetFile, sceneFile, masterSceneFile) {
+        controllerService(aboutData, factoryConfigFile, configFile, lampGroupFile, presetFile, transitionEffectFile, pulseEffectFile, sceneFile, masterSceneFile) {
 
     }
 

@@ -42,6 +42,8 @@ const char* ControllerServiceInterfaceName = "org.allseen.LSF.ControllerService"
 const char* ControllerServiceLampInterfaceName = "org.allseen.LSF.ControllerService.Lamp";
 const char* ControllerServiceLampGroupInterfaceName = "org.allseen.LSF.ControllerService.LampGroup";
 const char* ControllerServicePresetInterfaceName = "org.allseen.LSF.ControllerService.Preset";
+const char* ControllerServiceTransitionEffectInterfaceName = "org.allseen.LSF.ControllerService.TransitionEffect";
+const char* ControllerServicePulseEffectInterfaceName = "org.allseen.LSF.ControllerService.PulseEffect";
 const char* ControllerServiceSceneInterfaceName = "org.allseen.LSF.ControllerService.Scene";
 const char* ControllerServiceMasterSceneInterfaceName = "org.allseen.LSF.ControllerService.MasterScene";
 ajn::SessionPort ControllerServiceSessionPort = 43;
@@ -50,9 +52,11 @@ const uint32_t ControllerServiceInterfaceVersion = 1;
 const uint32_t ControllerServiceLampInterfaceVersion = 1;
 const uint32_t ControllerServiceLampGroupInterfaceVersion = 1;
 const uint32_t ControllerServicePresetInterfaceVersion = 1;
+const uint32_t ControllerServiceTransitionEffectInterfaceVersion = 1;
+const uint32_t ControllerServicePulseEffectInterfaceVersion = 1;
 const uint32_t ControllerServiceSceneInterfaceVersion = 1;
 const uint32_t ControllerServiceMasterSceneInterfaceVersion = 1;
-const uint32_t LeaderElectionAndStateSyncInterfaceVersion = 1;
+const uint32_t ControllerServiceLeaderElectionAndStateSyncInterfaceVersion = 1;
 
 const char* LampServiceObjectPath = "/org/allseen/LSF/Lamp";
 const char* LampServiceInterfaceName = "org.allseen.LSF.LampService";
@@ -754,6 +758,205 @@ LSFResponseCode LampGroup::IsDependentLampGroup(LSFString& lampGroupID)
     }
 
     return responseCode;
+}
+
+TransitionEffect::TransitionEffect() :
+    state(LampState()), transitionPeriod(0), presetID(LSFString()), invalidArgs(true)
+{
+
+}
+
+TransitionEffect::TransitionEffect(LampState& lampState, uint32_t& transPeriod) :
+    state(lampState), transitionPeriod(transPeriod), presetID(LSFString()), invalidArgs(false)
+{
+    QCC_DbgPrintf(("%s", __func__));
+}
+
+TransitionEffect::TransitionEffect(LSFString& presetId, uint32_t& transPeriod) :
+    state(LampState()), transitionPeriod(transPeriod), presetID(presetId), invalidArgs(false)
+{
+    QCC_DbgPrintf(("%s", __func__));
+}
+
+TransitionEffect::TransitionEffect(LampState& lampState) :
+    state(lampState), transitionPeriod(0), presetID(LSFString()), invalidArgs(false)
+{
+    QCC_DbgPrintf(("%s", __func__));
+}
+
+TransitionEffect::TransitionEffect(LSFString& presetId) :
+    state(LampState()), transitionPeriod(0), presetID(presetId), invalidArgs(false)
+{
+    QCC_DbgPrintf(("%s", __func__));
+}
+
+TransitionEffect::TransitionEffect(const ajn::MsgArg& lampState, const ajn::MsgArg& presetId, const ajn::MsgArg& transPeriod)
+{
+    QCC_DbgPrintf(("%s", __func__));
+    Set(lampState, presetId, transPeriod);
+}
+
+const char* TransitionEffect::c_str(void) const
+{
+    QCC_DbgPrintf(("%s", __func__));
+    return "";
+}
+
+TransitionEffect::TransitionEffect(const TransitionEffect& other) :
+    state(other.state), transitionPeriod(other.transitionPeriod), presetID(other.presetID), invalidArgs(other.invalidArgs)
+{
+    QCC_DbgPrintf(("%s", __func__));
+}
+
+TransitionEffect& TransitionEffect::operator=(const TransitionEffect& other)
+{
+    QCC_DbgPrintf(("%s", __func__));
+    state = other.state;
+    presetID = other.presetID;
+    transitionPeriod = other.transitionPeriod;
+    state = other.state;
+    invalidArgs = other.invalidArgs;
+    return *this;
+}
+
+void TransitionEffect::Set(const ajn::MsgArg& lampState, const ajn::MsgArg& presetId, const ajn::MsgArg& transPeriod)
+{
+    QCC_DbgPrintf(("%s", __func__));
+    const char* tempPresetId;
+    invalidArgs =  false;
+
+    state.Set(lampState);
+
+    presetId.Get("s", &tempPresetId);
+    presetID = LSFString(tempPresetId);
+
+    transPeriod.Get("u", &transitionPeriod);
+
+    if (state.nullState && presetID.empty()) {
+        QCC_LogError(ER_FAIL, ("%s: TransitionEffect cannot include NULL state and empty presetID", __func__));
+        invalidArgs =  true;
+    }
+}
+
+void TransitionEffect::Get(ajn::MsgArg* lampState, ajn::MsgArg* presetId, ajn::MsgArg* transPeriod) const
+{
+    QCC_DbgPrintf(("%s", __func__));
+
+    state.Get(lampState);
+    lampState->SetOwnershipFlags(MsgArg::OwnsArgs, true);
+
+    presetId->Set("s", presetID.c_str());
+    presetId->SetOwnershipFlags(MsgArg::OwnsArgs, true);
+
+    transPeriod->Set("u", transitionPeriod);
+    transPeriod->SetOwnershipFlags(MsgArg::OwnsArgs, true);
+}
+
+PulseEffect::PulseEffect() :
+    toState(LampState()), pulsePeriod(0), pulseDuration(0), numPulses(0), fromState(LampState()), toPreset(LSFString()), fromPreset(LSFString()), invalidArgs(true)
+{
+
+}
+
+PulseEffect::PulseEffect(LampState& toLampState, uint32_t& period, uint32_t& duration, uint32_t& numOfPulses, const LampState& fromLampState) :
+    toState(toLampState), pulsePeriod(period), pulseDuration(duration), numPulses(numOfPulses), fromState(fromLampState), toPreset(LSFString()), fromPreset(LSFString()), invalidArgs(false)
+{
+    QCC_DbgPrintf(("%s", __func__));
+}
+
+PulseEffect::PulseEffect(LSFString& toLampPreset, uint32_t& period, uint32_t& duration, uint32_t& numOfPulses, const LSFString& fromLampPreset) :
+    toState(LampState()), pulsePeriod(period), pulseDuration(duration), numPulses(numOfPulses), fromState(LampState()), toPreset(toLampPreset), fromPreset(fromLampPreset), invalidArgs(false)
+{
+    QCC_DbgPrintf(("%s", __func__));
+}
+
+PulseEffect::PulseEffect(const ajn::MsgArg& toLampState, const ajn::MsgArg& period, const ajn::MsgArg& duration, const ajn::MsgArg& numOfPulses, const ajn::MsgArg& fromLampState,
+                         const ajn::MsgArg& toLampPreset, const ajn::MsgArg& fromLampPreset)
+{
+    QCC_DbgPrintf(("%s", __func__));
+    Set(toLampState, period, duration, numOfPulses, fromLampState, toLampPreset, fromLampPreset);
+}
+
+const char* PulseEffect::c_str(void) const
+{
+    QCC_DbgPrintf(("%s", __func__));
+    return "";
+}
+
+PulseEffect::PulseEffect(const PulseEffect& other) :
+    toState(other.toState), pulsePeriod(other.pulsePeriod), pulseDuration(other.pulseDuration), numPulses(other.numPulses), fromState(other.fromState), toPreset(other.toPreset), fromPreset(other.fromPreset), invalidArgs(other.invalidArgs)
+{
+    QCC_DbgPrintf(("%s", __func__));
+}
+
+PulseEffect& PulseEffect::operator=(const PulseEffect& other)
+{
+    QCC_DbgPrintf(("%s", __func__));
+    toState = other.toState;
+    pulsePeriod = other.pulsePeriod;
+    pulseDuration = other.pulseDuration;
+    numPulses = other.numPulses;
+    fromState = other.fromState;
+    toPreset = other.toPreset;
+    fromPreset = other.fromPreset;
+    invalidArgs = other.invalidArgs;
+    return *this;
+}
+
+void PulseEffect::Set(const ajn::MsgArg& toLampState, const ajn::MsgArg& period, const ajn::MsgArg& duration, const ajn::MsgArg& numOfPulses, const ajn::MsgArg& fromLampState,
+                      const ajn::MsgArg& toLampPreset, const ajn::MsgArg& fromLampPreset)
+{
+    QCC_DbgPrintf(("%s", __func__));
+
+    const char* tempFromPresetId;
+    const char* tempToPresetId;
+
+    fromLampPreset.Get("s", &tempFromPresetId);
+    fromPreset = LSFString(tempFromPresetId);
+
+    toLampPreset.Get("s", &tempToPresetId);
+    toPreset = LSFString(tempToPresetId);
+
+    fromState.Set(fromLampState);
+    toState.Set(toLampState);
+
+    period.Get("u", &pulsePeriod);
+    duration.Get("u", &pulseDuration);
+    numOfPulses.Get("u", &numPulses);
+
+    if (((!(fromState.nullState)) && (!(toState.nullState)) && (fromPreset.empty()) && (toPreset.empty())) ||
+        ((fromState.nullState) && (toState.nullState) && (!(fromPreset.empty())) && (!(toPreset.empty())))) {
+        invalidArgs =  false;
+    } else {
+        QCC_LogError(ER_FAIL, ("%s: PulseEffect should include either valid LampStates or valid PresetIDs", __func__));
+    }
+}
+
+void PulseEffect::Get(ajn::MsgArg* toLampState, ajn::MsgArg* period, ajn::MsgArg* duration, ajn::MsgArg* numOfPulses, ajn::MsgArg* fromLampState,
+                      ajn::MsgArg* toLampPreset, ajn::MsgArg* fromLampPreset) const
+{
+    QCC_DbgPrintf(("%s", __func__));
+
+    fromState.Get(fromLampState);
+    fromLampState->SetOwnershipFlags(MsgArg::OwnsArgs, true);
+
+    toState.Get(toLampState);
+    toLampState->SetOwnershipFlags(MsgArg::OwnsArgs, true);
+
+    fromLampPreset->Set("s", fromPreset.c_str());
+    fromLampPreset->SetOwnershipFlags(MsgArg::OwnsArgs, true);
+
+    toLampPreset->Set("s", toPreset.c_str());
+    toLampPreset->SetOwnershipFlags(MsgArg::OwnsArgs, true);
+
+    period->Set("u", pulsePeriod);
+    period->SetOwnershipFlags(MsgArg::OwnsArgs, true);
+
+    duration->Set("u", pulseDuration);
+    duration->SetOwnershipFlags(MsgArg::OwnsArgs, true);
+
+    numOfPulses->Set("u", numPulses);
+    numOfPulses->SetOwnershipFlags(MsgArg::OwnsArgs, true);
 }
 
 TransitionLampsLampGroupsToState::TransitionLampsLampGroupsToState(LSFStringList& lampList, LSFStringList& lampGroupList, LampState& lampState, uint32_t& transPeriod) :

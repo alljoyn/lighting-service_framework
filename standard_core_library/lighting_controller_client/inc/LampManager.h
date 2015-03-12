@@ -361,6 +361,13 @@ class LampManagerCallback {
      * @param supportedLanguages - the required answer
      */
     virtual void GetLampSupportedLanguagesReplyCB(const LSFResponseCode& responseCode, const LSFString& lampID, const LSFStringList& supportedLanguages) { };
+    /**
+     * Set Lamp Effect Reply CB
+     * @param responseCode
+     * @param lampID   - The requested lamp id
+     * @param effectID - the requested effect id
+     */
+    virtual void SetLampEffectReplyCB(const LSFResponseCode& responseCode, const LSFString& lampID, const LSFString& effectID) { }
 };
 
 /**
@@ -649,11 +656,11 @@ class LampManager : public Manager {
      * Response in LampManagerCallback::TransitionLSFStringReplyCB \n
      * Calling to interface 'org.allseen.LSF.ControllerService.Lamp' to function 'PulseLampWithPreset'
      * @param lampID
-     * @param toPresetID - the required pre-set identifier
+     * @param toPresetID - the required preset identifier
      * @param period - The time duration of one pulse in milliseconds. Time to transform from 'fromPresetID' to 'toPresetID'.
      * @param duration - The time duration that the 'fromPresetID' will be lingered. Always duration <= period.
      * @param numPulses - number of pulses
-     * @param fromPresetID - the target pre-set identifier
+     * @param fromPresetID - the target preset identifier
      */
     ControllerClientStatus PulseLampWithPreset(const LSFString& lampID, const LSFString& toPresetID, const uint32_t& period, const uint32_t& duration, const uint32_t& numPulses, const LSFString& fromPresetID = CurrentStateIdentifier);
 
@@ -727,12 +734,12 @@ class LampManager : public Manager {
     }
 
     /**
-     * Transition the Lamp to a given pre-set \n
+     * Transition the Lamp to a given preset \n
      * Calling to interface 'org.allseen.LSF.ControllerService.Lamp' to method 'TransitionLampStateToPreset' \n
      * Response in LampManagerCallback::TransitionLampStateToPresetReplyCB
      *
      * @param lampID - The id of the Lamp
-     * @param presetID - The id of the target pre-set
+     * @param presetID - The id of the target preset
      * @param transitionPeriod - time duration of the transition in millisecond
      */
     ControllerClientStatus TransitionLampStateToPreset(const LSFString& lampID, const LSFString& presetID, const uint32_t& transitionPeriod = 0);
@@ -785,6 +792,14 @@ class LampManager : public Manager {
      * @return ControllerClientStatus
      */
     ControllerClientStatus GetLampDataSet(const LSFString& lampID, const LSFString& language = LSFString("en"));
+
+    /**
+     * Set the effect defined by effectID on the lamp identified by lamp ID \n
+     * @param lampID
+     * @param effectID
+     * @return ControllerClientStatus
+     */
+    ControllerClientStatus SetLampEffect(const LSFString& lampID, const LSFString& effectID);
 
   private:
 

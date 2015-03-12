@@ -19,6 +19,7 @@
 #include <qcc/Debug.h>
 #include <ControllerService.h>
 #include <OEM_CS_Config.h>
+#include <LSFTypes.h>
 
 #include <Thread.h>
 #include <LSFSemaphore.h>
@@ -256,6 +257,14 @@ void LeaderElectionObject::OnGetBlobReply(ajn::Message& message, void* context)
             case LSF_SCENE:
                 controller.GetSceneManager().HandleReceivedBlob(args[1].v_string.str, args[2].v_uint32, args[3].v_uint64);
                 break;
+
+            case LSF_TRANSITION_EFFECT:
+                controller.GetTransitionEffectManager().HandleReceivedBlob(args[1].v_string.str, args[2].v_uint32, args[3].v_uint64);
+                break;
+
+            case LSF_PULSE_EFFECT:
+                controller.GetPulseEffectManager().HandleReceivedBlob(args[1].v_string.str, args[2].v_uint32, args[3].v_uint64);
+                break;
             }
         }
     }
@@ -333,6 +342,14 @@ void LeaderElectionObject::OnGetChecksumAndModificationTimestampReply(ajn::Messa
 
             case LSF_SCENE:
                 controller.GetSceneManager().GetBlobInfo(myChecksum, myTimestamp);
+                break;
+
+            case LSF_TRANSITION_EFFECT:
+                controller.GetTransitionEffectManager().GetBlobInfo(myChecksum, myTimestamp);
+                break;
+
+            case LSF_PULSE_EFFECT:
+                controller.GetPulseEffectManager().GetBlobInfo(myChecksum, myTimestamp);
                 break;
             }
 
@@ -1581,4 +1598,10 @@ void LeaderElectionObject::OnBlobChanged(const InterfaceDescription::Member* mem
         QCC_LogError(ER_FAIL, ("%s: Unsupported blob type requested", __func__));
         break;
     }
+}
+
+uint32_t LeaderElectionObject::GetLeaderElectionAndStateSyncInterfaceVersion(void)
+{
+    QCC_DbgPrintf(("%s: LeaderElectionAndStateSyncInterfaceVersion=%d", __func__, ControllerServiceLeaderElectionAndStateSyncInterfaceVersion));
+    return ControllerServiceLeaderElectionAndStateSyncInterfaceVersion;
 }

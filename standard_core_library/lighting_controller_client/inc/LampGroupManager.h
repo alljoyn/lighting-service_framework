@@ -257,6 +257,14 @@ class LampGroupManagerCallback {
      * @param lampGroupID     The Lamp Group ID
      */
     virtual void TransitionLampGroupStateToPresetReplyCB(const LSFResponseCode& responseCode, const LSFString& lampGroupID) { }
+
+    /**
+     * Set Lamp Group Effect Reply CB
+     * @param responseCode
+     * @param lampGroupID   - The requested lamp id
+     * @param effectID - the requested effect id
+     */
+    virtual void SetLampGroupEffectReplyCB(const LSFResponseCode& responseCode, const LSFString& lampGroupID, const LSFString& effectID) { }
 };
 
 /**
@@ -560,6 +568,14 @@ class LampGroupManager : public Manager {
      * @param language
      */
     ControllerClientStatus GetLampGroupDataSet(const LSFString& lampGroupID, const LSFString& language = LSFString("en"));
+
+    /**
+     * Set the effect defined by effectID on the lamp group identified by lamp group ID \n
+     * @param lampGroupID
+     * @param effectID
+     * @return ControllerClientStatus
+     */
+    ControllerClientStatus SetLampGroupEffect(const LSFString& lampGroupID, const LSFString& effectID);
 
   private:
 

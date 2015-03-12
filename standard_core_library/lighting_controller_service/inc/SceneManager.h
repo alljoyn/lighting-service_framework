@@ -75,6 +75,20 @@ class SceneManager : public Manager {
      */
     LSFResponseCode IsDependentOnLampGroup(LSFString& lampGroupID);
     /**
+     * Check if there a scene that depends on specific transition effect. \n
+     * @param transitionEffectID - the transition effect id
+     * @return LSF_OK if there is not dependency
+     *         LSF_ERR_DEPENDENCY if there is dependency
+     */
+    LSFResponseCode IsDependentOnTransitionEffect(LSFString& transitionEffectID);
+    /**
+     * Check if there a scene that depends on specific pulse effect. \n
+     * @param pulseEffectID - the pulse effect id
+     * @return LSF_OK if there is not dependency
+     *         LSF_ERR_DEPENDENCY if there is dependency
+     */
+    LSFResponseCode IsDependentOnPulseEffect(LSFString& pulseEffectID);
+    /**
      * Get All Scene IDs. \n
      * Return asynchronous reply with response code: \n
      *  LSF_OK - operation succeeded

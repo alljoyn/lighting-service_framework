@@ -52,6 +52,8 @@ static std::string factoryConfigFile = "OEMConfig.ini";
 static std::string configFile = "Config.ini";
 static std::string lampGroupFile = "LampGroups.lsf";
 static std::string presetFile = "Presets.lsf";
+static std::string transitionEffectFile = "TransitionEffect.lsf";
+static std::string pulseEffectFile = "PulseEffect.lsf";
 static std::string sceneFile = "Scenes.lsf";
 static std::string masterSceneFile = "MasterScenes.lsf";
 static std::string storeFile = "LightingControllerService";
@@ -59,6 +61,8 @@ static std::string factoryConfigFilePath = factoryConfigFile;
 static std::string configFilePath = configFile;
 static std::string lampGroupFilePath = lampGroupFile;
 static std::string presetFilePath = presetFile;
+static std::string transitionEffectFilePath = transitionEffectFile;
+static std::string pulseEffectFilePath = pulseEffectFile;
 static std::string sceneFilePath = sceneFile;
 static std::string masterSceneFilePath = masterSceneFile;
 static std::string storeFilePath = storeFile;
@@ -107,6 +111,8 @@ static void parseCommandLine(int argc, char** argv)
                 configFilePath = absDirPath + configFile;
                 lampGroupFilePath = absDirPath + lampGroupFile;
                 presetFilePath = absDirPath + presetFile;
+                transitionEffectFilePath = absDirPath + transitionEffectFile;
+                pulseEffectFilePath = absDirPath + pulseEffectFile;
                 sceneFilePath = absDirPath + sceneFile;
                 masterSceneFilePath = absDirPath + masterSceneFile;
                 storeFilePath = storeLocation + "/" + storeFile;
@@ -142,7 +148,7 @@ void RunService(bool listenToInterrupts)
 
 
     lsf::ControllerServiceManager* controllerSvcManagerPtr =
-        new lsf::ControllerServiceManager(factoryConfigFilePath, configFilePath, lampGroupFilePath, presetFilePath, sceneFilePath, masterSceneFilePath);
+        new lsf::ControllerServiceManager(factoryConfigFilePath, configFilePath, lampGroupFilePath, presetFilePath, transitionEffectFilePath, pulseEffectFilePath, sceneFilePath, masterSceneFilePath);
 
     if (controllerSvcManagerPtr == NULL) {
         QCC_LogError(ER_OUT_OF_MEMORY, ("%s: Failed to start the Controller Service Manager", __func__));

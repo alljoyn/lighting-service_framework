@@ -212,7 +212,9 @@ static const char* interfaces[] =
     ControllerServiceSceneInterfaceName,
     ControllerServiceMasterSceneInterfaceName,
     ConfigServiceInterfaceName,
-    AboutInterfaceName
+    AboutInterfaceName,
+    ControllerServiceTransitionEffectInterfaceName,
+    ControllerServicePulseEffectInterfaceName
 };
 
 ControllerClient::ControllerClient(
@@ -227,6 +229,8 @@ ControllerClient::ControllerClient(
     presetManagerPtr(NULL),
     sceneManagerPtr(NULL),
     masterSceneManagerPtr(NULL),
+    transitionEffectManagerPtr(NULL),
+    pulseEffectManagerPtr(NULL),
     stopped(true),
     timeStopped(0)
 {
@@ -1225,6 +1229,38 @@ void ControllerClient::AddMethodHandlers()
         AddMethodReplyWithUint32ValueHandler("SetDefaultLampState", presetManagerPtr, &PresetManager::SetDefaultLampStateReply);
     }
 
+    if (transitionEffectManagerPtr) {
+        AddSignalHandler("TransitionEffectsNameChanged", transitionEffectManagerPtr, &TransitionEffectManager::TransitionEffectsNameChanged);
+        AddSignalHandler("TransitionEffectsCreated", transitionEffectManagerPtr, &TransitionEffectManager::TransitionEffectsCreated);
+        AddSignalHandler("TransitionEffectsUpdated", transitionEffectManagerPtr, &TransitionEffectManager::TransitionEffectsUpdated);
+        AddSignalHandler("TransitionEffectsDeleted", transitionEffectManagerPtr, &TransitionEffectManager::TransitionEffectsDeleted);
+
+        AddMethodReplyWithResponseCodeAndListOfIDsHandler("GetAllTransitionEffectIDs", transitionEffectManagerPtr, &TransitionEffectManager::GetAllTransitionEffectIDsReply);
+
+        AddMethodReplyWithResponseCodeIDLanguageAndNameHandler("GetTransitionEffectName", transitionEffectManagerPtr, &TransitionEffectManager::GetTransitionEffectNameReply);
+
+        AddMethodReplyWithResponseCodeIDAndNameHandler("SetTransitionEffectName", transitionEffectManagerPtr, &TransitionEffectManager::SetTransitionEffectNameReply);
+        AddMethodReplyWithResponseCodeAndIDHandler("CreateTransitionEffect", transitionEffectManagerPtr, &TransitionEffectManager::CreateTransitionEffectReply);
+        AddMethodReplyWithResponseCodeAndIDHandler("UpdateTransitionEffect", transitionEffectManagerPtr, &TransitionEffectManager::UpdateTransitionEffectReply);
+        AddMethodReplyWithResponseCodeAndIDHandler("DeleteTransitionEffect", transitionEffectManagerPtr, &TransitionEffectManager::DeleteTransitionEffectReply);
+    }
+
+    if (pulseEffectManagerPtr) {
+        AddSignalHandler("PulseEffectsNameChanged", pulseEffectManagerPtr, &PulseEffectManager::PulseEffectsNameChanged);
+        AddSignalHandler("PulseEffectsCreated", pulseEffectManagerPtr, &PulseEffectManager::PulseEffectsCreated);
+        AddSignalHandler("PulseEffectsUpdated", pulseEffectManagerPtr, &PulseEffectManager::PulseEffectsUpdated);
+        AddSignalHandler("PulseEffectsDeleted", pulseEffectManagerPtr, &PulseEffectManager::PulseEffectsDeleted);
+
+        AddMethodReplyWithResponseCodeAndListOfIDsHandler("GetAllPulseEffectIDs", pulseEffectManagerPtr, &PulseEffectManager::GetAllPulseEffectIDsReply);
+
+        AddMethodReplyWithResponseCodeIDLanguageAndNameHandler("GetPulseEffectName", pulseEffectManagerPtr, &PulseEffectManager::GetPulseEffectNameReply);
+
+        AddMethodReplyWithResponseCodeIDAndNameHandler("SetPulseEffectName", pulseEffectManagerPtr, &PulseEffectManager::SetPulseEffectNameReply);
+        AddMethodReplyWithResponseCodeAndIDHandler("CreatePulseEffect", pulseEffectManagerPtr, &PulseEffectManager::CreatePulseEffectReply);
+        AddMethodReplyWithResponseCodeAndIDHandler("UpdatePulseEffect", pulseEffectManagerPtr, &PulseEffectManager::UpdatePulseEffectReply);
+        AddMethodReplyWithResponseCodeAndIDHandler("DeletePulseEffect", pulseEffectManagerPtr, &PulseEffectManager::DeletePulseEffectReply);
+    }
+
     if (sceneManagerPtr) {
         AddSignalHandler("ScenesNameChanged", sceneManagerPtr, &SceneManager::ScenesNameChanged);
         AddSignalHandler("ScenesCreated", sceneManagerPtr, &SceneManager::ScenesCreated);
@@ -1268,6 +1304,8 @@ void ControllerClient::AddSignalHandlers()
     const InterfaceDescription* controllerServiceLampInterface = currentLeader.proxyObject.GetInterface(ControllerServiceLampInterfaceName);
     const InterfaceDescription* controllerServiceLampGroupInterface = currentLeader.proxyObject.GetInterface(ControllerServiceLampGroupInterfaceName);
     const InterfaceDescription* controllerServicePresetInterface = currentLeader.proxyObject.GetInterface(ControllerServicePresetInterfaceName);
+    const InterfaceDescription* controllerServiceTransitionEffectInterface = currentLeader.proxyObject.GetInterface(ControllerServiceTransitionEffectInterfaceName);
+    const InterfaceDescription* controllerServicePulseEffectInterface = currentLeader.proxyObject.GetInterface(ControllerServicePulseEffectInterfaceName);
     const InterfaceDescription* controllerServiceSceneInterface = currentLeader.proxyObject.GetInterface(ControllerServiceSceneInterfaceName);
     const InterfaceDescription* controllerServiceMasterSceneInterface = currentLeader.proxyObject.GetInterface(ControllerServiceMasterSceneInterfaceName);
 
@@ -1286,6 +1324,14 @@ void ControllerClient::AddSignalHandlers()
         { controllerServicePresetInterface->GetMember("PresetsCreated"), static_cast<MessageReceiver::SignalHandler>(&ControllerClient::SignalWithArgDispatcher) },
         { controllerServicePresetInterface->GetMember("PresetsUpdated"), static_cast<MessageReceiver::SignalHandler>(&ControllerClient::SignalWithArgDispatcher) },
         { controllerServicePresetInterface->GetMember("PresetsDeleted"), static_cast<MessageReceiver::SignalHandler>(&ControllerClient::SignalWithArgDispatcher) },
+        { controllerServiceTransitionEffectInterface->GetMember("TransitionEffectsNameChanged"), static_cast<MessageReceiver::SignalHandler>(&ControllerClient::SignalWithArgDispatcher) },
+        { controllerServiceTransitionEffectInterface->GetMember("TransitionEffectsCreated"), static_cast<MessageReceiver::SignalHandler>(&ControllerClient::SignalWithArgDispatcher) },
+        { controllerServiceTransitionEffectInterface->GetMember("TransitionEffectsUpdated"), static_cast<MessageReceiver::SignalHandler>(&ControllerClient::SignalWithArgDispatcher) },
+        { controllerServiceTransitionEffectInterface->GetMember("TransitionEffectsDeleted"), static_cast<MessageReceiver::SignalHandler>(&ControllerClient::SignalWithArgDispatcher) },
+        { controllerServicePulseEffectInterface->GetMember("PulseEffectsNameChanged"), static_cast<MessageReceiver::SignalHandler>(&ControllerClient::SignalWithArgDispatcher) },
+        { controllerServicePulseEffectInterface->GetMember("PulseEffectsCreated"), static_cast<MessageReceiver::SignalHandler>(&ControllerClient::SignalWithArgDispatcher) },
+        { controllerServicePulseEffectInterface->GetMember("PulseEffectsUpdated"), static_cast<MessageReceiver::SignalHandler>(&ControllerClient::SignalWithArgDispatcher) },
+        { controllerServicePulseEffectInterface->GetMember("PulseEffectsDeleted"), static_cast<MessageReceiver::SignalHandler>(&ControllerClient::SignalWithArgDispatcher) },
         { controllerServiceSceneInterface->GetMember("ScenesNameChanged"), static_cast<MessageReceiver::SignalHandler>(&ControllerClient::SignalWithArgDispatcher) },
         { controllerServiceSceneInterface->GetMember("ScenesCreated"), static_cast<MessageReceiver::SignalHandler>(&ControllerClient::SignalWithArgDispatcher) },
         { controllerServiceSceneInterface->GetMember("ScenesUpdated"), static_cast<MessageReceiver::SignalHandler>(&ControllerClient::SignalWithArgDispatcher) },
