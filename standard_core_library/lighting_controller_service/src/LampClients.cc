@@ -1483,6 +1483,7 @@ void LampClients::Run(void)
              * Send out Join Session requests
              */
             SessionOpts opts;
+            opts.transports &= (~TRANSPORT_UDP);
             opts.isMultipoint = true;
             for (LampMap::iterator it = activeLamps.begin(); it != activeLamps.end(); it++) {
                 LampConnection* newConn =  it->second;

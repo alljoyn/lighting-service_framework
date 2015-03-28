@@ -415,6 +415,7 @@ QStatus LSFAboutDataStore::Delete(const char* name, const char* languageTag)
             for (size_t i = 0; i < langNum; ++i) {
                 SetSupportedLanguage(langs[i]);
             }
+            delete [] langs;
         }
     } else if (strcmp(name, AboutData::DESCRIPTION) == 0) {
         char* description = NULL;
