@@ -1007,6 +1007,7 @@ void ControllerService::ObjectRegistered(void)
     QCC_DbgPrintf(("Registered!\n"));
 
     SessionOpts opts;
+    opts.transports &= (~TRANSPORT_UDP);
     opts.isMultipoint = true;
     QStatus status = bus.BindSessionPort(ControllerServiceSessionPort, opts, *listener);
     QCC_DbgPrintf(("BindSessionPort: %s\n", QCC_StatusText(status)));

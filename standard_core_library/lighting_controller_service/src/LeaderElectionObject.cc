@@ -867,6 +867,7 @@ void LeaderElectionObject::Run(void)
                             ControllerEntry* ctx = new ControllerEntry();
                             *ctx = controllerDetails;
                             SessionOpts opts;
+                            opts.transports &= (~TRANSPORT_UDP);
                             opts.isMultipoint = true;
                             QStatus status = bus.JoinSessionAsync(controllerDetails.busName.c_str(), controllerDetails.port, handler, opts, handler, ctx);
                             if (status != ER_OK) {

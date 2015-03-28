@@ -326,6 +326,7 @@ bool ControllerClient::JoinSessionWithAnotherLeader(Rank currentLeaderRank, uint
         *context = entry;
         SessionOpts opts;
         opts.isMultipoint = true;
+        opts.transports &= (~TRANSPORT_UDP);
         QStatus status = bus.JoinSessionAsync(entry.busName.c_str(), entry.port, busHandler, opts, busHandler, context);
         if (status != ER_OK) {
             QCC_LogError(status, ("%s: JoinSessionAsync failed", __func__));
