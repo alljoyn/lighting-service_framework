@@ -25,8 +25,12 @@
  ******************************************************************************/
 
 #include <qcc/String.h>
+#import "LSFNamespaceSpecifier.h"
 
 namespace lsf {
+
+OPTIONAL_NAMESPACE_CONTROLLER_SERVICE
+
 /**
  * Device Icon URL
  */
@@ -44,6 +48,8 @@ extern uint8_t DeviceIcon[];
  */
 extern const size_t DeviceIconSize;
 
-}
+OPTIONAL_NAMESPACE_CLOSE
+
+} //lsf
 
 #endif

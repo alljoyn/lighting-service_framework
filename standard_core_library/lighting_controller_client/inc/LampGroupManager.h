@@ -93,6 +93,16 @@ class LampGroupManagerCallback {
     virtual void CreateLampGroupReplyCB(const LSFResponseCode& responseCode, const LSFString& lampGroupID) { }
 
     /**
+     * Indicates that a reply has been received for the CreateLampGroupWithTracking method call.
+     *
+     * @param responseCode   The response code
+     * @param lampGroupID    The Lamp Group ID
+     * @param trackingID     The tracking ID that the application can use to associate the CreateLampGroupWithTracking
+     *                       method call with the reply
+     */
+    virtual void CreateLampGroupWithTrackingReplyCB(const LSFResponseCode& responseCode, const LSFString& lampGroupID, const uint32_t& trackingID) { }
+
+    /**
      *  Indicates that the signal LampGroupsCreated has been received.
      *
      *  @param lampGroupIDs   The Lamp Group IDs
@@ -332,6 +342,22 @@ class LampGroupManager : public Manager {
      *
      */
     ControllerClientStatus CreateLampGroup(const LampGroup& lampGroup, const LSFString& lampGroupName, const LSFString& language = LSFString("en"));
+
+    /**
+     * Create a new Lamp Group and provide a API call tracking ID back to the application. \n
+     * Response in LampGroupManagerCallback::CreateLampGroupWithTrackingReplyCB
+     *
+     * @param trackingID  Controller Client returns a tracking ID in this variable which the application
+     *                    can use to associate the reply for this call with the request
+     * @param lampGroup   Lamp Group
+     * @param lampGroupName
+     * @param language
+     * @return
+     *      - CONTROLLER_CLIENT_OK if successful
+     *      - An error status otherwise
+     *
+     */
+    ControllerClientStatus CreateLampGroupWithTracking(uint32_t& trackingID, const LampGroup& lampGroup, const LSFString& lampGroupName, const LSFString& language = LSFString("en"));
 
     /**
      * Modify a Lamp Group. \n
@@ -622,6 +648,11 @@ class LampGroupManager : public Manager {
      * Method Reply Handler for the signal CreateLampGroup
      */
     void CreateLampGroupReply(LSFResponseCode& responseCode, LSFString& lsfId);
+
+    /**
+     * Method Reply Handler for the signal CreateLampGroupWithTracking
+     */
+    void CreateLampGroupWithTrackingReply(LSFResponseCode& responseCode, LSFString& lsfId, uint32_t& trackingID);
 
     /**
      * Method Reply Handler for the signal UpdateLampGroup

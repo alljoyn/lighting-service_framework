@@ -117,6 +117,23 @@ ControllerClientStatus PresetManager::CreatePreset(const LampState& preset, cons
                3);
 }
 
+ControllerClientStatus PresetManager::CreatePresetWithTracking(uint32_t& trackingID, const LampState& preset, const LSFString& presetName, const LSFString& language)
+{
+    //QCC_DbgPrintf(("%s: preset=%s", __func__, preset.c_str()));
+
+    MsgArg arg[3];
+    preset.Get(&arg[0], true);
+    arg[1].Set("s", presetName.c_str());
+    arg[2].Set("s", language.c_str());
+
+    return controllerClient.MethodCallAsyncForReplyWithResponseCodeIDAndTrackingID(
+               trackingID,
+               ControllerServicePresetInterfaceName,
+               "CreatePreset",
+               arg,
+               3);
+}
+
 ControllerClientStatus PresetManager::UpdatePreset(const LSFString& presetID, const LampState& preset)
 {
     //QCC_DbgPrintf(("%s: presetID=%s preset=%s", __func__, presetID.c_str(), preset.c_str()));

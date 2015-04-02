@@ -14,17 +14,31 @@
  *    OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  ******************************************************************************/
 
+#ifdef LSF_BINDINGS
+#include <lsf/controllerservice/PresetManager.h>
+#include <lsf/controllerservice/ControllerService.h>
+#include <lsf/controllerservice/SceneManager.h>
+#include <lsf/controllerservice/OEM_CS_Config.h>
+#include <lsf/controllerservice/FileParser.h>
+#else
 #include <PresetManager.h>
 #include <ControllerService.h>
-#include <qcc/Debug.h>
 #include <SceneManager.h>
 #include <OEM_CS_Config.h>
 #include <FileParser.h>
+#endif
+
+#include <qcc/Debug.h>
 
 using namespace lsf;
 using namespace ajn;
 
+#ifdef LSF_BINDINGS
+using namespace controllerservice;
+#define QCC_MODULE "CONTROLLER_PRESET_MANAGER"
+#else
 #define QCC_MODULE "PRESET_MANAGER"
+#endif
 
 LSFString defaultLampStateID = "DefaultLampState";
 

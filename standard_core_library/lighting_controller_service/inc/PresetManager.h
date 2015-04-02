@@ -23,15 +23,22 @@
  *    OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  ******************************************************************************/
 
+#ifdef LSF_BINDINGS
+#include <lsf/controllerservice/Manager.h>
+#else
 #include <Manager.h>
+#endif
 
 #include <Mutex.h>
 #include <LSFTypes.h>
 
 #include <string>
 #include <map>
+#include "LSFNamespaceSpecifier.h"
 
 namespace lsf {
+
+OPTIONAL_NAMESPACE_CONTROLLER_SERVICE
 
 class SceneManager;
 /**
@@ -210,7 +217,9 @@ class PresetManager : public Manager {
     std::string GetString(const std::string& name, const std::string& id, const LampState& preset);
 };
 
-}
+OPTIONAL_NAMESPACE_CLOSE
+
+} //lsf
 
 
 #endif

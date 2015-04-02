@@ -23,31 +23,42 @@
  *    OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  ******************************************************************************/
 
+#ifdef LSF_BINDINGS
+#include <lsf/controllerservice/Manager.h>
+#else
 #include <Manager.h>
+#endif
 
+#include <SceneManager.h>
 #include <Mutex.h>
 #include <LSFTypes.h>
 
 #include <string>
 #include <map>
+#include "LSFNamespaceSpecifier.h"
 
 namespace lsf {
 
+OPTIONAL_NAMESPACE_CONTROLLER_SERVICE
+
+
 class SceneManager;
+class LampGroupManager;
+
 /**
  * class manages the transition effect of the lamps. \n
  * transition effect is the ability to save lamp states and to use them when required later on.
  */
 class TransitionEffectManager : public Manager {
-    friend class LampManager;
   public:
     /**
      * class constructor. \n
      * @param controllerSvc - reference to controller service instance
+     * @param lampGroupMgrPtr - pointer to lamp group manager
      * @param sceneMgrPtr - pointer to scene manager
      * @param transitionEffectFile - The full path of transition effect file to be the persistent data
      */
-    TransitionEffectManager(ControllerService& controllerSvc, SceneManager* sceneMgrPtr, const std::string& transitionEffectFile);
+    TransitionEffectManager(ControllerService& controllerSvc, LampGroupManager* lampGroupMgrPtr, SceneManager* sceneMgrPtr, const std::string& transitionEffectFile);
     /**
      * Clears the transitionEffects data. \n
      * Send signal to the controller clients 'org.allseen.LSF.ControllerService.TransitionEffect' 'TransitionEffectsDeleted'. \n
@@ -100,6 +111,22 @@ class TransitionEffectManager : public Manager {
      *      LSF_ERR_RESOURCES - blob is too big. \n
      */
     void UpdateTransitionEffect(ajn::Message& msg);
+    /**
+     * Apply transitionEffect on Lamps. \n
+     * @param msg type Message with MsgArgs: transition effect id and list of lamp IDs. \n
+     * Return asynchronously the response code and transition effect id. \n
+     * response code LSF_OK on success. \n
+     *      LSF_ERR_NOT_FOUND - transition effect/lamp with requested id is not found. \n
+     */
+    void ApplyTransitionEffectOnLamps(ajn::Message& msg);
+    /**
+     * Apply transitionEffect on Lamp Groups. \n
+     * @param msg type Message with MsgArgs: transition effect id and list of lamp group IDs. \n
+     * Return asynchronously the response code and transition effect id. \n
+     * response code LSF_OK on success. \n
+     *      LSF_ERR_NOT_FOUND - transition effect/lamp group with requested id is not found. \n
+     */
+    void ApplyTransitionEffectOnLampGroups(ajn::Message& msg);
     /**
      * Delete existing transitionEffect. \n
      * @param msg type Message with MsgArgs: transition effect id. \n
@@ -170,6 +197,7 @@ class TransitionEffectManager : public Manager {
 
     TransitionEffectMap transitionEffects;
     Mutex transitionEffectsLock;
+    LampGroupManager* lampGroupManagerPtr;
     SceneManager* sceneManagerPtr;
     size_t blobLength;
 
@@ -177,7 +205,9 @@ class TransitionEffectManager : public Manager {
     std::string GetString(const std::string& name, const std::string& id, const TransitionEffect& transitionEffect);
 };
 
-}
+OPTIONAL_NAMESPACE_CLOSE
+
+} //lsf
 
 
 #endif

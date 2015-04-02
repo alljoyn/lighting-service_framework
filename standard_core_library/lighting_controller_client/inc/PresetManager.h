@@ -104,6 +104,16 @@ class PresetManagerCallback {
     virtual void CreatePresetReplyCB(const LSFResponseCode& responseCode, const LSFString& presetID) { }
 
     /**
+     * Indicates that a reply has been received for the CreatePresetWithTracking method call.
+     *
+     * @param responseCode   The response code
+     * @param presetID       The Preset ID
+     * @param trackingID     The tracking ID that the application can use to associate the CreatePresetWithTracking
+     *                       method call with the reply
+     */
+    virtual void CreatePresetWithTrackingReplyCB(const LSFResponseCode& responseCode, const LSFString& presetID, const uint32_t& trackingID) { }
+
+    /**
      * A Preset has been created
      *
      * @param presetIDs    The id of the Preset
@@ -229,6 +239,22 @@ class PresetManager : public Manager {
     ControllerClientStatus CreatePreset(const LampState& preset, const LSFString& presetName, const LSFString& language = LSFString("en"));
 
     /**
+     * Create a new Preset and provide a API call tracking ID back to the application. \n
+     * Response in PresetManagerCallback::CreatePresetWithTrackingReplyCB
+     *
+     * @param trackingID  Controller Client returns a tracking ID in this variable which the application
+     *                    can use to associate the reply for this call with the request
+     * @param preset   Preset
+     * @param presetName
+     * @param language
+     * @return
+     *      - CONTROLLER_CLIENT_OK if successful
+     *      - An error status otherwise
+     *
+     */
+    ControllerClientStatus CreatePresetWithTracking(uint32_t& trackingID, const LampState& preset, const LSFString& presetName, const LSFString& language = LSFString("en"));
+
+    /**
      * Update an existing Preset. \n
      * Response in PresetManagerCallback::UpdatePresetReplyCB. \n
      * Return asynchronously the preset response code and unique id. \n
@@ -322,6 +348,10 @@ class PresetManager : public Manager {
 
     void CreatePresetReply(LSFResponseCode& responseCode, LSFString& lsfId) {
         callback.CreatePresetReplyCB(responseCode, lsfId);
+    }
+
+    void CreatePresetWithTrackingReply(LSFResponseCode& responseCode, LSFString& lsfId, uint32_t& trackingID) {
+        callback.CreatePresetWithTrackingReplyCB(responseCode, lsfId, trackingID);
     }
 
     void UpdatePresetReply(LSFResponseCode& responseCode, LSFString& lsfId) {

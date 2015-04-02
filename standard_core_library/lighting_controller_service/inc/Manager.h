@@ -36,8 +36,11 @@
 #include <vector>
 #include <Mutex.h>
 #include <signal.h>
+#include "LSFNamespaceSpecifier.h"
 
 namespace lsf {
+
+OPTIONAL_NAMESPACE_CONTROLLER_SERVICE
 
 class ControllerService;
 
@@ -49,7 +52,7 @@ class Manager : public ajn::MessageReceiver {
     static const size_t ID_STR_LEN = 8;
 
   protected:
-    static const size_t MAX_FILE_LEN = 1024 * 127; /**< Max file len */
+    static const size_t MAX_FILE_LEN = 1024 * 127;         /**< Max file len */
 
   public:
     /**
@@ -75,14 +78,14 @@ class Manager : public ajn::MessageReceiver {
      */
     LSFString GenerateUniqueID(const LSFString& prefix) const;
 
-    ControllerService& controllerService; /**< controller service reference */
+    ControllerService& controllerService;         /**< controller service reference */
 
-    bool updated; /**< true after ScheduleFileWrite */
+    bool updated;         /**< true after ScheduleFileWrite */
 
-    Mutex readMutex; /**< read mutex */
-    bool read; /**< true after ScheduleFileRead */
+    Mutex readMutex;         /**< read mutex */
+    bool read;         /**< true after ScheduleFileRead */
 
-    const std::string filePath; /**< the file location */
+    const std::string filePath;         /**< the file location */
     /**
      * Reading from file
      */
@@ -111,17 +114,19 @@ class Manager : public ajn::MessageReceiver {
      */
     void WriteFileWithChecksumAndTimestamp(const std::string& str, uint32_t checksum, uint64_t timestamp);
 
-    uint32_t checkSum; /**< checkSum of the file */
-    uint64_t timeStamp; /**< timestamp of the file */
-    bool blobUpdateCycle; /**< blob Update Cycle */
-    bool initialState; /**< initial state */
+    uint32_t checkSum;         /**< checkSum of the file */
+    uint64_t timeStamp;         /**< timestamp of the file */
+    bool blobUpdateCycle;         /**< blob Update Cycle */
+    bool initialState;         /**< initial state */
 
-    std::list<ajn::Message> readBlobMessages; /**< Read blob messages */
+    std::list<ajn::Message> readBlobMessages;         /**< Read blob messages */
 
-    volatile sig_atomic_t sendUpdate; /**< send update */
+    volatile sig_atomic_t sendUpdate;         /**< send update */
 };
 
-}
+OPTIONAL_NAMESPACE_CLOSE
+
+} //lsf
 
 
 #endif

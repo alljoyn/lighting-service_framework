@@ -14,22 +14,31 @@
  *    OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  ******************************************************************************/
 
+#ifdef LSF_BINDINGS
+#include <lsf/controllerservice/LampManager.h>
+#include <lsf/controllerservice/OEM_CS_Config.h>
+#include <lsf/controllerservice/ControllerService.h>
+#else
 #include <LampManager.h>
-#include <LSFResponseCodes.h>
 #include <OEM_CS_Config.h>
-
 #include <ControllerService.h>
+#endif
 
+#include <LSFResponseCodes.h>
 #include <alljoyn/Status.h>
 #include <qcc/Debug.h>
 
 #include <algorithm>
 
-
 using namespace lsf;
 using namespace ajn;
 
+#ifdef LSF_BINDINGS
+using namespace controllerservice;
+#define QCC_MODULE "CONTROLLER_LAMP_MANAGER"
+#else
 #define QCC_MODULE "LAMP_MANAGER"
+#endif
 
 LampManager::LampManager(ControllerService& controllerSvc, PresetManager& presetMgr)
     : Manager(controllerSvc), lampClients(controllerSvc), presetManager(presetMgr)
@@ -497,7 +506,8 @@ void LampManager::ChangeLampStateAndField(Message& message,
                                           PulseLampsWithPresetList& pulseWithPresetComponent,
                                           bool groupOperation,
                                           bool sceneOperation,
-                                          LSFString sceneOrMasterSceneId)
+                                          LSFString sceneOrMasterSceneId,
+                                          bool effectOperation)
 {
     LSFResponseCode responseCode = LSF_ERR_FAILURE;
 
@@ -535,17 +545,28 @@ void LampManager::ChangeLampStateAndField(Message& message,
             TransitionStateParams params(transitionToPresetComp.lamps, timestamp, state, transitionToPresetComp.transitionPeriod);
             stateParamsList.push_back(params);
         } else {
-            if (groupOperation || (sceneOperation && ((0 == strcmp(ControllerServiceSceneInterfaceName, message->GetInterface())) || (0 == strcmp(ControllerServiceMasterSceneInterfaceName, message->GetInterface()))))) {
+            if (groupOperation || effectOperation || (sceneOperation && ((0 == strcmp(ControllerServiceSceneInterfaceName, message->GetInterface())) || (0 == strcmp(ControllerServiceMasterSceneInterfaceName, message->GetInterface()))))) {
                 size_t numArgs;
                 const MsgArg* args;
                 message->GetArgs(numArgs, args);
 
-                if (controllerService.CheckNumArgsInMessage(numArgs, 1)  != LSF_OK) {
-                    return;
-                }
+                if (effectOperation) {
+                    if (controllerService.CheckNumArgsInMessage(numArgs, 2)  != LSF_OK) {
+                        return;
+                    }
+                    MsgArg arg[3];
+                    arg[0].Set("u", responseCode);
+                    arg[1] = args[0];
+                    arg[2] = args[1];
+                    controllerService.SendMethodReply(message, arg, 3);
+                } else {
+                    if (controllerService.CheckNumArgsInMessage(numArgs, 1)  != LSF_OK) {
+                        return;
+                    }
 
-                LSFString uniqueID = static_cast<LSFString>(args[0].v_string.str);
-                controllerService.SendMethodReplyWithResponseCodeAndID(message, responseCode, uniqueID);
+                    LSFString uniqueID = static_cast<LSFString>(args[0].v_string.str);
+                    controllerService.SendMethodReplyWithResponseCodeAndID(message, responseCode, uniqueID);
+                }
             } else {
                 controllerService.SendMethodReplyWithResponseCodeAndID(message, responseCode, transitionToPresetComp.lamps.front());
             }
@@ -594,17 +615,28 @@ void LampManager::ChangeLampStateAndField(Message& message,
                 pulseParamsList.push_back(params);
             }
         } else {
-            if (groupOperation || (sceneOperation && ((0 == strcmp(ControllerServiceSceneInterfaceName, message->GetInterface())) || (0 == strcmp(ControllerServiceMasterSceneInterfaceName, message->GetInterface()))))) {
+            if (groupOperation || effectOperation || (sceneOperation && ((0 == strcmp(ControllerServiceSceneInterfaceName, message->GetInterface())) || (0 == strcmp(ControllerServiceMasterSceneInterfaceName, message->GetInterface()))))) {
                 size_t numArgs;
                 const MsgArg* args;
                 message->GetArgs(numArgs, args);
 
-                if (controllerService.CheckNumArgsInMessage(numArgs, 1)  != LSF_OK) {
-                    return;
-                }
+                if (effectOperation) {
+                    if (controllerService.CheckNumArgsInMessage(numArgs, 2)  != LSF_OK) {
+                        return;
+                    }
+                    MsgArg arg[3];
+                    arg[0].Set("u", responseCode);
+                    arg[1] = args[0];
+                    arg[2] = args[1];
+                    controllerService.SendMethodReply(message, arg, 3);
+                } else {
+                    if (controllerService.CheckNumArgsInMessage(numArgs, 1)  != LSF_OK) {
+                        return;
+                    }
 
-                LSFString uniqueID = static_cast<LSFString>(args[0].v_string.str);
-                controllerService.SendMethodReplyWithResponseCodeAndID(message, responseCode, uniqueID);
+                    LSFString uniqueID = static_cast<LSFString>(args[0].v_string.str);
+                    controllerService.SendMethodReplyWithResponseCodeAndID(message, responseCode, uniqueID);
+                }
             } else {
                 controllerService.SendMethodReplyWithResponseCodeAndID(message, responseCode, pulseWithPresetComp.lamps.front());
             }
@@ -613,7 +645,7 @@ void LampManager::ChangeLampStateAndField(Message& message,
         pulseWithPresetComponent.pop_front();
     }
 
-    lampClients.ChangeLampState(message, groupOperation, sceneOperation, stateParamsList, stateFieldParamsList, pulseParamsList, sceneOrMasterSceneId);
+    lampClients.ChangeLampState(message, groupOperation, sceneOperation, effectOperation, stateParamsList, stateFieldParamsList, pulseParamsList, sceneOrMasterSceneId);
 }
 
 void LampManager::TransitionLampState(ajn::Message& message)

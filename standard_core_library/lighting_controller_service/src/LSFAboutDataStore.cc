@@ -14,7 +14,14 @@
  *    OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  ******************************************************************************/
 
+#ifdef LSF_BINDINGS
+#include "lsf/controllerservice/LSFAboutDataStore.h"
+#include "lsf/controllerservice/ControllerService.h"
+#else
 #include "LSFAboutDataStore.h"
+#include "ControllerService.h"
+#endif
+
 #include <alljoyn/config/AboutDataStoreInterface.h>
 #include <alljoyn/AboutData.h>
 #include <fstream>
@@ -23,7 +30,7 @@
 #include <sstream>
 #include <sys/stat.h>
 #include <qcc/Debug.h>
-#include "ControllerService.h"
+
 #if !defined(LSF_OS_DARWIN)
 #include <alljoyn/services_common/GuidUtil.h>
 #endif
@@ -31,6 +38,10 @@
 using namespace ajn;
 using namespace lsf;
 using namespace services;
+
+#ifdef LSF_BINDINGS
+using namespace controllerservice;
+#endif
 
 #define QCC_MODULE "LSF_ABOUT_DATA_STORE"
 

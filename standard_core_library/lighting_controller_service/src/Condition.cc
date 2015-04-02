@@ -14,10 +14,19 @@
  *    OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  ******************************************************************************/
 
+#ifdef LSF_BINDINGS
+#include <lsf/controllerservice/Condition.h>
+#else
 #include <Condition.h>
+#endif
+
 #include <Mutex.h>
 
 using namespace lsf;
+
+#ifdef LSF_BINDINGS
+using namespace controllerservice;
+#endif
 
 Condition::Condition()
 {

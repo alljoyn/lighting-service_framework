@@ -14,16 +14,22 @@
  *    OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  ******************************************************************************/
 
+#ifdef LSF_BINDINGS
+#include <lsf/controllerservice/LeaderElectionObject.h>
+#include <lsf/controllerservice/ServiceDescription.h>
+#include <lsf/controllerservice/ControllerService.h>
+#include <lsf/controllerservice/OEM_CS_Config.h>
+#else
 #include <LeaderElectionObject.h>
 #include <ServiceDescription.h>
-#include <qcc/Debug.h>
 #include <ControllerService.h>
 #include <OEM_CS_Config.h>
-#include <LSFTypes.h>
+#endif
 
+#include <qcc/Debug.h>
+#include <LSFTypes.h>
 #include <Thread.h>
 #include <LSFSemaphore.h>
-
 
 #define QCC_MODULE "LEADER_ELECTION"
 
@@ -39,6 +45,10 @@ bool g_IsLeader = false;
 
 using namespace lsf;
 using namespace ajn;
+
+#ifdef LSF_BINDINGS
+using namespace controllerservice;
+#endif
 
 static const char* ControllerServiceInterface[] = {
     ControllerServiceInterfaceName

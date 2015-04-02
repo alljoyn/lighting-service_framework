@@ -23,16 +23,24 @@
  *    OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  ******************************************************************************/
 
+#ifdef LSF_BINDINGS
+#include <lsf/controllerservice/Manager.h>
+#include <lsf/controllerservice/LampGroupManager.h>
+#else
 #include <Manager.h>
 #include <LampGroupManager.h>
+#endif
 
 #include <Mutex.h>
 #include <LSFTypes.h>
 
 #include <string>
 #include <map>
+#include "LSFNamespaceSpecifier.h"
 
 namespace lsf {
+
+OPTIONAL_NAMESPACE_CONTROLLER_SERVICE
 
 class MasterSceneManager;
 class SceneObject;
@@ -302,14 +310,16 @@ class SceneObject : public BusObject, public Translator {
      */
     void ObjectRegistered(void);
 
-    SceneManager& sceneManager; /**< Scene manager reference count */
-    LSFString sceneId;          /**< Scene id */
-    Scene scene;                /**< Scene object */
-    Mutex sceneNameMutex;       /**< Scene name mutex */
-    LSFString sceneName;        /**< Scene name */
-    const InterfaceDescription::Member* appliedSceneMember;  /**< applied scene signal */
+    SceneManager& sceneManager;         /**< Scene manager reference count */
+    LSFString sceneId;                  /**< Scene id */
+    Scene scene;                        /**< Scene object */
+    Mutex sceneNameMutex;               /**< Scene name mutex */
+    LSFString sceneName;                /**< Scene name */
+    const InterfaceDescription::Member* appliedSceneMember;          /**< applied scene signal */
 };
 
-}
+OPTIONAL_NAMESPACE_CLOSE
+
+} //lsf
 
 #endif

@@ -27,10 +27,12 @@
 #include <string>
 #include <iostream>
 #include <fstream>
+#include <LSFTypes.h>
+#import "LSFNamespaceSpecifier.h"
 
 namespace lsf {
 
-class LampState;
+OPTIONAL_NAMESPACE_CONTROLLER_SERVICE
 
 extern const std::string resetID;
 
@@ -58,7 +60,8 @@ std::ostream& WriteValue(std::ostream& stream, const std::string& name);
 
 std::ostream& WriteString(std::ostream& stream, const std::string& name);
 
+OPTIONAL_NAMESPACE_CLOSE
 
-}
+} //lsf
 
 #endif

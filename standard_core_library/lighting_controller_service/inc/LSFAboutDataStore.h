@@ -22,8 +22,11 @@
 #include <alljoyn/AboutData.h>
 #include <Rank.h>
 #include <Mutex.h>
+#include "LSFNamespaceSpecifier.h"
 
 namespace lsf {
+
+OPTIONAL_NAMESPACE_CONTROLLER_SERVICE
 
 /*
  * Pre-Declarations
@@ -165,6 +168,8 @@ class LSFAboutDataStore : public AboutDataStoreInterface {
     qcc::String ToXml(AboutData* aboutData);
 };
 
-}
+OPTIONAL_NAMESPACE_CLOSE
+
+} //lsf
 
 #endif /* LSF_ABOUT_DATA_STORE_H_ */

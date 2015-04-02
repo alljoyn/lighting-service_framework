@@ -14,16 +14,27 @@
  *    OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  ******************************************************************************/
 
+#ifdef LSF_BINDINGS
+#include <lsf/controllerservice/LampClients.h>
+#include <lsf/controllerservice/ControllerService.h>
+#include <lsf/controllerservice/OEM_CS_Config.h>
+#else
 #include <LampClients.h>
+#include <ControllerService.h>
+#include <OEM_CS_Config.h>
+#endif
+
 #include <alljoyn/Status.h>
 #include <alljoyn/AllJoynStd.h>
 #include <qcc/Debug.h>
 #include <algorithm>
-#include <ControllerService.h>
-#include <OEM_CS_Config.h>
 
 using namespace lsf;
 using namespace ajn;
+
+#ifdef LSF_BINDINGS
+using namespace controllerservice;
+#endif
 
 #define QCC_MODULE "LAMP_CLIENTS"
 
@@ -747,7 +758,7 @@ void LampClients::HandleGetReply(ajn::Message& message, void* context)
     delete ctx;
 }
 
-void LampClients::ChangeLampState(const ajn::Message& inMsg, bool groupOperation, bool sceneOperation, TransitionStateParamsList& transitionStateParams,
+void LampClients::ChangeLampState(const ajn::Message& inMsg, bool groupOperation, bool sceneOperation, bool effectOperation, TransitionStateParamsList& transitionStateParams,
                                   TransitionStateFieldParamsList& transitionStateFieldparams, PulseStateParamsList& pulseParams, LSFString sceneOrMasterSceneID)
 {
     QCC_DbgTrace(("%s", __func__));
@@ -758,12 +769,15 @@ void LampClients::ChangeLampState(const ajn::Message& inMsg, bool groupOperation
         return;
     }
 
-    if (groupOperation || (sceneOperation && ((0 == strcmp(ControllerServiceSceneInterfaceName, inMsg->GetInterface())) || (0 == strcmp(ControllerServiceMasterSceneInterfaceName, inMsg->GetInterface()))))) {
+    if (groupOperation || effectOperation || (sceneOperation && ((0 == strcmp(ControllerServiceSceneInterfaceName, inMsg->GetInterface())) || (0 == strcmp(ControllerServiceMasterSceneInterfaceName, inMsg->GetInterface()))))) {
         size_t numArgs;
         const MsgArg* args;
         Message tempMsg = inMsg;
         tempMsg->GetArgs(numArgs, args);
         queuedCall->responseCounter.standardReplyArgs.push_back(args[0]);
+        if (effectOperation) {
+            queuedCall->responseCounter.standardReplyArgs.push_back(args[1]);
+        }
     }
 
     while (transitionStateFieldparams.size()) {
@@ -771,13 +785,14 @@ void LampClients::ChangeLampState(const ajn::Message& inMsg, bool groupOperation
         TransitionStateFieldParams transitionStateFieldParam = transitionStateFieldparams.front();
 
         if (firstIteration) {
-            if (!groupOperation && !sceneOperation) {
+            if (!groupOperation && !sceneOperation && !effectOperation) {
                 queuedCall->responseCounter.standardReplyArgs.push_back(MsgArg("s", transitionStateFieldParam.lamps.front().c_str()));
             }
 
-            if (!sceneOperation) {
+            if (!sceneOperation & !effectOperation) {
                 queuedCall->responseCounter.standardReplyArgs.push_back(MsgArg("s", transitionStateFieldParam.field));
             }
+
             firstIteration = false;
         }
 
@@ -799,7 +814,7 @@ void LampClients::ChangeLampState(const ajn::Message& inMsg, bool groupOperation
         TransitionStateParams transitionStateParam = transitionStateParams.front();
 
         if (firstIteration) {
-            if (!groupOperation && !sceneOperation) {
+            if (!groupOperation && !sceneOperation && !effectOperation) {
                 queuedCall->responseCounter.standardReplyArgs.push_back(MsgArg("s", transitionStateParam.lamps.front().c_str()));
             }
             firstIteration = false;
@@ -820,7 +835,7 @@ void LampClients::ChangeLampState(const ajn::Message& inMsg, bool groupOperation
         PulseStateParams pulseParam = pulseParams.front();
 
         if (firstIteration) {
-            if (!groupOperation && !sceneOperation) {
+            if (!groupOperation && !sceneOperation && !effectOperation) {
                 queuedCall->responseCounter.standardReplyArgs.push_back(MsgArg("s", pulseParam.lamps.front().c_str()));
             }
             firstIteration = false;

@@ -27,50 +27,58 @@
  *    OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  ******************************************************************************/
 
+#ifdef LSF_BINDINGS
+#include <lsf/controllerservice/OEM_CS_Config.h>
+#else
 #include <OEM_CS_Config.h>
+#endif
+
 #include <Rank.h>
+#import "LSFNamespaceSpecifier.h"
 
 namespace lsf {
+
+OPTIONAL_NAMESPACE_CONTROLLER_SERVICE
 
 /**
  * Bit mask for MAC address rank parameter
  */
-#define MAC_ADDR_BIT_MASK 0x0000FFFFFFFFFFFF
+        #define MAC_ADDR_BIT_MASK 0x0000FFFFFFFFFFFF
 
 /**
  * Number of bit positions to left shift for MAC Address rank parameter
  */
-#define BIT_SHIFT_FOR_MAC_ADDRESS 1
+        #define BIT_SHIFT_FOR_MAC_ADDRESS 1
 
 /**
  * Number of bit positions to left shift for Controller Service Version rank parameter
  */
-#define BIT_SHIFT_FOR_CONTROLLER_SERVICE_VERSION 49
+        #define BIT_SHIFT_FOR_CONTROLLER_SERVICE_VERSION 49
 
 /**
  * Number of bit positions to left shift for Network Config rank parameter
  */
-#define BIT_SHIFT_FOR_NODE_TYPE 57
+        #define BIT_SHIFT_FOR_NODE_TYPE 57
 
 /**
  * Number of bit positions to left shift for Power rank parameter
  */
-#define BIT_SHIFT_FOR_POWER 59
+        #define BIT_SHIFT_FOR_POWER 59
 
 /**
  * Number of bit positions to left shift for Availability rank parameter
  */
-#define BIT_SHIFT_FOR_AVAILABILITY 61
+        #define BIT_SHIFT_FOR_AVAILABILITY 61
 
 /**
  * Max value of the Controller Service version allowed in rank encoding
  */
-#define MAX_CONTROLLER_SERVICE_VERSION 255
+        #define MAX_CONTROLLER_SERVICE_VERSION 255
 
 /**
  * Controller service version
  */
-#define CONTROLLER_SERVICE_VERSION 1
+        #define CONTROLLER_SERVICE_VERSION 1
 
 class ControllerServiceRank : public Rank {
   public:
@@ -84,6 +92,8 @@ class ControllerServiceRank : public Rank {
 
 };
 
-}
+OPTIONAL_NAMESPACE_CLOSE
+
+} //lsf
 
 #endif

@@ -29,10 +29,19 @@
 #include <LSFTypes.h>
 #include <Mutex.h>
 #include <Alarm.h>
+
+#ifdef LSF_BINDINGS
+#include <lsf/controllerservice/OEM_CS_Config.h>
+#else
 #include <OEM_CS_Config.h>
+#endif
+
 #include <Rank.h>
+#include "LSFNamespaceSpecifier.h"
 
 namespace lsf {
+
+OPTIONAL_NAMESPACE_CONTROLLER_SERVICE
 
 class ControllerService;
 /**
@@ -220,7 +229,9 @@ class LeaderElectionObject : public ajn::BusObject, public Thread, public AlarmL
     ControllerEntry upComingLeader;
 };
 
-}
+OPTIONAL_NAMESPACE_CLOSE
+
+} //lsf
 
 
 #endif

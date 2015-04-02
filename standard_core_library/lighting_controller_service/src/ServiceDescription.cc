@@ -14,11 +14,17 @@
  *    OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  ******************************************************************************/
 
+#ifdef LSF_BINDINGS
+#include <lsf/controllerservice/ServiceDescription.h>
+#else
 #include <ServiceDescription.h>
+#endif
 
 #define QCC_MODULE "SERVICE_DESCRIPTION"
 
 namespace lsf {
+
+OPTIONAL_NAMESPACE_CONTROLLER_SERVICE
 
 const std::string ControllerServiceDescription =
     "<node>"
@@ -446,6 +452,20 @@ const std::string ControllerServiceTransitionEffectDescription =
     "      <arg name='presetID' type='s' direction='out'/>"
     "      <arg name='transitionPeriod' type='u' direction='out'/>"
     "    </method>"
+    "    <method name='ApplyTransitionEffectOnLamps'>"
+    "      <arg name='transitionEffectID' type='s' direction='in'/>"
+    "      <arg name='lampIDs' type='as' direction='in'/>"
+    "      <arg name='responseCode' type='u' direction='out'/>"
+    "      <arg name='transitionEffectID' type='s' direction='out'/>"
+    "      <arg name='lampIDs' type='as' direction='out'/>"
+    "    </method>"
+    "    <method name='ApplyTransitionEffectOnLampGroups'>"
+    "      <arg name='transitionEffectID' type='s' direction='in'/>"
+    "      <arg name='lampGroupIDs' type='as' direction='in'/>"
+    "      <arg name='responseCode' type='u' direction='out'/>"
+    "      <arg name='transitionEffectID' type='s' direction='out'/>"
+    "      <arg name='lampGroupIDs' type='as' direction='out'/>"
+    "    </method>"
     "    <signal name='TransitionEffectsNameChanged'>"
     "      <arg name='transitionEffectIDs' type='as' direction='out'/>"
     "    </signal>"
@@ -526,6 +546,20 @@ const std::string ControllerServicePulseEffectDescription =
     "      <arg name='fromLampState' type='a{sv}' direction='out'/>"
     "      <arg name='toPresetID' type='s' direction='out'/>"
     "      <arg name='fromPresetID' type='s' direction='out'/>"
+    "    </method>"
+    "    <method name='ApplyPulseEffectOnLamps'>"
+    "      <arg name='pulseEffectID' type='s' direction='in'/>"
+    "      <arg name='lampIDs' type='as' direction='in'/>"
+    "      <arg name='responseCode' type='u' direction='out'/>"
+    "      <arg name='pulseEffectID' type='s' direction='out'/>"
+    "      <arg name='lampIDs' type='as' direction='out'/>"
+    "    </method>"
+    "    <method name='ApplyPulseEffectOnLampGroups'>"
+    "      <arg name='pulseEffectID' type='s' direction='in'/>"
+    "      <arg name='lampGroupIDs' type='as' direction='in'/>"
+    "      <arg name='responseCode' type='u' direction='out'/>"
+    "      <arg name='pulseEffectID' type='s' direction='out'/>"
+    "      <arg name='lampGroupIDs' type='as' direction='out'/>"
     "    </method>"
     "    <signal name='PulseEffectsNameChanged'>"
     "      <arg name='pulseEffectIDs' type='as' direction='out'/>"
@@ -718,4 +752,7 @@ const std::string LeaderElectionAndStateSyncDescription =
     "    </signal>"
     "  </interface>"
     "</node>";
+
+OPTIONAL_NAMESPACE_CLOSE
+
 }

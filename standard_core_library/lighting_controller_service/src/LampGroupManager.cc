@@ -14,14 +14,22 @@
  *    OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  ******************************************************************************/
 
+#ifdef LSF_BINDINGS
+#include <lsf/controllerservice/LampGroupManager.h>
+#include <lsf/controllerservice/ControllerService.h>
+#include <lsf/controllerservice/SceneManager.h>
+#include <lsf/controllerservice/OEM_CS_Config.h>
+#include <lsf/controllerservice/FileParser.h>
+#else
 #include <LampGroupManager.h>
 #include <ControllerService.h>
-#include <qcc/atomic.h>
-#include <qcc/Debug.h>
 #include <SceneManager.h>
 #include <OEM_CS_Config.h>
 #include <FileParser.h>
+#endif
 
+#include <qcc/atomic.h>
+#include <qcc/Debug.h>
 #include <sstream>
 #include <streambuf>
 #include <algorithm>
@@ -29,7 +37,12 @@
 using namespace lsf;
 using namespace ajn;
 
+#ifdef LSF_BINDINGS
+using namespace controllerservice;
+#define QCC_MODULE "CONTROLLER_LAMP_GROUP_MANAGER"
+#else
 #define QCC_MODULE "LAMP_GROUP_MANAGER"
+#endif
 
 LampGroupManager::LampGroupManager(ControllerService& controllerSvc, LampManager& lampMgr, SceneManager* sceneMgrPtr, const std::string& lampGroupFile) :
     Manager(controllerSvc, lampGroupFile), lampManager(lampMgr), sceneManagerPtr(sceneMgrPtr), blobLength(0)
@@ -804,7 +817,7 @@ LSFResponseCode LampGroupManager::ChangeLampGroupStateAndField(Message& message,
                                                                TransitionLampsLampGroupsToPresetList& transitionToPresetComponent,
                                                                PulseLampsLampGroupsWithStateList& pulseWithStateComponent,
                                                                PulseLampsLampGroupsWithPresetList& pulseWithPresetComponent,
-                                                               bool groupOperation, LSFString sceneOrMasterSceneID)
+                                                               bool groupOperation, bool sceneOperation, LSFString sceneOrMasterSceneID, bool effectOperation)
 {
     QCC_DbgTrace(("%s", __func__));
     LSFResponseCode responseCode = LSF_OK;
@@ -878,7 +891,7 @@ LSFResponseCode LampGroupManager::ChangeLampGroupStateAndField(Message& message,
     if (numLamps == 0) {
         responseCode = LSF_ERR_NOT_FOUND;
     } else {
-        lampManager.ChangeLampStateAndField(message, transitionToStateList, transitionToPresetList, stateFieldList, pulseWithStateList, pulseWithPresetList, groupOperation, !groupOperation, sceneOrMasterSceneID);
+        lampManager.ChangeLampStateAndField(message, transitionToStateList, transitionToPresetList, stateFieldList, pulseWithStateList, pulseWithPresetList, groupOperation, sceneOperation, sceneOrMasterSceneID, effectOperation);
     }
 
     return responseCode;

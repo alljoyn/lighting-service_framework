@@ -24,17 +24,28 @@
  *    OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  ******************************************************************************/
 
+#ifdef LSF_BINDINGS
+#include <lsf/controllerservice/Manager.h>
+#include <lsf/controllerservice/LampManager.h>
+#else
 #include <Manager.h>
 #include <LampManager.h>
+#endif
 
 #include <LSFTypes.h>
 #include <Mutex.h>
 
 #include <string>
+#include "LSFNamespaceSpecifier.h"
 
 namespace lsf {
 
+OPTIONAL_NAMESPACE_CONTROLLER_SERVICE
+
 class SceneManager;
+class TransitionEffectManager;
+class PulseEffectManager;
+
 /**
  * LampGroupManager class. \n
  * The class is handling groups of lamps. \n
@@ -42,6 +53,8 @@ class SceneManager;
 class LampGroupManager : public Manager {
 
     friend class SceneManager;
+    friend class TransitionEffectManager;
+    friend class PulseEffectManager;
 
   public:
     /**
@@ -242,13 +255,13 @@ class LampGroupManager : public Manager {
                                                  TransitionLampsLampGroupsToPresetList& transitionToPresetComponent,
                                                  PulseLampsLampGroupsWithStateList& pulseWithStateComponent,
                                                  PulseLampsLampGroupsWithPresetList& pulseWithPresetComponent,
-                                                 bool groupOperation = true, LSFString sceneOrMasterSceneID = LSFString());
+                                                 bool groupOperation = true, bool sceneOperation = false, LSFString sceneOrMasterSceneID = LSFString(), bool effectOperation = false);
 
-    LampGroupMap lampGroups;        /**< lamp groups */
-    Mutex lampGroupsLock;           /**< lamp groups lock */
-    LampManager& lampManager;       /**< lamp manager */
-    SceneManager* sceneManagerPtr;  /**< scene manager pointer */
-    size_t blobLength;              /**< blob length */
+    LampGroupMap lampGroups;                            /**< lamp groups */
+    Mutex lampGroupsLock;                               /**< lamp groups lock */
+    LampManager& lampManager;                           /**< lamp manager */
+    SceneManager* sceneManagerPtr;                      /**< scene manager pointer */
+    size_t blobLength;                                  /**< blob length */
     /**
      * get lamp group string
      */
@@ -259,6 +272,8 @@ class LampGroupManager : public Manager {
     std::string GetString(const std::string& name, const std::string& id, const LampGroup& group);
 };
 
-}
+OPTIONAL_NAMESPACE_CLOSE
+
+} //lsf
 
 #endif

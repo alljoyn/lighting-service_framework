@@ -55,6 +55,122 @@ ControllerClientStatus TransitionEffectManager::GetTransitionEffect(const LSFStr
     return status;
 }
 
+ControllerClientStatus TransitionEffectManager::ApplyTransitionEffectOnLamps(const LSFString& transitionEffectID, const LSFStringList& lampIDs)
+{
+    QCC_DbgPrintf(("%s: transitionEffectID=%s", __func__, transitionEffectID.c_str()));
+    MsgArg arg[2];
+    arg[0].Set("s", transitionEffectID.c_str());
+
+    size_t idsVecSize = lampIDs.size();
+
+    if (idsVecSize) {
+        const char** idsVec = new const char*[idsVecSize];
+        size_t i = 0;
+        for (LSFStringList::const_iterator it = lampIDs.begin(); it != lampIDs.end(); it++) {
+            idsVec[i++] = it->c_str();
+        }
+        arg[1].Set("as", idsVecSize, idsVec);
+        delete [] idsVec;
+        arg[1].SetOwnershipFlags(MsgArg::OwnsArgs);
+    } else {
+        QCC_LogError(ER_BAD_ARG_2, ("%s: Size of lampIDs list is 0", __func__));
+        return CONTROLLER_CLIENT_ERR_FAILURE;
+    }
+
+    ControllerClientStatus status = controllerClient.MethodCallAsync(
+        ControllerServiceTransitionEffectInterfaceName,
+        "ApplyTransitionEffectOnLamps",
+        this,
+        &TransitionEffectManager::ApplyTransitionEffectOnLampsReply,
+        arg,
+        2);
+
+    return status;
+}
+
+ControllerClientStatus TransitionEffectManager::ApplyTransitionEffectOnLampGroups(const LSFString& transitionEffectID, const LSFStringList& lampGroupIDs)
+{
+    QCC_DbgPrintf(("%s: transitionEffectID=%s", __func__, transitionEffectID.c_str()));
+    MsgArg arg[2];
+    arg[0].Set("s", transitionEffectID.c_str());
+
+    size_t idsVecSize = lampGroupIDs.size();
+
+    if (idsVecSize) {
+        const char** idsVec = new const char*[idsVecSize];
+        size_t i = 0;
+        for (LSFStringList::const_iterator it = lampGroupIDs.begin(); it != lampGroupIDs.end(); it++) {
+            idsVec[i++] = it->c_str();
+        }
+        arg[1].Set("as", idsVecSize, idsVec);
+        delete [] idsVec;
+        arg[1].SetOwnershipFlags(MsgArg::OwnsArgs);
+    } else {
+        QCC_LogError(ER_BAD_ARG_2, ("%s: Size of lampGroupIDs list is 0", __func__));
+        return CONTROLLER_CLIENT_ERR_FAILURE;
+    }
+
+    ControllerClientStatus status = controllerClient.MethodCallAsync(
+        ControllerServiceTransitionEffectInterfaceName,
+        "ApplyTransitionEffectOnLampGroups",
+        this,
+        &TransitionEffectManager::ApplyTransitionEffectOnLampGroupsReply,
+        arg,
+        2);
+
+    return status;
+}
+
+void TransitionEffectManager::ApplyTransitionEffectOnLampsReply(Message& message)
+{
+    QCC_DbgPrintf(("%s: Method Reply %s", __func__, (MESSAGE_METHOD_RET == message->GetType()) ? message->ToString().c_str() : "ERROR"));
+    size_t numArgs;
+    const MsgArg* args;
+    message->GetArgs(numArgs, args);
+
+    if (controllerClient.CheckNumArgsInMessage(numArgs, 3) != LSF_OK) {
+        return;
+    }
+
+    LSFResponseCode responseCode = static_cast<LSFResponseCode>(args[0].v_uint32);
+    LSFString transitionEffectID = static_cast<LSFString>(args[1].v_string.str);
+    LSFStringList lampIDs;
+    MsgArg* idsArray;
+    size_t idsSize;
+    args[2].Get("as", &idsSize, &idsArray);
+    for (size_t i = 0; i < idsSize; i++) {
+        char* gid;
+        idsArray[i].Get("s", &gid);
+        lampIDs.push_back(LSFString(gid));
+    }
+    callback.ApplyTransitionEffectOnLampsReplyCB(responseCode, transitionEffectID, lampIDs);
+}
+
+void TransitionEffectManager::ApplyTransitionEffectOnLampGroupsReply(Message& message)
+{
+    QCC_DbgPrintf(("%s: Method Reply %s", __func__, (MESSAGE_METHOD_RET == message->GetType()) ? message->ToString().c_str() : "ERROR"));
+    size_t numArgs;
+    const MsgArg* args;
+    message->GetArgs(numArgs, args);
+
+    if (controllerClient.CheckNumArgsInMessage(numArgs, 3) != LSF_OK) {
+        return;
+    }
+
+    LSFResponseCode responseCode = static_cast<LSFResponseCode>(args[0].v_uint32);
+    LSFString transitionEffectID = static_cast<LSFString>(args[1].v_string.str);
+    LSFStringList lampGroupIDs;
+    MsgArg* idsArray;
+    size_t idsSize;
+    args[2].Get("as", &idsSize, &idsArray);
+    for (size_t i = 0; i < idsSize; i++) {
+        char* gid;
+        idsArray[i].Get("s", &gid);
+        lampGroupIDs.push_back(LSFString(gid));
+    }
+    callback.ApplyTransitionEffectOnLampGroupsReplyCB(responseCode, transitionEffectID, lampGroupIDs);
+}
+
 void TransitionEffectManager::GetTransitionEffectReply(Message& message)
 {
     QCC_DbgPrintf(("%s: Method Reply %s", __func__, (MESSAGE_METHOD_RET == message->GetType()) ? message->ToString().c_str() : "ERROR"));
@@ -101,7 +217,7 @@ ControllerClientStatus TransitionEffectManager::SetTransitionEffectName(const LS
                3);
 }
 
-ControllerClientStatus TransitionEffectManager::CreateTransitionEffect(const TransitionEffect& transitionEffect, const LSFString& transitionEffectName, const LSFString& language)
+ControllerClientStatus TransitionEffectManager::CreateTransitionEffect(uint32_t& trackingID, const TransitionEffect& transitionEffect, const LSFString& transitionEffectName, const LSFString& language)
 {
     //QCC_DbgPrintf(("%s: transitionEffect=%s", __func__, transitionEffect.c_str()));
 
@@ -110,7 +226,8 @@ ControllerClientStatus TransitionEffectManager::CreateTransitionEffect(const Tra
     arg[3].Set("s", transitionEffectName.c_str());
     arg[4].Set("s", language.c_str());
 
-    return controllerClient.MethodCallAsyncForReplyWithResponseCodeAndID(
+    return controllerClient.MethodCallAsyncForReplyWithResponseCodeIDAndTrackingID(
+               trackingID,
                ControllerServiceTransitionEffectInterfaceName,
                "CreateTransitionEffect",
                arg,

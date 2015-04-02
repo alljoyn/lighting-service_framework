@@ -94,6 +94,16 @@ class SceneManagerCallback {
     virtual void CreateSceneReplyCB(const LSFResponseCode& responseCode, const LSFString& sceneID) { }
 
     /**
+     * Indicates that a reply has been received for the CreateSceneWithTracking method call.
+     *
+     * @param responseCode   The response code
+     * @param sceneID  The Scene ID
+     * @param trackingID     The tracking ID that the application can use to associate the CreateSceneWithTracking
+     *                       method call with the reply
+     */
+    virtual void CreateSceneWithTrackingReplyCB(const LSFResponseCode& responseCode, const LSFString& sceneID, const uint32_t& trackingID) { }
+
+    /**
      * Response to SceneManager::CreateSceneWithSceneElements.
      *
      * @param responseCode    The response code: \n
@@ -101,9 +111,11 @@ class SceneManagerCallback {
      *  LSF_ERR_INVALID_ARGS - Language not supported, scene name is empty, Invalid Scene components specified, ame length exceeds \n
      *  LSF_ERR_RESOURCES - Could not allocate memory \n
      *  LSF_ERR_NO_SLOT - No slot for new Scene \n
-     * @param sceneID    The id of the new Scene
+     * @param sceneID        The id of the new Scene
+     * @param trackingID     The tracking ID that the application can use to associate the CreateSceneWithTracking
+     *                       method call with the reply
      */
-    virtual void CreateSceneWithSceneElementsReplyCB(const LSFResponseCode& responseCode, const LSFString& sceneID) { }
+    virtual void CreateSceneWithSceneElementsReplyCB(const LSFResponseCode& responseCode, const LSFString& sceneID, const uint32_t& trackingID) { }
 
     /**
      *  This signal is fired any time a scene is been created.
@@ -244,14 +256,32 @@ class SceneManager : public Manager {
     ControllerClientStatus CreateScene(const Scene& scene, const LSFString& sceneName, const LSFString& language = LSFString("en"));
 
     /**
+     * Create a new Scene and provide a API call tracking ID back to the application. \n
+     * Response in SceneManagerCallback::CreateSceneWithTrackingReplyCB
+     *
+     * @param trackingID  Controller Client returns a tracking ID in this variable which the application
+     *                    can use to associate the reply for this call with the request
+     * @param scene   Scene
+     * @param sceneName
+     * @param language
+     * @return
+     *      - CONTROLLER_CLIENT_OK if successful
+     *      - An error status otherwise
+     *
+     */
+    ControllerClientStatus CreateSceneWithTracking(uint32_t& trackingID, const Scene& scene, const LSFString& sceneName, const LSFString& language = LSFString("en"));
+
+    /**
      *  Create a new Scene with Scene Elements. \n
      *  Response in SceneManagerCallback::CreateSceneWithSceneElementsReplyCB
      *
+     * @param trackingID  Controller Client returns a tracking ID in this variable which the application
+     *                    can use to associate the reply for this call with the request
      * @param sceneElementIDs       The list of scene element IDs that comprise the Scene
      * @param sceneName             The scene name
      * @param language              The scene language
      */
-    ControllerClientStatus CreateSceneWithSceneElements(const LSFStringList& sceneElementIDs, const LSFString& sceneName, const LSFString& language = LSFString("en"));
+    ControllerClientStatus CreateSceneWithSceneElements(uint32_t& trackingID, const LSFStringList& sceneElementIDs, const LSFString& sceneName, const LSFString& language = LSFString("en"));
 
     /**
      * Modify an existing scene. \n
@@ -365,8 +395,12 @@ class SceneManager : public Manager {
         callback.CreateSceneReplyCB(responseCode, lsfId);
     }
 
-    void CreateSceneWithSceneElementsReply(LSFResponseCode& responseCode, LSFString& lsfId) {
-        callback.CreateSceneWithSceneElementsReplyCB(responseCode, lsfId);
+    void CreateSceneWithTrackingReply(LSFResponseCode& responseCode, LSFString& lsfId, uint32_t& trackingID) {
+        callback.CreateSceneWithTrackingReplyCB(responseCode, lsfId, trackingID);
+    }
+
+    void CreateSceneWithSceneElementsReply(LSFResponseCode& responseCode, LSFString& lsfId, uint32_t& trackingID) {
+        callback.CreateSceneWithSceneElementsReplyCB(responseCode, lsfId, trackingID);
     }
 
     void UpdateSceneReply(LSFResponseCode& responseCode, LSFString& lsfId) {

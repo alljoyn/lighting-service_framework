@@ -85,6 +85,22 @@ ControllerClientStatus LampGroupManager::CreateLampGroup(const LampGroup& lampGr
                4);
 }
 
+ControllerClientStatus LampGroupManager::CreateLampGroupWithTracking(uint32_t& trackingID, const LampGroup& lampGroup, const LSFString& lampGroupName, const LSFString& language)
+{
+    QCC_DbgPrintf(("%s", __func__));
+    MsgArg args[4];
+    lampGroup.Get(&args[0], &args[1]);
+    args[2].Set("s", lampGroupName.c_str());
+    args[3].Set("s", language.c_str());
+
+    return controllerClient.MethodCallAsyncForReplyWithResponseCodeIDAndTrackingID(
+               trackingID,
+               ControllerServiceLampGroupInterfaceName,
+               "CreateLampGroup",
+               args,
+               4);
+}
+
 ControllerClientStatus LampGroupManager::UpdateLampGroup(const LSFString& lampGroupID, const LampGroup& lampGroup)
 {
     QCC_DbgPrintf(("%s: lampGroupID=%s", __func__, lampGroupID.c_str()));
@@ -379,6 +395,11 @@ void LampGroupManager::SetLampGroupNameReply(LSFResponseCode& responseCode, LSFS
 void LampGroupManager::CreateLampGroupReply(LSFResponseCode& responseCode, LSFString& lsfId) {
     QCC_DbgTrace(("%s", __func__));
     callback.CreateLampGroupReplyCB(responseCode, lsfId);
+}
+
+void LampGroupManager::CreateLampGroupWithTrackingReply(LSFResponseCode& responseCode, LSFString& lsfId, uint32_t& trackingID) {
+    QCC_DbgTrace(("%s", __func__));
+    callback.CreateLampGroupWithTrackingReplyCB(responseCode, lsfId, trackingID);
 }
 
 void LampGroupManager::UpdateLampGroupReply(LSFResponseCode& responseCode, LSFString& lsfId) {

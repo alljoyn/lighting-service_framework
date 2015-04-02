@@ -28,10 +28,13 @@
  ******************************************************************************/
 
 #include <pthread.h>
+#include <Mutex.h>
+#include "LSFNamespaceSpecifier.h"
 
 namespace lsf {
 
-class Mutex;
+OPTIONAL_NAMESPACE_CONTROLLER_SERVICE
+
 /**
  * abstraction of posix pthread_cond_t
  */
@@ -63,6 +66,8 @@ class Condition {
     pthread_cond_t condition;
 };
 
-}
+OPTIONAL_NAMESPACE_CLOSE
+
+} //lsf
 
 #endif

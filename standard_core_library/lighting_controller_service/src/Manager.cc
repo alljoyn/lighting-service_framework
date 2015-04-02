@@ -14,7 +14,13 @@
  *    OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  ******************************************************************************/
 
+#ifdef LSF_BINDINGS
+#include <lsf/controllerservice/Manager.h>
+#include <lsf/controllerservice/ControllerService.h>
+#else
 #include <Manager.h>
+#include <ControllerService.h>
+#endif
 
 #include <qcc/StringUtil.h>
 #include <qcc/Debug.h>
@@ -24,11 +30,15 @@
 #include <sstream>
 #include <streambuf>
 
-#include <ControllerService.h>
-
+#ifdef LSF_BINDINGS
+#define QCC_MODULE "CONTROLLER_MANAGER"
+#else
 #define QCC_MODULE "MANAGER"
+#endif
 
 namespace lsf {
+
+OPTIONAL_NAMESPACE_CONTROLLER_SERVICE
 
 Manager::Manager(ControllerService& controllerSvc, const std::string& filePath)
     : controllerService(controllerSvc),
@@ -177,4 +187,5 @@ void Manager::GetBlobInfoInternal(uint32_t& checksum, uint64_t& timestamp)
     timestamp = timeStamp;
 }
 
-};
+OPTIONAL_NAMESPACE_CLOSE
+}

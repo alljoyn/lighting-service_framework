@@ -56,6 +56,26 @@ class TransitionEffectManagerCallback {
     virtual void GetTransitionEffectReplyCB(const LSFResponseCode& responseCode, const LSFString& transitionEffectID, const TransitionEffect& transitionEffect) { }
 
     /**
+     * Response to TransitionEffectManager::ApplyTransitionEffectOnLamps. \n
+     * response code LSF_OK on success. \n
+     *      LSF_ERR_NOT_FOUND - transition effect with requested id is not found. \n
+     * @param responseCode          The return code
+     * @param transitionEffectID    The id of the TransitionEffect
+     *
+     */
+    virtual void ApplyTransitionEffectOnLampsReplyCB(const LSFResponseCode& responseCode, const LSFString& transitionEffectID, const LSFStringList& lampIDs) { }
+
+    /**
+     * Response to TransitionEffectManager::ApplyTransitionEffectOnLampGroups. \n
+     * response code LSF_OK on success. \n
+     *      LSF_ERR_NOT_FOUND - transition effect with requested id is not found. \n
+     * @param responseCode          The return code
+     * @param transitionEffectID    The id of the TransitionEffect
+     *
+     */
+    virtual void ApplyTransitionEffectOnLampGroupsReplyCB(const LSFResponseCode& responseCode, const LSFString& transitionEffectID, const LSFStringList& lampGroupIDs) { }
+
+    /**
      * Response to TransitionEffectManager::GetAllTransitionEffectIDs. \n
      * response code LSF_OK on success. \n
      * @param responseCode          The return code
@@ -100,8 +120,9 @@ class TransitionEffectManagerCallback {
      *      LSF_ERR_RESOURCES - blob is too big. \n
      * @param responseCode    The return code
      * @param transitionEffectID    The id of the new TransitionEffect
+     * @param trackingID     The tracking ID that the application can use to associate the method call with the reply
      */
-    virtual void CreateTransitionEffectReplyCB(const LSFResponseCode& responseCode, const LSFString& transitionEffectID) { }
+    virtual void CreateTransitionEffectReplyCB(const LSFResponseCode& responseCode, const LSFString& transitionEffectID, const uint32_t& trackingID) { }
 
     /**
      * A TransitionEffect has been created
@@ -176,6 +197,28 @@ class TransitionEffectManager : public Manager {
     ControllerClientStatus GetTransitionEffect(const LSFString& transitionEffectID);
 
     /**
+     * Apply transition effect on lamps. \n
+     * Response in TransitionEffectManagerCallback::ApplyTransitionEffectOnLampsReplyCB. \n
+     * @param transitionEffectID type LSFString which is transition effect id. \n
+     * @param lampIDs type LSFStringList which is the list of lamp ids. \n
+     * Return asynchronously the apply transition effect on lamps response code and transition effect id\n
+     * response code LSF_OK on success. \n
+     *      LSF_ERR_NOT_FOUND - transition effect with requested id is not found. \n
+     */
+    ControllerClientStatus ApplyTransitionEffectOnLamps(const LSFString& transitionEffectID, const LSFStringList& lampIDs);
+
+    /**
+     * Apply transition effect on lamp groups. \n
+     * Response in TransitionEffectManagerCallback::ApplyTransitionEffectOnLampGroupsReplyCB. \n
+     * @param transitionEffectID type LSFString which is transition effect id. \n
+     * @param lampGroupIDs type LSFStringList which is the list of lamp group ids. \n
+     * Return asynchronously the apply transition effect on lamp groups response code and transition effect id\n
+     * response code LSF_OK on success. \n
+     *      LSF_ERR_NOT_FOUND - transition effect with requested id is not found. \n
+     */
+    ControllerClientStatus ApplyTransitionEffectOnLampGroups(const LSFString& transitionEffectID, const LSFStringList& lampGroupIDs);
+
+    /**
      * Get the name of a TransitionEffect. \n
      * Response in TransitionEffectManagerCallback::GetTransitionEffectNameReplyCB. \n
      * Return asynchronously the transition effect name, id, language and response code. \n
@@ -201,11 +244,13 @@ class TransitionEffectManager : public Manager {
      * Response in TransitionEffectManagerCallback::CreateTransitionEffectReplyCB. \n
      * Return asynchronously the transition effect response code and auto generated unique id. \n
      *
+     * @param trackingID  Controller Client returns a tracking ID in this variable which the application
+     *                    can use to associate the reply for this call with the request
      * @param transitionEffect The new transition effect information
      * @param transitionEffectName
      * @param language
      */
-    ControllerClientStatus CreateTransitionEffect(const TransitionEffect& transitionEffect, const LSFString& transitionEffectName, const LSFString& language = LSFString("en"));
+    ControllerClientStatus CreateTransitionEffect(uint32_t& trackingID, const TransitionEffect& transitionEffect, const LSFString& transitionEffectName, const LSFString& language = LSFString("en"));
 
     /**
      * Update an existing TransitionEffect. \n
@@ -260,6 +305,8 @@ class TransitionEffectManager : public Manager {
     }
 
     void GetTransitionEffectReply(ajn::Message& message);
+    void ApplyTransitionEffectOnLampsReply(Message& message);
+    void ApplyTransitionEffectOnLampGroupsReply(Message& message);
 
     void GetTransitionEffectNameReply(LSFResponseCode& responseCode, LSFString& lsfId, LSFString& language, LSFString& lsfName) {
         callback.GetTransitionEffectNameReplyCB(responseCode, lsfId, language, lsfName);
@@ -269,8 +316,8 @@ class TransitionEffectManager : public Manager {
         callback.SetTransitionEffectNameReplyCB(responseCode, lsfId, language);
     }
 
-    void CreateTransitionEffectReply(LSFResponseCode& responseCode, LSFString& lsfId) {
-        callback.CreateTransitionEffectReplyCB(responseCode, lsfId);
+    void CreateTransitionEffectReply(LSFResponseCode& responseCode, LSFString& lsfId, uint32_t& trackingID) {
+        callback.CreateTransitionEffectReplyCB(responseCode, lsfId, trackingID);
     }
 
     void UpdateTransitionEffectReply(LSFResponseCode& responseCode, LSFString& lsfId) {

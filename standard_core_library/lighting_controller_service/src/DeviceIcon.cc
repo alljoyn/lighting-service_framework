@@ -14,9 +14,15 @@
  *    OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  ******************************************************************************/
 
+#ifdef LSF_BINDINGS
+#include <lsf/controllerservice/DeviceIcon.h>
+#else
 #include <DeviceIcon.h>
+#endif
 
 namespace lsf {
+
+OPTIONAL_NAMESPACE_CONTROLLER_SERVICE
 
 const qcc::String DeviceIconURL = "";
 
@@ -252,5 +258,7 @@ uint8_t DeviceIcon[] = {
 };
 
 const size_t DeviceIconSize = sizeof(DeviceIcon);
+
+OPTIONAL_NAMESPACE_CLOSE
 
 }

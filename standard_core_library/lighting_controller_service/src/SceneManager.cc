@@ -14,18 +14,32 @@
  *    OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  ******************************************************************************/
 
+#ifdef LSF_BINDINGS
+#include <lsf/controllerservice/SceneManager.h>
+#include <lsf/controllerservice/ControllerService.h>
+#include <lsf/controllerservice/MasterSceneManager.h>
+#include <lsf/controllerservice/OEM_CS_Config.h>
+#include <lsf/controllerservice/FileParser.h>
+#else
 #include <SceneManager.h>
 #include <ControllerService.h>
-#include <qcc/atomic.h>
-#include <qcc/Debug.h>
 #include <MasterSceneManager.h>
 #include <OEM_CS_Config.h>
 #include <FileParser.h>
+#endif
+
+#include <qcc/atomic.h>
+#include <qcc/Debug.h>
 
 using namespace lsf;
 using namespace ajn;
 
+#ifdef LSF_BINDINGS
+using namespace controllerservice;
+#define QCC_MODULE "CONTROLLER_SCENE_MANAGER"
+#else
 #define QCC_MODULE "SCENE_MANAGER"
+#endif
 
 const char* sceneEventActionObjId = "LightingControllerServiceObject";
 const char* sceneEventActionObjDescription[] = { "This is the LSF EventAction object for scene " };
@@ -864,7 +878,7 @@ LSFResponseCode SceneManager::ApplySceneInternal(ajn::Message message, LSFString
 
         if (invokeChangeState) {
             QCC_DbgTrace(("%s: Calling LampGroupManager::ChangeLampGroupStateAndField()", __func__));
-            LSFResponseCode tempResponseCode = lampGroupManager.ChangeLampGroupStateAndField(message, transitionToStateComponent, transitionToPresetComponent, pulseWithStateComponent, pulseWithPresetComponent, false, sceneOrMasterSceneId);
+            LSFResponseCode tempResponseCode = lampGroupManager.ChangeLampGroupStateAndField(message, transitionToStateComponent, transitionToPresetComponent, pulseWithStateComponent, pulseWithPresetComponent, false, true, sceneOrMasterSceneId);
             if (tempResponseCode != LSF_OK) {
                 responseCode = LSF_ERR_FAILURE;
             }

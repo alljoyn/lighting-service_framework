@@ -22,10 +22,14 @@
  *    ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  *    OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  ******************************************************************************/
+
 #include <LSFTypes.h>
 #include <alljoyn/AboutData.h>
+#include "LSFNamespaceSpecifier.h"
 
 namespace lsf {
+
+OPTIONAL_NAMESPACE_CONTROLLER_SERVICE
 
 /**
  * Maximum number of supported LSF entities i.e. Lamp Groups, Scenes,
@@ -246,6 +250,8 @@ typedef enum _OEM_CS_RankParam_NodeType {
  * @return One of the values defined by the enum OEM_CS_RankParam_NodeType
  */
 OEM_CS_RankParam_NodeType OEM_CS_GetRankParam_NodeType(void);
+
+OPTIONAL_NAMESPACE_CLOSE
 
 } //lsf
 

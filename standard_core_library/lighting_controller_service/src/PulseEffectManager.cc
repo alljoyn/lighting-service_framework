@@ -14,20 +14,34 @@
  *    OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  ******************************************************************************/
 
+#ifdef LSF_BINDINGS
+#include <lsf/controllerservice/PulseEffectManager.h>
+#include <lsf/controllerservice/ControllerService.h>
+#include <lsf/controllerservice/SceneManager.h>
+#include <lsf/controllerservice/OEM_CS_Config.h>
+#include <lsf/controllerservice/FileParser.h>
+#else
 #include <PulseEffectManager.h>
 #include <ControllerService.h>
-#include <qcc/Debug.h>
 #include <SceneManager.h>
 #include <OEM_CS_Config.h>
 #include <FileParser.h>
+#endif
+
+#include <qcc/Debug.h>
 
 using namespace lsf;
 using namespace ajn;
 
+#ifdef LSF_BINDINGS
+using namespace controllerservice;
+#define QCC_MODULE "CONTROLLER_PULSE_EFFECT_MANAGER"
+#else
 #define QCC_MODULE "PULSE_EFFECT_MANAGER"
+#endif
 
-PulseEffectManager::PulseEffectManager(ControllerService& controllerSvc, SceneManager* sceneMgrPtr, const std::string& pulseEffectFile) :
-    Manager(controllerSvc, pulseEffectFile), sceneManagerPtr(sceneMgrPtr), blobLength(0)
+PulseEffectManager::PulseEffectManager(ControllerService& controllerSvc, LampGroupManager* lampGroupMgrPtr, SceneManager* sceneMgrPtr, const std::string& pulseEffectFile) :
+    Manager(controllerSvc, pulseEffectFile), lampGroupManagerPtr(lampGroupMgrPtr), sceneManagerPtr(sceneMgrPtr), blobLength(0)
 {
     QCC_DbgTrace(("%s", __func__));
     pulseEffects.clear();
@@ -420,6 +434,118 @@ void PulseEffectManager::UpdatePulseEffect(Message& msg)
         LSFStringList idList;
         idList.push_back(pulseEffectID);
         controllerService.SendSignal(ControllerServicePulseEffectInterfaceName, "PulseEffectsUpdated", idList);
+    }
+}
+
+void PulseEffectManager::ApplyPulseEffectOnLamps(Message& msg)
+{
+    QCC_DbgPrintf(("%s: %s", __func__, msg->ToString().c_str()));
+    LSFResponseCode responseCode = LSF_ERR_NOT_FOUND;
+
+    size_t numArgs;
+    const MsgArg* args;
+    msg->GetArgs(numArgs, args);
+
+    if (controllerService.CheckNumArgsInMessage(numArgs, 2)  != LSF_OK) {
+        return;
+    }
+
+    const char* pulseEffectId;
+    args[0].Get("s", &pulseEffectId);
+
+    LSFString pulseEffectID(pulseEffectId);
+
+    PulseEffect pulseEffect;
+
+    responseCode = GetPulseEffectInternal(pulseEffectID, pulseEffect);
+
+    if (responseCode == LSF_OK) {
+        LSFStringList lamps;
+        LSFStringList lampGroups;
+        lamps.clear();
+        lampGroups.clear();
+
+        MsgArg* idsArray;
+        size_t idsSize;
+        args[1].Get("as", &idsSize, &idsArray);
+        CreateUniqueList(lamps, idsArray, idsSize);
+
+        TransitionLampsLampGroupsToStateList transitionToStateComponent;
+        TransitionLampsLampGroupsToPresetList transitionToPresetComponent;
+        PulseLampsLampGroupsWithStateList pulseWithStateComponent;
+        PulseLampsLampGroupsWithPresetList pulseWithPresetComponent;
+
+        if (pulseEffect.fromState.nullState) {
+            PulseLampsLampGroupsWithPreset component(lamps, lampGroups, pulseEffect.fromPreset, pulseEffect.toPreset, pulseEffect.pulsePeriod, pulseEffect.pulseDuration, pulseEffect.numPulses);
+            pulseWithPresetComponent.push_back(component);
+        } else {
+            PulseLampsLampGroupsWithState component(lamps, lampGroups, pulseEffect.fromState, pulseEffect.toState, pulseEffect.pulsePeriod, pulseEffect.pulseDuration, pulseEffect.numPulses);
+            pulseWithStateComponent.push_back(component);
+        }
+
+        responseCode = lampGroupManagerPtr->ChangeLampGroupStateAndField(msg, transitionToStateComponent, transitionToPresetComponent,
+                                                                         pulseWithStateComponent, pulseWithPresetComponent,
+                                                                         false, false, LSFString(), true);
+    }
+
+    if (LSF_ERR_NOT_FOUND == responseCode) {
+        controllerService.SendMethodReplyWithResponseCodeAndID(msg, responseCode, pulseEffectID);
+    }
+}
+
+void PulseEffectManager::ApplyPulseEffectOnLampGroups(Message& msg)
+{
+    QCC_DbgPrintf(("%s: %s", __func__, msg->ToString().c_str()));
+    LSFResponseCode responseCode = LSF_ERR_NOT_FOUND;
+
+    size_t numArgs;
+    const MsgArg* args;
+    msg->GetArgs(numArgs, args);
+
+    if (controllerService.CheckNumArgsInMessage(numArgs, 2)  != LSF_OK) {
+        return;
+    }
+
+    const char* pulseEffectId;
+    args[0].Get("s", &pulseEffectId);
+
+    LSFString pulseEffectID(pulseEffectId);
+
+    PulseEffect pulseEffect;
+
+    responseCode = GetPulseEffectInternal(pulseEffectID, pulseEffect);
+
+    if (responseCode == LSF_OK) {
+        LSFStringList lamps;
+        LSFStringList lampGroups;
+        lamps.clear();
+        lampGroups.clear();
+
+        MsgArg* idsArray;
+        size_t idsSize;
+        args[1].Get("as", &idsSize, &idsArray);
+        CreateUniqueList(lampGroups, idsArray, idsSize);
+
+        TransitionLampsLampGroupsToStateList transitionToStateComponent;
+        TransitionLampsLampGroupsToPresetList transitionToPresetComponent;
+        PulseLampsLampGroupsWithStateList pulseWithStateComponent;
+        PulseLampsLampGroupsWithPresetList pulseWithPresetComponent;
+
+        if (pulseEffect.fromState.nullState) {
+            PulseLampsLampGroupsWithPreset component(lamps, lampGroups, pulseEffect.fromPreset, pulseEffect.toPreset, pulseEffect.pulsePeriod, pulseEffect.pulseDuration, pulseEffect.numPulses);
+            pulseWithPresetComponent.push_back(component);
+        } else {
+            PulseLampsLampGroupsWithState component(lamps, lampGroups, pulseEffect.fromState, pulseEffect.toState, pulseEffect.pulsePeriod, pulseEffect.pulseDuration, pulseEffect.numPulses);
+            pulseWithStateComponent.push_back(component);
+        }
+
+        responseCode = lampGroupManagerPtr->ChangeLampGroupStateAndField(msg, transitionToStateComponent, transitionToPresetComponent,
+                                                                         pulseWithStateComponent, pulseWithPresetComponent,
+                                                                         false, false, LSFString(), true);
+    }
+
+    if (LSF_ERR_NOT_FOUND == responseCode) {
+        controllerService.SendMethodReplyWithResponseCodeAndID(msg, responseCode, pulseEffectID);
     }
 }
 

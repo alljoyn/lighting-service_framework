@@ -141,7 +141,6 @@ void CreateUniqueList(LSFStringList& uniqueList, ajn::MsgArg* idsArray, size_t i
             QCC_DbgPrintf(("%s: lampId = %s already in the list", __func__, gid));
         }
     }
-
 }
 
 char* strdupnew(const char* str) {

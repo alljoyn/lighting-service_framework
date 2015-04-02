@@ -32,10 +32,23 @@
 #include <alljoyn/notification/NotificationSender.h>
 #include <alljoyn/config/ConfigService.h>
 
-
 #include <LSFTypes.h>
 #include <Mutex.h>
 
+#ifdef LSF_BINDINGS
+#include <lsf/controllerservice/PersistenceThread.h>
+#include <lsf/controllerservice/LampManager.h>
+#include <lsf/controllerservice/LampGroupManager.h>
+#include <lsf/controllerservice/PresetManager.h>
+#include <lsf/controllerservice/TransitionEffectManager.h>
+#include <lsf/controllerservice/PulseEffectManager.h>
+#include <lsf/controllerservice/SceneManager.h>
+#include <lsf/controllerservice/MasterSceneManager.h>
+#include <lsf/controllerservice/LeaderElectionObject.h>
+#include <lsf/controllerservice/LampClients.h>
+#include <lsf/controllerservice/ControllerServiceRank.h>
+#include <lsf/controllerservice/LSFAboutDataStore.h>
+#else
 #include <PersistenceThread.h>
 #include <LampManager.h>
 #include <LampGroupManager.h>
@@ -48,12 +61,17 @@
 #include <LampClients.h>
 #include <ControllerServiceRank.h>
 #include <LSFAboutDataStore.h>
+#endif
+
 #include <alljoyn/AboutIconObj.h>
 #include <alljoyn/AboutObj.h>
 #include <alljoyn/AboutIcon.h>
 #include <alljoyn/AboutData.h>
+#include "LSFNamespaceSpecifier.h"
 
 namespace lsf {
+
+OPTIONAL_NAMESPACE_CONTROLLER_SERVICE
 
 /*
  * Pre-Declaration of a deprecated 14.06 release specific class
@@ -417,8 +435,8 @@ class ControllerService : public ajn::BusObject, public ajn::services::ConfigSer
     virtual void ObjectRegistered(void);
 
     typedef struct {
-        std::string interfaceDescription;  /**< Interface Description */
-        const char* interfaceName;         /**< Interface Name */
+        std::string interfaceDescription;          /**< Interface Description */
+        const char* interfaceName;                 /**< Interface Name */
     } InterfaceEntry;
 
     QStatus CreateAndAddInterface(std::string interfaceDescription, const char* interfaceName);
@@ -659,7 +677,8 @@ class ControllerServiceManager {
     ControllerService controllerService;
 };
 
+OPTIONAL_NAMESPACE_CLOSE
 
-}
+} //lsf
 
 #endif

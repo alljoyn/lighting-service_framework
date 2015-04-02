@@ -28,7 +28,13 @@
 #include <alljoyn/AboutListener.h>
 #include <LSFKeyListener.h>
 #include <Mutex.h>
+
+#ifdef LSF_BINDINGS
+#include <lsf/controllerservice/Manager.h>
+#else
 #include <Manager.h>
+#endif
+
 #include <Thread.h>
 #include <LSFSemaphore.h>
 #include <Alarm.h>
@@ -37,10 +43,14 @@
 #include <string>
 #include <map>
 #include <vector>
+#import "LSFNamespaceSpecifier.h"
 
 #define INITIAL_PASSCODE "000000"
 
 namespace lsf {
+
+OPTIONAL_NAMESPACE_CONTROLLER_SERVICE
+
 /**
  * struct is used to contain a list of lamps and the requested field state details
  */
@@ -56,11 +66,11 @@ typedef struct _TransitionStateFieldParams {
     _TransitionStateFieldParams(LSFStringList& lampList, uint64_t& timeStamp, const char* fieldName, ajn::MsgArg& fieldValue, uint32_t& transPeriod) :
         lamps(lampList), timestamp(timeStamp), field(fieldName), value(fieldValue), period(transPeriod) { }
 
-    LSFStringList lamps;    /**< List of lamps */
-    uint64_t timestamp;     /**< time for the transition */
-    const char* field;      /**< field to act on */
-    ajn::MsgArg value;      /**< value to move to */
-    uint32_t period;        /**< period of time */
+    LSFStringList lamps;                        /**< List of lamps */
+    uint64_t timestamp;                         /**< time for the transition */
+    const char* field;                          /**< field to act on */
+    ajn::MsgArg value;                          /**< value to move to */
+    uint32_t period;                            /**< period of time */
 } TransitionStateFieldParams;
 
 /**
@@ -77,10 +87,10 @@ typedef struct _TransitionStateParams {
     _TransitionStateParams(LSFStringList& lampList, uint64_t& timeStamp, ajn::MsgArg& lampState, uint32_t& transPeriod) :
         lamps(lampList), timestamp(timeStamp), state(lampState), period(transPeriod) { }
 
-    LSFStringList lamps;    /**< List of lamps */
-    uint64_t timestamp;     /**< time for the transition */
-    ajn::MsgArg state;      /**< new state to transit to */
-    uint32_t period;        /**< period of time */
+    LSFStringList lamps;                        /**< List of lamps */
+    uint64_t timestamp;                         /**< time for the transition */
+    ajn::MsgArg state;                          /**< new state to transit to */
+    uint32_t period;                            /**< period of time */
 } TransitionStateParams;
 
 /**
@@ -100,13 +110,13 @@ typedef struct _PulseStateParams {
     _PulseStateParams(LSFStringList& lampList, ajn::MsgArg& oldLampState, ajn::MsgArg& newLampState, uint32_t& pulsePeriod, uint32_t& pulseDuration, uint32_t& numPul, uint64_t& timeStamp) :
         lamps(lampList), oldState(oldLampState), newState(newLampState), period(pulsePeriod), duration(pulseDuration), numPulses(numPul), timestamp(timeStamp) { }
 
-    LSFStringList lamps;    /**< List of lamps */
-    ajn::MsgArg oldState;   /**< Old state */
-    ajn::MsgArg newState;   /**< New state */
-    uint32_t period;        /**< period of pulse time */
-    uint32_t duration;      /**< duration of pulse time */
-    uint32_t numPulses;     /**< number of pulses */
-    uint64_t timestamp;     /**< time for the pulse */
+    LSFStringList lamps;                        /**< List of lamps */
+    ajn::MsgArg oldState;                       /**< Old state */
+    ajn::MsgArg newState;                       /**< New state */
+    uint32_t period;                            /**< period of pulse time */
+    uint32_t duration;                          /**< duration of pulse time */
+    uint32_t numPulses;                         /**< number of pulses */
+    uint64_t timestamp;                         /**< time for the pulse */
 } PulseStateParams;
 
 typedef std::list<TransitionStateFieldParams> TransitionStateFieldParamsList;
@@ -278,7 +288,7 @@ class LampClients : public Manager, public ajn::BusAttachment::JoinSessionAsyncC
     /**
      * change lamp state
      */
-    void ChangeLampState(const ajn::Message& inMsg, bool groupOperation, bool sceneOperation, TransitionStateParamsList& transitionStateParams,
+    void ChangeLampState(const ajn::Message& inMsg, bool groupOperation, bool sceneOperation, bool effectOperation, TransitionStateParamsList& transitionStateParams,
                          TransitionStateFieldParamsList& transitionStateFieldparams, PulseStateParamsList& pulseParams, LSFString sceneOrMasterSceneID = LSFString());
 
     /**
@@ -565,6 +575,8 @@ class LampClients : public Manager, public ajn::BusAttachment::JoinSessionAsyncC
     Alarm retryAlarm;
 };
 
-}
+OPTIONAL_NAMESPACE_CLOSE
+
+} //lsf
 
 #endif

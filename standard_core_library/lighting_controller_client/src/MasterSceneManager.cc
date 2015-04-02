@@ -86,6 +86,22 @@ ControllerClientStatus MasterSceneManager::CreateMasterScene(const MasterScene& 
                3);
 }
 
+ControllerClientStatus MasterSceneManager::CreateMasterSceneWithTracking(uint32_t& trackingID, const MasterScene& masterScene, const LSFString& masterSceneName, const LSFString& language)
+{
+    QCC_DbgPrintf(("%s", __func__));
+    MsgArg arg[3];
+    masterScene.Get(&arg[0]);
+    arg[1].Set("s", masterSceneName.c_str());
+    arg[2].Set("s", language.c_str());
+
+    return controllerClient.MethodCallAsyncForReplyWithResponseCodeIDAndTrackingID(
+               trackingID,
+               ControllerServiceMasterSceneInterfaceName,
+               "CreateMasterScene",
+               arg,
+               3);
+}
+
 ControllerClientStatus MasterSceneManager::UpdateMasterScene(const LSFString& masterSceneID, const MasterScene& masterScene)
 {
     QCC_DbgPrintf(("%s: masterSceneID=%s", __func__, masterSceneID.c_str()));

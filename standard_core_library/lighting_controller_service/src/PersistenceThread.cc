@@ -15,10 +15,20 @@
  ******************************************************************************/
 
 #include <qcc/Debug.h>
+
+#ifdef LSF_BINDINGS
+#include <lsf/controllerservice/PersistenceThread.h>
+#include <lsf/controllerservice/ControllerService.h>
+#else
 #include <PersistenceThread.h>
 #include <ControllerService.h>
+#endif
 
 using namespace lsf;
+
+#ifdef LSF_BINDINGS
+using namespace controllerservice;
+#endif
 
 #define QCC_MODULE "PERSISTED_THREAD"
 

@@ -187,6 +187,8 @@ class ControllerClient : public ajn::MessageReceiver {
 
     void HandlerForMethodReplyWithResponseCodeAndID(ajn::Message& message, void* context);
 
+    void HandlerForMethodReplyWithResponseCodeIDAndTrackingID(ajn::Message& message, void* context);
+
     void HandlerForMethodReplyWithUint32Value(ajn::Message& message, void* context);
 
     void HandlerForMethodReplyWithResponseCodeIDLanguageAndName(ajn::Message& message, void* context);
@@ -230,6 +232,16 @@ class ControllerClient : public ajn::MessageReceiver {
      * Helper template to invoke MethodCallAsync on the AllJoyn ProxyBusObject.
      */
     ControllerClientStatus MethodCallAsyncForReplyWithResponseCodeAndID(
+        const char* ifaceName,
+        const char* methodName,
+        const ajn::MsgArg* args = NULL,
+        size_t numArgs = 0);
+
+    /**
+     * Helper template to invoke MethodCallAsync on the AllJoyn ProxyBusObject.
+     */
+    ControllerClientStatus MethodCallAsyncForReplyWithResponseCodeIDAndTrackingID(
+        uint32_t& trackingID,
         const char* ifaceName,
         const char* methodName,
         const ajn::MsgArg* args = NULL,
@@ -740,6 +752,45 @@ class ControllerClient : public ajn::MessageReceiver {
 
     typedef std::map<std::string, MethodReplyWithResponseCodeAndIDHandlerBase*> MethodReplyWithResponseCodeAndIDDispatcherMap;
     MethodReplyWithResponseCodeAndIDDispatcherMap methodReplyWithResponseCodeAndIDHandlers;
+
+    template <typename OBJ>
+    void AddMethodReplyWithResponseCodeIDAndTrackingIDHandler(const std::string& methodName, OBJ* obj, void (OBJ::* methodReply)(LSFResponseCode &, LSFString &, uint32_t &))
+    {
+        MethodReplyWithResponseCodeIDAndTrackingIDHandlerBase* handler = new MethodReplyWithResponseCodeIDAndTrackingIDHandler<OBJ>(obj, methodReply);
+        std::pair<MethodReplyWithResponseCodeIDAndTrackingIDDispatcherMap::iterator, bool> ins = methodReplyWithResponseCodeIDAndTrackingIDHandlers.insert(std::make_pair(methodName, handler));
+        if (ins.second == false) {
+            // if this was already there, overwrite and delete the old handler
+            delete ins.first->second;
+            ins.first->second = handler;
+        }
+    }
+
+    class MethodReplyWithResponseCodeIDAndTrackingIDHandlerBase {
+      public:
+        virtual ~MethodReplyWithResponseCodeIDAndTrackingIDHandlerBase() { }
+        virtual void Handle(LSFResponseCode& responseCode, LSFString& lsfId, uint32_t& trackingID) = 0;
+    };
+
+    template <typename OBJ>
+    class MethodReplyWithResponseCodeIDAndTrackingIDHandler : public MethodReplyWithResponseCodeIDAndTrackingIDHandlerBase {
+        typedef void (OBJ::* HandlerFunction)(LSFResponseCode&, LSFString&, uint32_t&);
+
+      public:
+        MethodReplyWithResponseCodeIDAndTrackingIDHandler(OBJ* obj, HandlerFunction handleFunc) :
+            object(obj), handler(handleFunc) { }
+
+        virtual ~MethodReplyWithResponseCodeIDAndTrackingIDHandler() { }
+
+        virtual void Handle(LSFResponseCode& responseCode, LSFString& lsfId, uint32_t& trackingID) {
+            (object->*(handler))(responseCode, lsfId, trackingID);
+        }
+
+        OBJ* object;
+        HandlerFunction handler;
+    };
+
+    typedef std::map<std::string, MethodReplyWithResponseCodeIDAndTrackingIDHandlerBase*> MethodReplyWithResponseCodeIDAndTrackingIDDispatcherMap;
+    MethodReplyWithResponseCodeIDAndTrackingIDDispatcherMap methodReplyWithResponseCodeIDAndTrackingIDHandlers;
 
     template <typename OBJ>
     void AddMethodReplyWithUint32ValueHandler(const std::string& methodName, OBJ* obj, void (OBJ::* methodReply)(uint32_t &))

@@ -77,10 +77,19 @@ class MasterSceneManagerCallback {
      * Response to MasterSceneManager::CreateMasterScene
      *
      * @param responseCode    The response code
-     * @param masterSceneID    The Lamp masterScene id
-     * @param masterSceneID The Lamp masterScene
+     * @param masterSceneID    The masterScene id
      */
     virtual void CreateMasterSceneReplyCB(const LSFResponseCode& responseCode, const LSFString& masterSceneID) { }
+
+    /**
+     * Indicates that a reply has been received for the CreateMasterSceneWithTracking method call.
+     *
+     * @param responseCode   The response code
+     * @param masterSceneID  The Master Scene ID
+     * @param trackingID     The tracking ID that the application can use to associate the CreateMasterSceneWithTracking
+     *                       method call with the reply
+     */
+    virtual void CreateMasterSceneWithTrackingReplyCB(const LSFResponseCode& responseCode, const LSFString& masterSceneID, const uint32_t& trackingID) { }
 
     /**
      *  A masterScene has been created
@@ -190,6 +199,22 @@ class MasterSceneManager : public Manager {
     ControllerClientStatus CreateMasterScene(const MasterScene& masterScene, const LSFString& masterSceneName, const LSFString& language = LSFString("en"));
 
     /**
+     * Create a new Master Scene and provide a API call tracking ID back to the application. \n
+     * Response in MasterSceneManagerCallback::CreateMasterSceneWithTrackingReplyCB
+     *
+     * @param trackingID  Controller Client returns a tracking ID in this variable which the application
+     *                    can use to associate the reply for this call with the request
+     * @param masterScene   Master Scene
+     * @param masterSceneName
+     * @param language
+     * @return
+     *      - CONTROLLER_CLIENT_OK if successful
+     *      - An error status otherwise
+     *
+     */
+    ControllerClientStatus CreateMasterSceneWithTracking(uint32_t& trackingID, const MasterScene& masterScene, const LSFString& masterSceneName, const LSFString& language = LSFString("en"));
+
+    /**
      * Modify a masterScene. \n
      * Change master scene to another master scene. \n
      * Response in MasterSceneManagerCallback::UpdateMasterSceneReplyCB
@@ -274,6 +299,10 @@ class MasterSceneManager : public Manager {
 
     void CreateMasterSceneReply(LSFResponseCode& responseCode, LSFString& lsfId) {
         callback.CreateMasterSceneReplyCB(responseCode, lsfId);
+    }
+
+    void CreateMasterSceneWithTrackingReply(LSFResponseCode& responseCode, LSFString& lsfId, uint32_t& trackingID) {
+        callback.CreateMasterSceneWithTrackingReplyCB(responseCode, lsfId, trackingID);
     }
 
     void UpdateMasterSceneReply(LSFResponseCode& responseCode, LSFString& lsfId) {

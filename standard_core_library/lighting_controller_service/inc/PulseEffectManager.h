@@ -23,15 +23,23 @@
  *    OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  ******************************************************************************/
 
+#ifdef LSF_BINDINGS
+#include <lsf/controllerservice/Manager.h>
+#else
 #include <Manager.h>
+#endif
 
 #include <Mutex.h>
 #include <LSFTypes.h>
+#include <LampGroupManager.h>
 
 #include <string>
 #include <map>
+#include "LSFNamespaceSpecifier.h"
 
 namespace lsf {
+
+OPTIONAL_NAMESPACE_CONTROLLER_SERVICE
 
 class SceneManager;
 /**
@@ -44,10 +52,11 @@ class PulseEffectManager : public Manager {
     /**
      * class constructor. \n
      * @param controllerSvc - reference to controller service instance
+     * @param lampGroupMgrPtr - pointer to lamp group manager
      * @param sceneMgrPtr - pointer to scene manager
      * @param pulseEffectFile - The full path of pulse effect file to be the persistent data
      */
-    PulseEffectManager(ControllerService& controllerSvc, SceneManager* sceneMgrPtr, const std::string& pulseEffectFile);
+    PulseEffectManager(ControllerService& controllerSvc, LampGroupManager* lampGroupMgrPtr, SceneManager* sceneMgrPtr, const std::string& pulseEffectFile);
     /**
      * Clears the pulseEffects data. \n
      * Send signal to the controller clients 'org.allseen.LSF.ControllerService.PulseEffect' 'PulseEffectsDeleted'. \n
@@ -100,6 +109,22 @@ class PulseEffectManager : public Manager {
      *      LSF_ERR_RESOURCES - blob is too big. \n
      */
     void UpdatePulseEffect(ajn::Message& msg);
+    /**
+     * Apply pulseEffect on Lamps. \n
+     * @param msg type Message with MsgArgs: pulse effect id and list of lamp IDs. \n
+     * Return asynchronously the response code and pulse effect id. \n
+     * response code LSF_OK on success. \n
+     *      LSF_ERR_NOT_FOUND - pulse effect/lamp with requested id is not found. \n
+     */
+    void ApplyPulseEffectOnLamps(ajn::Message& msg);
+    /**
+     * Apply pulseEffect on Lamp Groups. \n
+     * @param msg type Message with MsgArgs: pulse effect id and list of lamp group IDs. \n
+     * Return asynchronously the response code and pulse effect id. \n
+     * response code LSF_OK on success. \n
+     *      LSF_ERR_NOT_FOUND - pulse effect/lamp group with requested id is not found. \n
+     */
+    void ApplyPulseEffectOnLampGroups(ajn::Message& msg);
     /**
      * Delete existing pulseEffect. \n
      * @param msg type Message with MsgArgs: pulse effect id. \n
@@ -170,6 +195,7 @@ class PulseEffectManager : public Manager {
 
     PulseEffectMap pulseEffects;
     Mutex pulseEffectsLock;
+    LampGroupManager* lampGroupManagerPtr;
     SceneManager* sceneManagerPtr;
     size_t blobLength;
 
@@ -177,7 +203,9 @@ class PulseEffectManager : public Manager {
     std::string GetString(const std::string& name, const std::string& id, const PulseEffect& pulseEffect);
 };
 
-}
+OPTIONAL_NAMESPACE_CLOSE
+
+} //lsf
 
 
 #endif

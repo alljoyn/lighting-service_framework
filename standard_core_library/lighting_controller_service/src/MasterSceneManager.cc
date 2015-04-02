@@ -14,16 +14,29 @@
  *    OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  ******************************************************************************/
 
+#ifdef LSF_BINDINGS
+#include <lsf/controllerservice/MasterSceneManager.h>
+#include <lsf/controllerservice/ControllerService.h>
+#include <lsf/controllerservice/OEM_CS_Config.h>
+#include <lsf/controllerservice/FileParser.h>
+#else
 #include <MasterSceneManager.h>
 #include <ControllerService.h>
-#include <qcc/Debug.h>
 #include <OEM_CS_Config.h>
 #include <FileParser.h>
+#endif
+
+#include <qcc/Debug.h>
 
 using namespace lsf;
 using namespace ajn;
 
+#ifdef LSF_BINDINGS
+using namespace controllerservice;
+#define QCC_MODULE "CONTROLLER_MASTER_SCENE_MANAGER"
+#else
 #define QCC_MODULE "MASTER_SCENE_MANAGER"
+#endif
 
 MasterSceneManager::MasterSceneManager(ControllerService& controllerSvc, SceneManager& sceneMgr, const std::string& masterSceneFile) :
     Manager(controllerSvc, masterSceneFile), sceneManager(sceneMgr), blobLength(0)

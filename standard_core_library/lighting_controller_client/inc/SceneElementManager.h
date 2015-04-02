@@ -90,8 +90,9 @@ class SceneElementManagerCallback {
      *  LSF_ERR_RESOURCES - Could not allocate memory \n
      *  LSF_ERR_NO_SLOT - No slot for new SceneElement \n
      * @param sceneElementID    The id of the new SceneElement
+     * @param trackingID     The tracking ID that the application can use to associate the method call with the reply
      */
-    virtual void CreateTransitionToStateSceneElementReplyCB(const LSFResponseCode& responseCode, const LSFString& sceneElementID) { }
+    virtual void CreateTransitionToStateSceneElementReplyCB(const LSFResponseCode& responseCode, const LSFString& sceneElementID, const uint32_t& trackingID) { }
 
     /**
      * Response to SceneElementManager::CreateTransitionToPresetSceneElement.
@@ -102,8 +103,9 @@ class SceneElementManagerCallback {
      *  LSF_ERR_RESOURCES - Could not allocate memory \n
      *  LSF_ERR_NO_SLOT - No slot for new SceneElement \n
      * @param sceneElementID    The id of the new SceneElement
+     * @param trackingID     The tracking ID that the application can use to associate the method call with the reply
      */
-    virtual void CreateTransitionToPresetSceneElementReplyCB(const LSFResponseCode& responseCode, const LSFString& sceneElementID) { }
+    virtual void CreateTransitionToPresetSceneElementReplyCB(const LSFResponseCode& responseCode, const LSFString& sceneElementID, const uint32_t& trackingID) { }
 
     /**
      * Response to SceneElementManager::CreatePulseWithStateSceneElement.
@@ -114,8 +116,9 @@ class SceneElementManagerCallback {
      *  LSF_ERR_RESOURCES - Could not allocate memory \n
      *  LSF_ERR_NO_SLOT - No slot for new SceneElement \n
      * @param sceneElementID    The id of the new SceneElement
+     * @param trackingID     The tracking ID that the application can use to associate the method call with the reply
      */
-    virtual void CreatePulseWithStateSceneElementReplyCB(const LSFResponseCode& responseCode, const LSFString& sceneElementID) { }
+    virtual void CreatePulseWithStateSceneElementReplyCB(const LSFResponseCode& responseCode, const LSFString& sceneElementID, const uint32_t& trackingID) { }
 
     /**
      * Response to SceneElementManager::CreatePulseWithPresetSceneElement.
@@ -126,8 +129,9 @@ class SceneElementManagerCallback {
      *  LSF_ERR_RESOURCES - Could not allocate memory \n
      *  LSF_ERR_NO_SLOT - No slot for new SceneElement \n
      * @param sceneElementID    The id of the new SceneElement
+     * @param trackingID     The tracking ID that the application can use to associate the method call with the reply
      */
-    virtual void CreatePulseWithPresetSceneElementReplyCB(const LSFResponseCode& responseCode, const LSFString& sceneElementID) { }
+    virtual void CreatePulseWithPresetSceneElementReplyCB(const LSFResponseCode& responseCode, const LSFString& sceneElementID, const uint32_t& trackingID) { }
 
     /**
      * Response to SceneElementManager::CreateSceneElementWithEffectID.
@@ -137,9 +141,10 @@ class SceneElementManagerCallback {
      *  LSF_ERR_INVALID_ARGS - Language not supported, sceneElement name is empty, Invalid SceneElement components specified, ame length exceeds \n
      *  LSF_ERR_RESOURCES - Could not allocate memory \n
      *  LSF_ERR_NO_SLOT - No slot for new SceneElement \n
-     * @param sceneElementID    The id of the new SceneElement
+     * @param sceneElementID The id of the new SceneElement
+     * @param trackingID     The tracking ID that the application can use to associate the method call with the reply
      */
-    virtual void CreateSceneElementWithEffectIDReplyCB(const LSFResponseCode& responseCode, const LSFString& sceneElementID) { }
+    virtual void CreateSceneElementWithEffectIDReplyCB(const LSFResponseCode& responseCode, const LSFString& sceneElementID, const uint32_t& trackingID) { }
 
     /**
      *  This signal is fired any time a sceneElement is been created.
@@ -477,24 +482,24 @@ class SceneElementManager : public Manager {
         callback.GetSceneElementNameReplyCB(responseCode, lsfId, language, lsfName);
     }
 
-    void CreateTransitionToStateSceneElementReply(LSFResponseCode& responseCode, LSFString& lsfId) {
-        callback.CreateTransitionToStateSceneElementReplyCB(responseCode, lsfId);
+    void CreateTransitionToStateSceneElementReply(LSFResponseCode& responseCode, LSFString& lsfId, uint32_t& trackingID) {
+        callback.CreateTransitionToStateSceneElementReplyCB(responseCode, lsfId, trackingID);
     }
 
-    void CreateTransitionToPresetSceneElementReply(LSFResponseCode& responseCode, LSFString& lsfId) {
-        callback.CreateTransitionToPresetSceneElementReplyCB(responseCode, lsfId);
+    void CreateTransitionToPresetSceneElementReply(LSFResponseCode& responseCode, LSFString& lsfId, uint32_t& trackingID) {
+        callback.CreateTransitionToPresetSceneElementReplyCB(responseCode, lsfId, trackingID);
     }
 
-    void CreatePulseWithStateSceneElementReply(LSFResponseCode& responseCode, LSFString& lsfId) {
-        callback.CreatePulseWithStateSceneElementReplyCB(responseCode, lsfId);
+    void CreatePulseWithStateSceneElementReply(LSFResponseCode& responseCode, LSFString& lsfId, uint32_t& trackingID) {
+        callback.CreatePulseWithStateSceneElementReplyCB(responseCode, lsfId, trackingID);
     }
 
-    void CreatePulseWithPresetSceneElementReply(LSFResponseCode& responseCode, LSFString& lsfId) {
-        callback.CreatePulseWithPresetSceneElementReplyCB(responseCode, lsfId);
+    void CreatePulseWithPresetSceneElementReply(LSFResponseCode& responseCode, LSFString& lsfId, uint32_t& trackingID) {
+        callback.CreatePulseWithPresetSceneElementReplyCB(responseCode, lsfId, trackingID);
     }
 
-    void CreateSceneElementWithEffectIDReply(LSFResponseCode& responseCode, LSFString& lsfId) {
-        callback.CreateSceneElementWithEffectIDReplyCB(responseCode, lsfId);
+    void CreateSceneElementWithEffectIDReply(LSFResponseCode& responseCode, LSFString& lsfId, uint32_t& trackingID) {
+        callback.CreateSceneElementWithEffectIDReplyCB(responseCode, lsfId, trackingID);
     }
 
     void UpdateTransitionToStateSceneElementReply(LSFResponseCode& responseCode, LSFString& lsfId) {

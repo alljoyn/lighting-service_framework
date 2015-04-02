@@ -212,7 +212,9 @@ static const char* interfaces[] =
     ControllerServiceSceneInterfaceName,
     ControllerServiceMasterSceneInterfaceName,
     ConfigServiceInterfaceName,
-    AboutInterfaceName
+    AboutInterfaceName,
+    ControllerServiceTransitionEffectInterfaceName,
+    ControllerServicePulseEffectInterfaceName
 };
 
 ControllerClient::ControllerClient(
@@ -233,7 +235,9 @@ ControllerClient::ControllerClient(
     timeStopped(0)
 {
     currentLeader.Clear();
-    bus.RegisterBusListener(*busHandler);
+    if (busHandler) {
+        bus.RegisterBusListener(*busHandler);
+    }
 }
 
 ControllerClientStatus ControllerClient::Start(void)
@@ -248,6 +252,11 @@ ControllerClientStatus ControllerClient::Start(void)
     }
 
     stopped = false;
+
+    if (busHandler == NULL) {
+        QCC_LogError(ER_FAIL, ("%s: busHandler is NULL", __func__));
+        return CONTROLLER_CLIENT_ERR_FAILURE;
+    }
 
     bus.RegisterAboutListener(*busHandler);
 
@@ -915,6 +924,53 @@ ControllerClientStatus ControllerClient::MethodCallAsyncForReplyWithResponseCode
     return status;
 }
 
+/*
+ * Struct type used for setting context on method calls for which we need to
+ * forward a tracking ID to the application
+ */
+struct MethodCallWithTrackingIDContext {
+
+    MethodCallWithTrackingIDContext(const char* name) :
+        methodName(name) {
+        qcc::String trackingId = qcc::RandHexString(4);
+        qcc::HexStringToBytes(trackingId, (uint8_t*)(&trackingID), 4);
+    }
+
+  public:
+    LSFString methodName;
+    uint32_t trackingID;
+};
+
+ControllerClientStatus ControllerClient::MethodCallAsyncForReplyWithResponseCodeIDAndTrackingID(
+    uint32_t& trackingID,
+    const char* ifaceName,
+    const char* methodName,
+    const ajn::MsgArg* args,
+    size_t numArgs)
+{
+    MethodCallWithTrackingIDContext* methodContext = new MethodCallWithTrackingIDContext(methodName);
+    if (!methodContext) {
+        QCC_LogError(ER_FAIL, ("%s: Unable to allocate memory for call", __func__));
+        return CONTROLLER_CLIENT_ERR_FAILURE;
+    }
+
+    trackingID = methodContext->trackingID;
+
+    ControllerClientStatus status = MethodCallAsyncHelper(
+        ifaceName,
+        methodName,
+        this,
+        static_cast<ajn::MessageReceiver::ReplyHandler>(&ControllerClient::HandlerForMethodReplyWithResponseCodeIDAndTrackingID),
+        args,
+        numArgs,
+        (void*)methodContext);
+    if (status != CONTROLLER_CLIENT_OK) {
+        delete methodContext;
+        trackingID = 0;
+    }
+    return status;
+}
+
 void ControllerClient::HandlerForMethodReplyWithResponseCodeAndID(Message& message, void* context)
 {
     if (stopped) {
@@ -956,6 +1012,54 @@ void ControllerClient::HandlerForMethodReplyWithResponseCodeAndID(Message& messa
         }
 
         delete ((LSFString*)context);
+    } else {
+        QCC_LogError(ER_FAIL, ("%s: Received a NULL context in method reply", __func__));
+    }
+}
+
+void ControllerClient::HandlerForMethodReplyWithResponseCodeIDAndTrackingID(Message& message, void* context)
+{
+    if (stopped) {
+        QCC_DbgPrintf(("%s: Controller Client stopped", __func__));
+        return;
+    }
+    if (context) {
+        QCC_DbgPrintf(("%s: Method Reply for %s:%s", __func__, ((LSFString*)context)->c_str(), (MESSAGE_METHOD_RET == message->GetType()) ? message->ToString().c_str() : "ERROR"));
+        bus.EnableConcurrentCallbacks();
+
+        MethodCallWithTrackingIDContext* contextVal = (MethodCallWithTrackingIDContext*)(context);
+        if (message->GetType() == ajn::MESSAGE_METHOD_RET) {
+            MethodReplyWithResponseCodeIDAndTrackingIDDispatcherMap::iterator it = methodReplyWithResponseCodeIDAndTrackingIDHandlers.find(contextVal->methodName);
+            if (it != methodReplyWithResponseCodeIDAndTrackingIDHandlers.end()) {
+                MethodReplyWithResponseCodeIDAndTrackingIDHandlerBase* handler = it->second;
+
+                size_t numInputArgs;
+                const MsgArg* inputArgs;
+                message->GetArgs(numInputArgs, inputArgs);
+
+                if (CheckNumArgsInMessage(numInputArgs, 2) != LSF_OK) {
+                    return;
+                }
+
+                char* id;
+
+                LSFResponseCode responseCode;
+                inputArgs[0].Get("u", &responseCode);
+                inputArgs[1].Get("s", &id);
+
+                LSFString lsfId = LSFString(id);
+
+                uint32_t trackingID = contextVal->trackingID;
+                handler->Handle(responseCode, lsfId, trackingID);
+            }
+        } else {
+            ErrorCodeList errorList;
+            errorList.push_back(ERROR_ALLJOYN_METHOD_CALL_TIMEOUT);
+            QCC_DbgPrintf(("%s: calling to ControllerClientErrorCB()\n", __func__));
+            callback.ControllerClientErrorCB(errorList);
+        }
+
+        delete (contextVal);
     } else {
         QCC_LogError(ER_FAIL, ("%s: Received a NULL context in method reply", __func__));
     }
@@ -1202,6 +1306,7 @@ void ControllerClient::AddMethodHandlers()
         AddMethodReplyWithResponseCodeAndIDHandler("TransitionLampGroupState", lampGroupManagerPtr, &LampGroupManager::TransitionLampGroupStateReply);
         AddMethodReplyWithResponseCodeAndIDHandler("TransitionLampGroupStateToPreset", lampGroupManagerPtr, &LampGroupManager::TransitionLampGroupStateToPresetReply);
         AddMethodReplyWithResponseCodeAndIDHandler("CreateLampGroup", lampGroupManagerPtr, &LampGroupManager::CreateLampGroupReply);
+        AddMethodReplyWithResponseCodeIDAndTrackingIDHandler("CreateLampGroup", lampGroupManagerPtr, &LampGroupManager::CreateLampGroupWithTrackingReply);
         AddMethodReplyWithResponseCodeAndIDHandler("UpdateLampGroup", lampGroupManagerPtr, &LampGroupManager::UpdateLampGroupReply);
         AddMethodReplyWithResponseCodeAndIDHandler("DeleteLampGroup", lampGroupManagerPtr, &LampGroupManager::DeleteLampGroupReply);
 
@@ -1222,6 +1327,7 @@ void ControllerClient::AddMethodHandlers()
 
         AddMethodReplyWithResponseCodeIDAndNameHandler("SetPresetName", presetManagerPtr, &PresetManager::SetPresetNameReply);
         AddMethodReplyWithResponseCodeAndIDHandler("CreatePreset", presetManagerPtr, &PresetManager::CreatePresetReply);
+        AddMethodReplyWithResponseCodeIDAndTrackingIDHandler("CreatePreset", presetManagerPtr, &PresetManager::CreatePresetWithTrackingReply);
         AddMethodReplyWithResponseCodeAndIDHandler("UpdatePreset", presetManagerPtr, &PresetManager::UpdatePresetReply);
         AddMethodReplyWithResponseCodeAndIDHandler("DeletePreset", presetManagerPtr, &PresetManager::DeletePresetReply);
 
@@ -1239,7 +1345,7 @@ void ControllerClient::AddMethodHandlers()
         AddMethodReplyWithResponseCodeIDLanguageAndNameHandler("GetTransitionEffectName", transitionEffectManagerPtr, &TransitionEffectManager::GetTransitionEffectNameReply);
 
         AddMethodReplyWithResponseCodeIDAndNameHandler("SetTransitionEffectName", transitionEffectManagerPtr, &TransitionEffectManager::SetTransitionEffectNameReply);
-        AddMethodReplyWithResponseCodeAndIDHandler("CreateTransitionEffect", transitionEffectManagerPtr, &TransitionEffectManager::CreateTransitionEffectReply);
+        AddMethodReplyWithResponseCodeIDAndTrackingIDHandler("CreateTransitionEffect", transitionEffectManagerPtr, &TransitionEffectManager::CreateTransitionEffectReply);
         AddMethodReplyWithResponseCodeAndIDHandler("UpdateTransitionEffect", transitionEffectManagerPtr, &TransitionEffectManager::UpdateTransitionEffectReply);
         AddMethodReplyWithResponseCodeAndIDHandler("DeleteTransitionEffect", transitionEffectManagerPtr, &TransitionEffectManager::DeleteTransitionEffectReply);
     }
@@ -1255,7 +1361,7 @@ void ControllerClient::AddMethodHandlers()
         AddMethodReplyWithResponseCodeIDLanguageAndNameHandler("GetPulseEffectName", pulseEffectManagerPtr, &PulseEffectManager::GetPulseEffectNameReply);
 
         AddMethodReplyWithResponseCodeIDAndNameHandler("SetPulseEffectName", pulseEffectManagerPtr, &PulseEffectManager::SetPulseEffectNameReply);
-        AddMethodReplyWithResponseCodeAndIDHandler("CreatePulseEffect", pulseEffectManagerPtr, &PulseEffectManager::CreatePulseEffectReply);
+        AddMethodReplyWithResponseCodeIDAndTrackingIDHandler("CreatePulseEffect", pulseEffectManagerPtr, &PulseEffectManager::CreatePulseEffectReply);
         AddMethodReplyWithResponseCodeAndIDHandler("UpdatePulseEffect", pulseEffectManagerPtr, &PulseEffectManager::UpdatePulseEffectReply);
         AddMethodReplyWithResponseCodeAndIDHandler("DeletePulseEffect", pulseEffectManagerPtr, &PulseEffectManager::DeletePulseEffectReply);
     }
@@ -1273,6 +1379,7 @@ void ControllerClient::AddMethodHandlers()
 
         AddMethodReplyWithResponseCodeIDAndNameHandler("SetSceneName", sceneManagerPtr, &SceneManager::SetSceneNameReply);
         AddMethodReplyWithResponseCodeAndIDHandler("CreateScene", sceneManagerPtr, &SceneManager::CreateSceneReply);
+        AddMethodReplyWithResponseCodeIDAndTrackingIDHandler("CreateScene", sceneManagerPtr, &SceneManager::CreateSceneWithTrackingReply);
         AddMethodReplyWithResponseCodeAndIDHandler("UpdateScene", sceneManagerPtr, &SceneManager::UpdateSceneReply);
         AddMethodReplyWithResponseCodeAndIDHandler("DeleteScene", sceneManagerPtr, &SceneManager::DeleteSceneReply);
         AddMethodReplyWithResponseCodeAndIDHandler("ApplyScene", sceneManagerPtr, &SceneManager::ApplySceneReply);
@@ -1291,6 +1398,7 @@ void ControllerClient::AddMethodHandlers()
 
         AddMethodReplyWithResponseCodeIDAndNameHandler("SetMasterSceneName", masterSceneManagerPtr, &MasterSceneManager::SetMasterSceneNameReply);
         AddMethodReplyWithResponseCodeAndIDHandler("CreateMasterScene", masterSceneManagerPtr, &MasterSceneManager::CreateMasterSceneReply);
+        AddMethodReplyWithResponseCodeIDAndTrackingIDHandler("CreateMasterScene", masterSceneManagerPtr, &MasterSceneManager::CreateMasterSceneWithTrackingReply);
         AddMethodReplyWithResponseCodeAndIDHandler("UpdateMasterScene", masterSceneManagerPtr, &MasterSceneManager::UpdateMasterSceneReply);
         AddMethodReplyWithResponseCodeAndIDHandler("DeleteMasterScene", masterSceneManagerPtr, &MasterSceneManager::DeleteMasterSceneReply);
         AddMethodReplyWithResponseCodeAndIDHandler("ApplyMasterScene", masterSceneManagerPtr, &MasterSceneManager::ApplyMasterSceneReply);
@@ -1303,6 +1411,8 @@ void ControllerClient::AddSignalHandlers()
     const InterfaceDescription* controllerServiceLampInterface = currentLeader.proxyObject.GetInterface(ControllerServiceLampInterfaceName);
     const InterfaceDescription* controllerServiceLampGroupInterface = currentLeader.proxyObject.GetInterface(ControllerServiceLampGroupInterfaceName);
     const InterfaceDescription* controllerServicePresetInterface = currentLeader.proxyObject.GetInterface(ControllerServicePresetInterfaceName);
+    const InterfaceDescription* controllerServiceTransitionEffectInterface = currentLeader.proxyObject.GetInterface(ControllerServiceTransitionEffectInterfaceName);
+    const InterfaceDescription* controllerServicePulseEffectInterface = currentLeader.proxyObject.GetInterface(ControllerServicePulseEffectInterfaceName);
     const InterfaceDescription* controllerServiceSceneInterface = currentLeader.proxyObject.GetInterface(ControllerServiceSceneInterfaceName);
     const InterfaceDescription* controllerServiceMasterSceneInterface = currentLeader.proxyObject.GetInterface(ControllerServiceMasterSceneInterfaceName);
 
@@ -1321,6 +1431,14 @@ void ControllerClient::AddSignalHandlers()
         { controllerServicePresetInterface->GetMember("PresetsCreated"), static_cast<MessageReceiver::SignalHandler>(&ControllerClient::SignalWithArgDispatcher) },
         { controllerServicePresetInterface->GetMember("PresetsUpdated"), static_cast<MessageReceiver::SignalHandler>(&ControllerClient::SignalWithArgDispatcher) },
         { controllerServicePresetInterface->GetMember("PresetsDeleted"), static_cast<MessageReceiver::SignalHandler>(&ControllerClient::SignalWithArgDispatcher) },
+        { controllerServiceTransitionEffectInterface->GetMember("TransitionEffectsNameChanged"), static_cast<MessageReceiver::SignalHandler>(&ControllerClient::SignalWithArgDispatcher) },
+        { controllerServiceTransitionEffectInterface->GetMember("TransitionEffectsCreated"), static_cast<MessageReceiver::SignalHandler>(&ControllerClient::SignalWithArgDispatcher) },
+        { controllerServiceTransitionEffectInterface->GetMember("TransitionEffectsUpdated"), static_cast<MessageReceiver::SignalHandler>(&ControllerClient::SignalWithArgDispatcher) },
+        { controllerServiceTransitionEffectInterface->GetMember("TransitionEffectsDeleted"), static_cast<MessageReceiver::SignalHandler>(&ControllerClient::SignalWithArgDispatcher) },
+        { controllerServicePulseEffectInterface->GetMember("PulseEffectsNameChanged"), static_cast<MessageReceiver::SignalHandler>(&ControllerClient::SignalWithArgDispatcher) },
+        { controllerServicePulseEffectInterface->GetMember("PulseEffectsCreated"), static_cast<MessageReceiver::SignalHandler>(&ControllerClient::SignalWithArgDispatcher) },
+        { controllerServicePulseEffectInterface->GetMember("PulseEffectsUpdated"), static_cast<MessageReceiver::SignalHandler>(&ControllerClient::SignalWithArgDispatcher) },
+        { controllerServicePulseEffectInterface->GetMember("PulseEffectsDeleted"), static_cast<MessageReceiver::SignalHandler>(&ControllerClient::SignalWithArgDispatcher) },
         { controllerServiceSceneInterface->GetMember("ScenesNameChanged"), static_cast<MessageReceiver::SignalHandler>(&ControllerClient::SignalWithArgDispatcher) },
         { controllerServiceSceneInterface->GetMember("ScenesCreated"), static_cast<MessageReceiver::SignalHandler>(&ControllerClient::SignalWithArgDispatcher) },
         { controllerServiceSceneInterface->GetMember("ScenesUpdated"), static_cast<MessageReceiver::SignalHandler>(&ControllerClient::SignalWithArgDispatcher) },

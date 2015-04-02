@@ -56,6 +56,26 @@ class PulseEffectManagerCallback {
     virtual void GetPulseEffectReplyCB(const LSFResponseCode& responseCode, const LSFString& pulseEffectID, const PulseEffect& pulseEffect) { }
 
     /**
+     * Response to PulseEffectManager::ApplyPulseEffectOnLamps. \n
+     * response code LSF_OK on success. \n
+     *      LSF_ERR_NOT_FOUND - pulse effect with requested id is not found. \n
+     * @param responseCode          The return code
+     * @param pulseEffectID    The id of the PulseEffect
+     *
+     */
+    virtual void ApplyPulseEffectOnLampsReplyCB(const LSFResponseCode& responseCode, const LSFString& pulseEffectID, const LSFStringList& lampIDs) { }
+
+    /**
+     * Response to PulseEffectManager::ApplyPulseEffectOnLampGroups. \n
+     * response code LSF_OK on success. \n
+     *      LSF_ERR_NOT_FOUND - pulse effect with requested id is not found. \n
+     * @param responseCode          The return code
+     * @param pulseEffectID    The id of the PulseEffect
+     *
+     */
+    virtual void ApplyPulseEffectOnLampGroupsReplyCB(const LSFResponseCode& responseCode, const LSFString& pulseEffectID, const LSFStringList& lampGroupIDs) { }
+
+    /**
      * Response to PulseEffectManager::GetAllPulseEffectIDs. \n
      * response code LSF_OK on success. \n
      * @param responseCode          The return code
@@ -100,8 +120,9 @@ class PulseEffectManagerCallback {
      *      LSF_ERR_RESOURCES - blob is too big. \n
      * @param responseCode    The return code
      * @param pulseEffectID    The id of the new PulseEffect
+     * @param trackingID     The tracking ID that the application can use to associate the method call with the reply
      */
-    virtual void CreatePulseEffectReplyCB(const LSFResponseCode& responseCode, const LSFString& pulseEffectID) { }
+    virtual void CreatePulseEffectReplyCB(const LSFResponseCode& responseCode, const LSFString& pulseEffectID, const uint32_t& trackingID) { }
 
     /**
      * A PulseEffect has been created
@@ -176,6 +197,28 @@ class PulseEffectManager : public Manager {
     ControllerClientStatus GetPulseEffect(const LSFString& pulseEffectID);
 
     /**
+     * Apply pulse effect on lamps. \n
+     * Response in PulseEffectManagerCallback::ApplyPulseEffectOnLampsReplyCB. \n
+     * @param pulseEffectID type LSFString which is pulse effect id. \n
+     * @param lampIDs type LSFStringList which is the list of lamp ids. \n
+     * Return asynchronously the apply pulse effect on lamps response code and pulse effect id\n
+     * response code LSF_OK on success. \n
+     *      LSF_ERR_NOT_FOUND - pulse effect with requested id is not found. \n
+     */
+    ControllerClientStatus ApplyPulseEffectOnLamps(const LSFString& pulseEffectID, const LSFStringList& lampIDs);
+
+    /**
+     * Apply pulse effect on lamp groups. \n
+     * Response in PulseEffectManagerCallback::ApplyPulseEffectOnLampGroupsReplyCB. \n
+     * @param pulseEffectID type LSFString which is pulse effect id. \n
+     * @param lampGroupIDs type LSFStringList which is the list of lamp group ids. \n
+     * Return asynchronously the apply pulse effect on lamp groups response code and pulse effect id\n
+     * response code LSF_OK on success. \n
+     *      LSF_ERR_NOT_FOUND - pulse effect with requested id is not found. \n
+     */
+    ControllerClientStatus ApplyPulseEffectOnLampGroups(const LSFString& pulseEffectID, const LSFStringList& lampGroupIDs);
+
+    /**
      * Get the name of a PulseEffect. \n
      * Response in PulseEffectManagerCallback::GetPulseEffectNameReplyCB. \n
      * Return asynchronously the pulse effect name, id, language and response code. \n
@@ -201,11 +244,13 @@ class PulseEffectManager : public Manager {
      * Response in PulseEffectManagerCallback::CreatePulseEffectReplyCB. \n
      * Return asynchronously the pulse effect response code and auto generated unique id. \n
      *
+     * @param trackingID  Controller Client returns a tracking ID in this variable which the application
+     *                    can use to associate the reply for this call with the request
      * @param pulseEffect The new pulse effect information
      * @param pulseEffectName
      * @param language
      */
-    ControllerClientStatus CreatePulseEffect(const PulseEffect& pulseEffect, const LSFString& pulseEffectName, const LSFString& language = LSFString("en"));
+    ControllerClientStatus CreatePulseEffect(uint32_t& trackingID, const PulseEffect& pulseEffect, const LSFString& pulseEffectName, const LSFString& language = LSFString("en"));
 
     /**
      * Update an existing PulseEffect. \n
@@ -269,13 +314,17 @@ class PulseEffectManager : public Manager {
         callback.SetPulseEffectNameReplyCB(responseCode, lsfId, language);
     }
 
-    void CreatePulseEffectReply(LSFResponseCode& responseCode, LSFString& lsfId) {
-        callback.CreatePulseEffectReplyCB(responseCode, lsfId);
+    void CreatePulseEffectReply(LSFResponseCode& responseCode, LSFString& lsfId, uint32_t& trackingID) {
+        callback.CreatePulseEffectReplyCB(responseCode, lsfId, trackingID);
     }
 
     void UpdatePulseEffectReply(LSFResponseCode& responseCode, LSFString& lsfId) {
         callback.UpdatePulseEffectReplyCB(responseCode, lsfId);
     }
+
+    void ApplyPulseEffectOnLampsReply(ajn::Message& message);
+
+    void ApplyPulseEffectOnLampGroupsReply(ajn::Message& message);
 
     void DeletePulseEffectReply(LSFResponseCode& responseCode, LSFString& lsfId) {
         callback.DeletePulseEffectReplyCB(responseCode, lsfId);

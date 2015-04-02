@@ -1,12 +1,6 @@
-#ifndef _SERVICE_DESCRIPTION_H_
-#define _SERVICE_DESCRIPTION_H_
-/**
- * \ingroup ControllerService
- */
-/**
- * @file
- * This file provides definitions for service description
- */
+#ifndef _LSF_NamespaceSpecifier_h
+#define _LSF_NamespaceSpecifier_h
+
 /******************************************************************************
  * Copyright AllSeen Alliance. All rights reserved.
  *
@@ -23,25 +17,14 @@
  *    OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  ******************************************************************************/
 
-#include <string>
-#include "LSFNamespaceSpecifier.h"
-
-namespace lsf {
-
-OPTIONAL_NAMESPACE_CONTROLLER_SERVICE
-
-extern const std::string ControllerServiceDescription;
-extern const std::string ControllerServiceLampDescription;
-extern const std::string ControllerServiceLampGroupDescription;
-extern const std::string ControllerServicePresetDescription;
-extern const std::string ControllerServiceTransitionEffectDescription;
-extern const std::string ControllerServicePulseEffectDescription;
-extern const std::string ControllerServiceSceneDescription;
-extern const std::string ControllerServiceMasterSceneDescription;
-extern const std::string LeaderElectionAndStateSyncDescription;
-
-OPTIONAL_NAMESPACE_CLOSE
-
-} //lsf
+#ifdef LSF_BINDINGS
+#define OPTIONAL_NAMESPACE_CONTROLLER_CLIENT namespace controllerclient {
+#define OPTIONAL_NAMESPACE_CONTROLLER_SERVICE namespace controllerservice {
+#define OPTIONAL_NAMESPACE_CLOSE }
+#else
+#define OPTIONAL_NAMESPACE_CONTROLLER_CLIENT
+#define OPTIONAL_NAMESPACE_CONTROLLER_SERVICE
+#define OPTIONAL_NAMESPACE_CLOSE
+#endif
 
 #endif

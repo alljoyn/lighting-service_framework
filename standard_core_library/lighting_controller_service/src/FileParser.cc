@@ -14,13 +14,20 @@
  *    OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  ******************************************************************************/
 
+#ifdef LSF_BINDINGS
+#include <lsf/controllerservice/FileParser.h>
+#else
 #include <FileParser.h>
+#endif
+
 #include <LSFTypes.h>
 #include <qcc/Debug.h>
 
 #define QCC_MODULE "FILE_PARSER"
 
 namespace lsf {
+
+OPTIONAL_NAMESPACE_CONTROLLER_SERVICE
 
 const std::string resetID = "Reset";
 
@@ -77,4 +84,5 @@ std::ostream& WriteString(std::ostream& stream, const std::string& name)
     return stream;
 }
 
+OPTIONAL_NAMESPACE_CLOSE
 }

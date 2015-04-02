@@ -14,12 +14,19 @@
  *    OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  ******************************************************************************/
 
+#ifdef LSF_BINDINGS
+#include <lsf/controllerservice/ControllerServiceRank.h>
+#else
 #include <ControllerServiceRank.h>
+#endif
+
 #include <qcc/Debug.h>
 
 #define QCC_MODULE "LSF_CONTROLLER_SERVICE_RANK"
 
 namespace lsf {
+
+OPTIONAL_NAMESPACE_CONTROLLER_SERVICE
 
 void ControllerServiceRank::Initialize(void)
 {
@@ -102,5 +109,7 @@ void ControllerServiceRank::Initialize(void)
 
     QCC_DbgPrintf(("%s: %s", __func__, c_str()));
 }
+
+OPTIONAL_NAMESPACE_CLOSE
 
 }

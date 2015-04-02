@@ -14,20 +14,35 @@
  *    OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  ******************************************************************************/
 
+#ifdef LSF_BINDINGS
+#include <lsf/controllerservice/TransitionEffectManager.h>
+#include <lsf/controllerservice/ControllerService.h>
+#include <lsf/controllerservice/SceneManager.h>
+#include <lsf/controllerservice/OEM_CS_Config.h>
+#include <lsf/controllerservice/FileParser.h>
+#else
 #include <TransitionEffectManager.h>
 #include <ControllerService.h>
-#include <qcc/Debug.h>
 #include <SceneManager.h>
 #include <OEM_CS_Config.h>
 #include <FileParser.h>
+#include <LampGroupManager.h>
+#endif
+
+#include <qcc/Debug.h>
 
 using namespace lsf;
 using namespace ajn;
 
+#ifdef LSF_BINDINGS
+using namespace controllerservice;
+#define QCC_MODULE "CONTROLLER_TRANSITION_EFFECT_MANAGER"
+#else
 #define QCC_MODULE "TRANSITION_EFFECT_MANAGER"
+#endif
 
-TransitionEffectManager::TransitionEffectManager(ControllerService& controllerSvc, SceneManager* sceneMgrPtr, const std::string& transitionEffectFile) :
-    Manager(controllerSvc, transitionEffectFile), sceneManagerPtr(sceneMgrPtr), blobLength(0)
+TransitionEffectManager::TransitionEffectManager(ControllerService& controllerSvc, LampGroupManager* lampGroupMgrPtr, SceneManager* sceneMgrPtr, const std::string& transitionEffectFile) :
+    Manager(controllerSvc, transitionEffectFile), lampGroupManagerPtr(lampGroupMgrPtr), sceneManagerPtr(sceneMgrPtr), blobLength(0)
 {
     QCC_DbgTrace(("%s", __func__));
     transitionEffects.clear();
@@ -420,6 +435,117 @@ void TransitionEffectManager::UpdateTransitionEffect(Message& msg)
         LSFStringList idList;
         idList.push_back(transitionEffectID);
         controllerService.SendSignal(ControllerServiceTransitionEffectInterfaceName, "TransitionEffectsUpdated", idList);
+    }
+}
+
+void TransitionEffectManager::ApplyTransitionEffectOnLamps(Message& msg)
+{
+    QCC_DbgPrintf(("%s: %s", __func__, msg->ToString().c_str()));
+    LSFResponseCode responseCode = LSF_ERR_NOT_FOUND;
+
+    size_t numArgs;
+    const MsgArg* args;
+    msg->GetArgs(numArgs, args);
+
+    if (controllerService.CheckNumArgsInMessage(numArgs, 2)  != LSF_OK) {
+        return;
+    }
+
+    const char* transitionEffectId;
+    args[0].Get("s", &transitionEffectId);
+
+    LSFString transitionEffectID(transitionEffectId);
+
+    TransitionEffect transitionEffect;
+
+    responseCode = GetTransitionEffectInternal(transitionEffectID, transitionEffect);
+
+    if (responseCode == LSF_OK) {
+        LSFStringList lamps;
+        LSFStringList lampGroups;
+        lamps.clear();
+        lampGroups.clear();
+
+        MsgArg* idsArray;
+        size_t idsSize;
+        args[1].Get("as", &idsSize, &idsArray);
+        CreateUniqueList(lamps, idsArray, idsSize);
+
+        TransitionLampsLampGroupsToStateList transitionToStateComponent;
+        TransitionLampsLampGroupsToPresetList transitionToPresetComponent;
+        PulseLampsLampGroupsWithStateList pulseWithStateComponent;
+        PulseLampsLampGroupsWithPresetList pulseWithPresetComponent;
+
+        if (transitionEffect.state.nullState) {
+            TransitionLampsLampGroupsToPreset component(lamps, lampGroups, transitionEffect.presetID, transitionEffect.transitionPeriod);
+            transitionToPresetComponent.push_back(component);
+        } else {
+            TransitionLampsLampGroupsToState component(lamps, lampGroups, transitionEffect.state, transitionEffect.transitionPeriod);
+            transitionToStateComponent.push_back(component);
+        }
+
+        responseCode = lampGroupManagerPtr->ChangeLampGroupStateAndField(msg, transitionToStateComponent, transitionToPresetComponent,
+                                                                         pulseWithStateComponent, pulseWithPresetComponent,
+                                                                         false, false, LSFString(), true);
+    }
+
+    if (LSF_ERR_NOT_FOUND == responseCode) {
+        controllerService.SendMethodReplyWithResponseCodeAndID(msg, responseCode, transitionEffectID);
+    }
+}
+
+void TransitionEffectManager::ApplyTransitionEffectOnLampGroups(Message& msg)
+{
+    QCC_DbgPrintf(("%s: %s", __func__, msg->ToString().c_str()));
+    LSFResponseCode responseCode = LSF_ERR_NOT_FOUND;
+
+    size_t numArgs;
+    const MsgArg* args;
+    msg->GetArgs(numArgs, args);
+
+    if (controllerService.CheckNumArgsInMessage(numArgs, 2)  != LSF_OK) {
+        return;
+    }
+
+    const char* transitionEffectId;
+    args[0].Get("s", &transitionEffectId);
+
+    LSFString transitionEffectID(transitionEffectId);
+
+    TransitionEffect transitionEffect;
+
+    responseCode = GetTransitionEffectInternal(transitionEffectID, transitionEffect);
+
+    if (responseCode == LSF_OK) {
+        LSFStringList lamps;
+        LSFStringList lampGroups;
+        lamps.clear();
+        lampGroups.clear();
+
+        MsgArg* idsArray;
+        size_t idsSize;
+        args[1].Get("as", &idsSize, &idsArray);
+        CreateUniqueList(lampGroups, idsArray, idsSize);
+
+        TransitionLampsLampGroupsToStateList transitionToStateComponent;
+        TransitionLampsLampGroupsToPresetList transitionToPresetComponent;
+        PulseLampsLampGroupsWithStateList pulseWithStateComponent;
+        PulseLampsLampGroupsWithPresetList pulseWithPresetComponent;
+
+        if (transitionEffect.state.nullState) {
+            TransitionLampsLampGroupsToPreset component(lamps, lampGroups, transitionEffect.presetID, transitionEffect.transitionPeriod);
+            transitionToPresetComponent.push_back(component);
+        } else {
+            TransitionLampsLampGroupsToState component(lamps, lampGroups, transitionEffect.state, transitionEffect.transitionPeriod);
+            transitionToStateComponent.push_back(component);
+        }
+
+        responseCode = lampGroupManagerPtr->ChangeLampGroupStateAndField(msg, transitionToStateComponent, transitionToPresetComponent, pulseWithStateComponent, pulseWithPresetComponent,
+                                                                         false, false, LSFString(), true);
+    }
+
+    if (LSF_ERR_NOT_FOUND == responseCode) {
+        controllerService.SendMethodReplyWithResponseCodeAndID(msg, responseCode, transitionEffectID);
     }
 }
 

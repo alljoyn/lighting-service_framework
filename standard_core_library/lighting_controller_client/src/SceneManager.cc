@@ -85,6 +85,22 @@ ControllerClientStatus SceneManager::CreateScene(const Scene& scene, const LSFSt
                6);
 }
 
+ControllerClientStatus SceneManager::CreateSceneWithTracking(uint32_t& trackingID, const Scene& scene, const LSFString& sceneName, const LSFString& language)
+{
+    QCC_DbgPrintf(("%s", __func__));
+    MsgArg args[6];
+    scene.Get(&args[0], &args[1], &args[2], &args[3]);
+    args[4].Set("s", sceneName.c_str());
+    args[5].Set("s", language.c_str());
+
+    return controllerClient.MethodCallAsyncForReplyWithResponseCodeIDAndTrackingID(
+               trackingID,
+               ControllerServiceSceneInterfaceName,
+               "CreateScene",
+               args,
+               6);
+}
+
 ControllerClientStatus SceneManager::UpdateScene(const LSFString& sceneID, const Scene& scene)
 {
     QCC_DbgPrintf(("%s: sceneID=%s", __func__, sceneID.c_str()));

@@ -25,8 +25,11 @@
 
 #include <Thread.h>
 #include <LSFSemaphore.h>
+#include "LSFNamespaceSpecifier.h"
 
 namespace lsf {
+
+OPTIONAL_NAMESPACE_CONTROLLER_SERVICE
 
 class ControllerService;
 /**
@@ -65,7 +68,9 @@ class PersistenceThread : public Thread {
     LSFSemaphore semaphore;
 };
 
-}
+OPTIONAL_NAMESPACE_CLOSE
+
+} //lsf
 
 
 #endif

@@ -24,17 +24,27 @@
  *    OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  ******************************************************************************/
 
+#ifdef LSF_BINDINGS
+#include <lsf/controllerservice/Manager.h>
+#include <lsf/controllerservice/PresetManager.h>
+#include <lsf/controllerservice/LampClients.h>
+#else
 #include <Manager.h>
 #include <PresetManager.h>
-#include <Mutex.h>
 #include <LampClients.h>
+#endif
 
+#include <Mutex.h>
 #include <string>
 #include <map>
 #include <vector>
 #include <algorithm>
+#include "LSFNamespaceSpecifier.h"
 
 namespace lsf {
+
+OPTIONAL_NAMESPACE_CONTROLLER_SERVICE
+
 /**
  * Lamps and state details
  */
@@ -52,10 +62,9 @@ class LampsAndState {
             }
         }
     }
-
-    LSFStringList lamps; /**< list of lamps */
-    LampState state; /**< state of lamps */
-    uint32_t transitionPeriod; /**< transition period */
+    LSFStringList lamps;         /**< list of lamps */
+    LampState state;         /**< state of lamps */
+    uint32_t transitionPeriod;         /**< transition period */
 };
 /**
  * lamps and present details
@@ -68,9 +77,9 @@ class LampsAndPreset {
     LampsAndPreset(LSFStringList lampList, LSFString presetID, uint32_t period) :
         lamps(lampList), presetID(presetID), transitionPeriod(period) { }
 
-    LSFStringList lamps; /**< list of lamps */
-    LSFString presetID; /**< present ID */
-    uint32_t transitionPeriod; /**< transition period */
+    LSFStringList lamps;         /**< list of lamps */
+    LSFString presetID;         /**< present ID */
+    uint32_t transitionPeriod;         /**< transition period */
 };
 /**
  * a class that contains a list of lamps and the new state wanted for them.
@@ -83,10 +92,10 @@ class LampsAndStateField {
     LampsAndStateField(LSFStringList lampList, LSFString fieldName, ajn::MsgArg arg, uint32_t period) :
         lamps(lampList), stateFieldName(fieldName), stateFieldValue(arg), transitionPeriod(period) { }
 
-    LSFStringList lamps; /**< list of lamps */
-    LSFString stateFieldName; /**< state field name */
-    ajn::MsgArg stateFieldValue; /**< state field value */
-    uint32_t transitionPeriod; /**< transition period */
+    LSFStringList lamps;         /**< list of lamps */
+    LSFString stateFieldName;         /**< state field name */
+    ajn::MsgArg stateFieldValue;         /**< state field value */
+    uint32_t transitionPeriod;         /**< transition period */
 };
 /**
  * pulse lamp details
@@ -99,12 +108,12 @@ class PulseLampsWithState {
     PulseLampsWithState(LSFStringList lampList, LampState fromLampState, LampState toLampState, uint32_t period, uint32_t duration, uint32_t numPulses) :
         lamps(lampList), fromState(fromLampState), toState(toLampState), period(period), duration(duration), numPulses(numPulses) { }
 
-    LSFStringList lamps; /**< list of lamps */
-    LampState fromState; /**< from state */
-    LampState toState; /**< to state */
-    uint32_t period; /**< period of time */
-    uint32_t duration; /**< duration of time */
-    uint32_t numPulses; /**< number of pulses */
+    LSFStringList lamps;         /**< list of lamps */
+    LampState fromState;         /**< from state */
+    LampState toState;         /**< to state */
+    uint32_t period;         /**< period of time */
+    uint32_t duration;         /**< duration of time */
+    uint32_t numPulses;         /**< number of pulses */
 };
 /**
  * pulse lamps details
@@ -117,12 +126,12 @@ class PulseLampsWithPreset {
     PulseLampsWithPreset(LSFStringList lampList, LSFString fromPreset, LSFString toPreset, uint32_t period, uint32_t duration, uint32_t numPulses) :
         lamps(lampList), fromPreset(fromPreset), toPreset(toPreset), period(period), duration(duration), numPulses(numPulses) { }
 
-    LSFStringList lamps; /**< list of lamps */
-    LSFString fromPreset; /**< from present */
-    LSFString toPreset; /**< to present */
-    uint32_t period; /**< period of time */
-    uint32_t duration; /**< duration of time */
-    uint32_t numPulses; /**< number of pulses */
+    LSFStringList lamps;         /**< list of lamps */
+    LSFString fromPreset;         /**< from present */
+    LSFString toPreset;         /**< to present */
+    uint32_t period;         /**< period of time */
+    uint32_t duration;         /**< duration of time */
+    uint32_t numPulses;         /**< number of pulses */
 };
 
 typedef std::list<LampsAndState> LampsAndStateList;
@@ -340,13 +349,16 @@ class LampManager : public Manager {
                                  PulseLampsWithPresetList& pulseWithPresetComponent,
                                  bool groupOperation = false,
                                  bool sceneOperation = false,
-                                 LSFString sceneOrMasterSceneId = LSFString());
+                                 LSFString sceneOrMasterSceneId = LSFString(),
+                                 bool effectOperation = false);
 
     LampClients lampClients;
     PresetManager& presetManager;
 
 };
 
-}
+OPTIONAL_NAMESPACE_CLOSE
+
+} //lsf
 
 #endif
