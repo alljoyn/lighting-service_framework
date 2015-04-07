@@ -212,9 +212,7 @@ static const char* interfaces[] =
     ControllerServiceSceneInterfaceName,
     ControllerServiceMasterSceneInterfaceName,
     ConfigServiceInterfaceName,
-    AboutInterfaceName,
-    ControllerServiceTransitionEffectInterfaceName,
-    ControllerServicePulseEffectInterfaceName
+    AboutInterfaceName
 };
 
 ControllerClient::ControllerClient(
@@ -1305,8 +1303,6 @@ void ControllerClient::AddSignalHandlers()
     const InterfaceDescription* controllerServiceLampInterface = currentLeader.proxyObject.GetInterface(ControllerServiceLampInterfaceName);
     const InterfaceDescription* controllerServiceLampGroupInterface = currentLeader.proxyObject.GetInterface(ControllerServiceLampGroupInterfaceName);
     const InterfaceDescription* controllerServicePresetInterface = currentLeader.proxyObject.GetInterface(ControllerServicePresetInterfaceName);
-    const InterfaceDescription* controllerServiceTransitionEffectInterface = currentLeader.proxyObject.GetInterface(ControllerServiceTransitionEffectInterfaceName);
-    const InterfaceDescription* controllerServicePulseEffectInterface = currentLeader.proxyObject.GetInterface(ControllerServicePulseEffectInterfaceName);
     const InterfaceDescription* controllerServiceSceneInterface = currentLeader.proxyObject.GetInterface(ControllerServiceSceneInterfaceName);
     const InterfaceDescription* controllerServiceMasterSceneInterface = currentLeader.proxyObject.GetInterface(ControllerServiceMasterSceneInterfaceName);
 
@@ -1325,14 +1321,6 @@ void ControllerClient::AddSignalHandlers()
         { controllerServicePresetInterface->GetMember("PresetsCreated"), static_cast<MessageReceiver::SignalHandler>(&ControllerClient::SignalWithArgDispatcher) },
         { controllerServicePresetInterface->GetMember("PresetsUpdated"), static_cast<MessageReceiver::SignalHandler>(&ControllerClient::SignalWithArgDispatcher) },
         { controllerServicePresetInterface->GetMember("PresetsDeleted"), static_cast<MessageReceiver::SignalHandler>(&ControllerClient::SignalWithArgDispatcher) },
-        { controllerServiceTransitionEffectInterface->GetMember("TransitionEffectsNameChanged"), static_cast<MessageReceiver::SignalHandler>(&ControllerClient::SignalWithArgDispatcher) },
-        { controllerServiceTransitionEffectInterface->GetMember("TransitionEffectsCreated"), static_cast<MessageReceiver::SignalHandler>(&ControllerClient::SignalWithArgDispatcher) },
-        { controllerServiceTransitionEffectInterface->GetMember("TransitionEffectsUpdated"), static_cast<MessageReceiver::SignalHandler>(&ControllerClient::SignalWithArgDispatcher) },
-        { controllerServiceTransitionEffectInterface->GetMember("TransitionEffectsDeleted"), static_cast<MessageReceiver::SignalHandler>(&ControllerClient::SignalWithArgDispatcher) },
-        { controllerServicePulseEffectInterface->GetMember("PulseEffectsNameChanged"), static_cast<MessageReceiver::SignalHandler>(&ControllerClient::SignalWithArgDispatcher) },
-        { controllerServicePulseEffectInterface->GetMember("PulseEffectsCreated"), static_cast<MessageReceiver::SignalHandler>(&ControllerClient::SignalWithArgDispatcher) },
-        { controllerServicePulseEffectInterface->GetMember("PulseEffectsUpdated"), static_cast<MessageReceiver::SignalHandler>(&ControllerClient::SignalWithArgDispatcher) },
-        { controllerServicePulseEffectInterface->GetMember("PulseEffectsDeleted"), static_cast<MessageReceiver::SignalHandler>(&ControllerClient::SignalWithArgDispatcher) },
         { controllerServiceSceneInterface->GetMember("ScenesNameChanged"), static_cast<MessageReceiver::SignalHandler>(&ControllerClient::SignalWithArgDispatcher) },
         { controllerServiceSceneInterface->GetMember("ScenesCreated"), static_cast<MessageReceiver::SignalHandler>(&ControllerClient::SignalWithArgDispatcher) },
         { controllerServiceSceneInterface->GetMember("ScenesUpdated"), static_cast<MessageReceiver::SignalHandler>(&ControllerClient::SignalWithArgDispatcher) },

@@ -533,8 +533,6 @@ QStatus ControllerService::RegisterMethodHandlers(void)
     const InterfaceDescription* controllerServiceLampInterface = bus.GetInterface(ControllerServiceLampInterfaceName);
     const InterfaceDescription* controllerServiceLampGroupInterface = bus.GetInterface(ControllerServiceLampGroupInterfaceName);
     const InterfaceDescription* controllerServicePresetInterface = bus.GetInterface(ControllerServicePresetInterfaceName);
-    const InterfaceDescription* controllerServiceTransitionEffectInterface = bus.GetInterface(ControllerServiceTransitionEffectInterfaceName);
-    const InterfaceDescription* controllerServicePulseEffectInterface = bus.GetInterface(ControllerServicePulseEffectInterfaceName);
     const InterfaceDescription* controllerServiceSceneInterface = bus.GetInterface(ControllerServiceSceneInterfaceName);
     const InterfaceDescription* controllerServiceMasterSceneInterface = bus.GetInterface(ControllerServiceMasterSceneInterfaceName);
 
@@ -587,20 +585,6 @@ QStatus ControllerService::RegisterMethodHandlers(void)
         { controllerServicePresetInterface->GetMember("UpdatePreset"), static_cast<MessageReceiver::MethodHandler>(&ControllerService::MethodCallDispatcher) },
         { controllerServicePresetInterface->GetMember("DeletePreset"), static_cast<MessageReceiver::MethodHandler>(&ControllerService::MethodCallDispatcher) },
         { controllerServicePresetInterface->GetMember("GetPreset"), static_cast<MessageReceiver::MethodHandler>(&ControllerService::MethodCallDispatcher) },
-        { controllerServiceTransitionEffectInterface->GetMember("GetAllTransitionEffectIDs"), static_cast<MessageReceiver::MethodHandler>(&ControllerService::MethodCallDispatcher) },
-        { controllerServiceTransitionEffectInterface->GetMember("GetTransitionEffectName"), static_cast<MessageReceiver::MethodHandler>(&ControllerService::MethodCallDispatcher) },
-        { controllerServiceTransitionEffectInterface->GetMember("SetTransitionEffectName"), static_cast<MessageReceiver::MethodHandler>(&ControllerService::MethodCallDispatcher) },
-        { controllerServiceTransitionEffectInterface->GetMember("CreateTransitionEffect"), static_cast<MessageReceiver::MethodHandler>(&ControllerService::MethodCallDispatcher) },
-        { controllerServiceTransitionEffectInterface->GetMember("UpdateTransitionEffect"), static_cast<MessageReceiver::MethodHandler>(&ControllerService::MethodCallDispatcher) },
-        { controllerServiceTransitionEffectInterface->GetMember("DeleteTransitionEffect"), static_cast<MessageReceiver::MethodHandler>(&ControllerService::MethodCallDispatcher) },
-        { controllerServiceTransitionEffectInterface->GetMember("GetTransitionEffect"), static_cast<MessageReceiver::MethodHandler>(&ControllerService::MethodCallDispatcher) },
-        { controllerServicePulseEffectInterface->GetMember("GetAllPulseEffectIDs"), static_cast<MessageReceiver::MethodHandler>(&ControllerService::MethodCallDispatcher) },
-        { controllerServicePulseEffectInterface->GetMember("GetPulseEffectName"), static_cast<MessageReceiver::MethodHandler>(&ControllerService::MethodCallDispatcher) },
-        { controllerServicePulseEffectInterface->GetMember("SetPulseEffectName"), static_cast<MessageReceiver::MethodHandler>(&ControllerService::MethodCallDispatcher) },
-        { controllerServicePulseEffectInterface->GetMember("CreatePulseEffect"), static_cast<MessageReceiver::MethodHandler>(&ControllerService::MethodCallDispatcher) },
-        { controllerServicePulseEffectInterface->GetMember("UpdatePulseEffect"), static_cast<MessageReceiver::MethodHandler>(&ControllerService::MethodCallDispatcher) },
-        { controllerServicePulseEffectInterface->GetMember("DeletePulseEffect"), static_cast<MessageReceiver::MethodHandler>(&ControllerService::MethodCallDispatcher) },
-        { controllerServicePulseEffectInterface->GetMember("GetPulseEffect"), static_cast<MessageReceiver::MethodHandler>(&ControllerService::MethodCallDispatcher) },
         { controllerServiceSceneInterface->GetMember("GetAllSceneIDs"), static_cast<MessageReceiver::MethodHandler>(&ControllerService::MethodCallDispatcher) },
         { controllerServiceSceneInterface->GetMember("GetSceneName"), static_cast<MessageReceiver::MethodHandler>(&ControllerService::MethodCallDispatcher) },
         { controllerServiceSceneInterface->GetMember("SetSceneName"), static_cast<MessageReceiver::MethodHandler>(&ControllerService::MethodCallDispatcher) },
@@ -685,9 +669,7 @@ QStatus ControllerService::Start(const char* keyStoreFileLocation)
         { ControllerServiceLampGroupDescription, ControllerServiceLampGroupInterfaceName },
         { ControllerServicePresetDescription, ControllerServicePresetInterfaceName },
         { ControllerServiceSceneDescription, ControllerServiceSceneInterfaceName },
-        { ControllerServiceMasterSceneDescription, ControllerServiceMasterSceneInterfaceName },
-        { ControllerServiceTransitionEffectDescription, ControllerServiceTransitionEffectInterfaceName },
-        { ControllerServicePulseEffectDescription, ControllerServicePulseEffectInterfaceName }
+        { ControllerServiceMasterSceneDescription, ControllerServiceMasterSceneInterfaceName }
     };
 
     status = CreateAndAddInterfaces(interfaceEntries, sizeof(interfaceEntries) / sizeof(InterfaceEntry));
@@ -1367,10 +1349,6 @@ QStatus ControllerService::Get(const char*ifcName, const char*propName, MsgArg& 
             status = val.Set("u", masterSceneManager.GetControllerServiceMasterSceneInterfaceVersion());
         } else if (0 == strcmp(ifcName, LeaderElectionAndStateSyncInterfaceName)) {
             status = val.Set("u", elector.GetLeaderElectionAndStateSyncInterfaceVersion());
-        } else if (0 == strcmp(ifcName, ControllerServiceTransitionEffectInterfaceName)) {
-            status = val.Set("u", transitionEffectManager.GetControllerServiceTransitionEffectInterfaceVersion());
-        } else if (0 == strcmp(ifcName, ControllerServicePulseEffectInterfaceName)) {
-            status = val.Set("u", pulseEffectManager.GetControllerServicePulseEffectInterfaceVersion());
         } else {
             status = ER_BUS_OBJECT_NO_SUCH_INTERFACE;
         }
