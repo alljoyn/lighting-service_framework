@@ -43,6 +43,7 @@
 #include <lsf/controllerservice/TransitionEffectManager.h>
 #include <lsf/controllerservice/PulseEffectManager.h>
 #include <lsf/controllerservice/SceneManager.h>
+#include <lsf/controllerservice/SceneElementManager.h>
 #include <lsf/controllerservice/MasterSceneManager.h>
 #include <lsf/controllerservice/LeaderElectionObject.h>
 #include <lsf/controllerservice/LampClients.h>
@@ -56,6 +57,7 @@
 #include <TransitionEffectManager.h>
 #include <PulseEffectManager.h>
 #include <SceneManager.h>
+#include <SceneElementManager.h>
 #include <MasterSceneManager.h>
 #include <LeaderElectionObject.h>
 #include <LampClients.h>
@@ -114,7 +116,9 @@ class ControllerService : public ajn::BusObject, public ajn::services::ConfigSer
      * @param presetFile - path of preset file
      * @param transitionEffectFile - path of transitionEffect file
      * @param pulseEffectFile - path of pulseEffect file
+     * @param sceneElementsFile - path to sceneElements file
      * @param sceneFile - path of scene file
+     * @param sceneWithSceneElementsFile - path of scene with scene elements file
      * @param masterSceneFile - path of master scene file
      */
     ControllerService(
@@ -124,7 +128,9 @@ class ControllerService : public ajn::BusObject, public ajn::services::ConfigSer
         const std::string& presetFile,
         const std::string& transitionEffectFile,
         const std::string& pulseEffectFile,
+        const std::string& sceneElementsFile,
         const std::string& sceneFile,
+        const std::string& sceneWithSceneElementsFile,
         const std::string& masterSceneFile);
 
     /**
@@ -155,7 +161,9 @@ class ControllerService : public ajn::BusObject, public ajn::services::ConfigSer
      * @param presetFile - path of preset file
      * @param transitionEffectFile - path of transitionEffect file
      * @param pulseEffectFile - path of pulseEffect file
+     * @param sceneElementsFile - path to sceneElements file
      * @param sceneFile - path of scene file
+     * @param sceneWithSceneElementsFile - path of scene with scene elements file
      * @param masterSceneFile - path of master scene file
      */
     ControllerService(
@@ -166,7 +174,9 @@ class ControllerService : public ajn::BusObject, public ajn::services::ConfigSer
         const std::string& presetFile,
         const std::string& transitionEffectFile,
         const std::string& pulseEffectFile,
+        const std::string& sceneElementsFile,
         const std::string& sceneFile,
+        const std::string& sceneWithSceneElementsFile,
         const std::string& masterSceneFile);
 
     /**
@@ -225,6 +235,11 @@ class ControllerService : public ajn::BusObject, public ajn::services::ConfigSer
      * @return SceneManager
      */
     SceneManager& GetSceneManager(void) { return sceneManager; };
+    /**
+     * Get reference to Scene Element Manager object
+     * @return SceneElementManager
+     */
+    SceneElementManager& GetSceneElementManager(void) { return sceneElementManager; };
     /**
      * Get reference to Master Scene Manager
      * @return MasterSceneManager
@@ -460,6 +475,7 @@ class ControllerService : public ajn::BusObject, public ajn::services::ConfigSer
     LampGroupManager lampGroupManager;
     PresetManager presetManager;
     SceneManager sceneManager;
+    SceneElementManager sceneElementManager;
     MasterSceneManager masterSceneManager;
     TransitionEffectManager transitionEffectManager;
     PulseEffectManager pulseEffectManager;
@@ -578,9 +594,11 @@ class ControllerServiceManager {
         const std::string& presetFile,
         const std::string& transitionEffectFile,
         const std::string& pulseEffectFile,
+        const std::string& sceneElementsFile,
         const std::string& sceneFile,
+        const std::string& sceneWithSceneElementsFile,
         const std::string& masterSceneFile) :
-        controllerService(factoryConfigFile, configFile, lampGroupFile, presetFile, transitionEffectFile, pulseEffectFile, sceneFile, masterSceneFile) {
+        controllerService(factoryConfigFile, configFile, lampGroupFile, presetFile, transitionEffectFile, pulseEffectFile, sceneElementsFile, sceneFile, sceneWithSceneElementsFile, masterSceneFile) {
 
     }
 
@@ -614,7 +632,9 @@ class ControllerServiceManager {
      * @param presetFile - path of preset file
      * @param transitionEffectFile - path of transitionEffect file
      * @param pulseEffectFile - path of pulseEffect file
+     * @param sceneElementsFile - path to sceneElements file
      * @param sceneFile - path of scene file
+     * @param sceneWithSceneElementsFile - path of scene with scene elements file
      * @param masterSceneFile - path of master scene file
      */
     ControllerServiceManager(
@@ -625,9 +645,11 @@ class ControllerServiceManager {
         const std::string& presetFile,
         const std::string& transitionEffectFile,
         const std::string& pulseEffectFile,
+        const std::string& sceneElementsFile,
         const std::string& sceneFile,
+        const std::string& sceneWithSceneElementsFile,
         const std::string& masterSceneFile) :
-        controllerService(aboutData, factoryConfigFile, configFile, lampGroupFile, presetFile, transitionEffectFile, pulseEffectFile, sceneFile, masterSceneFile) {
+        controllerService(aboutData, factoryConfigFile, configFile, lampGroupFile, presetFile, transitionEffectFile, pulseEffectFile, sceneElementsFile, sceneFile, sceneWithSceneElementsFile, masterSceneFile) {
 
     }
 

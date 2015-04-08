@@ -589,7 +589,7 @@ void MasterSceneManager::ApplyMasterScene(ajn::Message& message)
     }
 
     if (LSF_OK == responseCode) {
-        responseCode = sceneManager.ApplySceneInternal(message, scenes, uniqueId);
+        responseCode = sceneManager.ApplySceneNestedInternal(message, scenes, uniqueId);
     }
 
     if (LSF_OK != responseCode) {

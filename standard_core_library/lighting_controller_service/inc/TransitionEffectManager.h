@@ -25,11 +25,12 @@
 
 #ifdef LSF_BINDINGS
 #include <lsf/controllerservice/Manager.h>
+#include <lsf/controllerservice/SceneManager.h>
 #else
 #include <Manager.h>
+#include <SceneManager.h>
 #endif
 
-#include <SceneManager.h>
 #include <Mutex.h>
 #include <LSFTypes.h>
 

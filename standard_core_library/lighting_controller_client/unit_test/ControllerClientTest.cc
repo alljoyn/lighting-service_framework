@@ -69,6 +69,7 @@ LSFString presetIDForDependencyCheck;
 LSFString transitionEffectIDForDependencyCheck;
 LSFString pulseEffectIDForDependencyCheck;
 LSFString sceneIDForDependencyCheck;
+LSFString masterSceneIDForDependencyCheck;
 
 class ControllerClientCallbackHandler : public ControllerClientCallback {
   public:
@@ -10831,6 +10832,7 @@ TEST_F(ControllerClientTest, Controller_Client_CreateMasterScene) {
     }
 
     EXPECT_EQ(masterSceneManagerCBHandler.createMasterSceneReplyCBID, masterSceneManagerCBHandler.masterSceneList.front());
+    masterSceneIDForDependencyCheck = masterSceneManagerCBHandler.createMasterSceneReplyCBID;
 }
 
 TEST_F(ControllerClientTest, Controller_Client_CreateMasterSceneWithTracking) {
@@ -10900,14 +10902,13 @@ TEST_F(ControllerClientTest, Controller_Client_CreateMasterSceneWithTracking) {
     }
 
     EXPECT_EQ(lampGroupManagerCBHandler.createLampGroupReplyCBID, lampGroupManagerCBHandler.lampGroupList.front());
-    nestedLampGroupIDForDependencyCheck = lampGroupManagerCBHandler.createLampGroupReplyCBID;
 
     replyReceivedFlag = false;
     signalReceivedFlag = false;
 
     localStatus = CONTROLLER_CLIENT_OK;
     LSFStringList lampList1, lampGroupList1;
-    lampGroupList1.push_back(nestedLampGroupIDForDependencyCheck);
+    lampGroupList1.push_back(lampGroupManagerCBHandler.createLampGroupReplyCBID);
     LampGroup lampGroup1(lampList1, lampGroupList1);
     localStatus = lampGroupManager.CreateLampGroup(lampGroup1, name);
     ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
@@ -10931,7 +10932,6 @@ TEST_F(ControllerClientTest, Controller_Client_CreateMasterSceneWithTracking) {
     }
 
     EXPECT_EQ(lampGroupManagerCBHandler.createLampGroupReplyCBID, lampGroupManagerCBHandler.lampGroupList.front());
-    lampGroupIDForDependencyCheck = lampGroupManagerCBHandler.createLampGroupReplyCBID;
 
     replyReceivedFlag = false;
     signalReceivedFlag = false;
@@ -10961,16 +10961,15 @@ TEST_F(ControllerClientTest, Controller_Client_CreateMasterSceneWithTracking) {
     }
 
     EXPECT_EQ(presetManagerCBHandler.createPresetReplyCBID, presetManagerCBHandler.presetList.front());
-    presetIDForDependencyCheck = presetManagerCBHandler.createPresetReplyCBID;
 
     replyReceivedFlag = false;
     signalReceivedFlag = false;
 
     localStatus = CONTROLLER_CLIENT_OK;
     LSFStringList lamps, lampGroups;
-    lampGroups.push_back(lampGroupIDForDependencyCheck);
+    lampGroups.push_back(lampGroupManagerCBHandler.createLampGroupReplyCBID);
     uint32_t transPeriod = 50;
-    TransitionLampsLampGroupsToPreset transitionToPresetComponent(lamps, lampGroups, presetIDForDependencyCheck, transPeriod);
+    TransitionLampsLampGroupsToPreset transitionToPresetComponent(lamps, lampGroups, presetManagerCBHandler.createPresetReplyCBID, transPeriod);
 
     TransitionLampsLampGroupsToStateList transitionToStateList;
     TransitionLampsLampGroupsToPresetList transitionToPresetList;
@@ -11002,14 +11001,13 @@ TEST_F(ControllerClientTest, Controller_Client_CreateMasterSceneWithTracking) {
     }
 
     EXPECT_EQ(sceneManagerCBHandler.createSceneReplyCBID, sceneManagerCBHandler.sceneList.front());
-    sceneIDForDependencyCheck = sceneManagerCBHandler.createSceneReplyCBID;
 
     replyReceivedFlag = false;
     signalReceivedFlag = false;
 
     localStatus = CONTROLLER_CLIENT_OK;
     LSFStringList sceneList;
-    sceneList.push_back(sceneIDForDependencyCheck);
+    sceneList.push_back(sceneManagerCBHandler.createSceneReplyCBID);
     MasterScene masterScene(sceneList);
     LSFString masterSceneName("SampleMasterScene");
     uint32_t trackingID = 0;
@@ -11443,6 +11441,13 @@ TEST_F(ControllerClientTest, Controller_Client_UpdateMasterScene) {
     LSFStringList sceneList;
     sceneList.push_back("abc");
     MasterScene masterScene(sceneList);
+    while (masterSceneManagerCBHandler.masterSceneList.size()) {
+        if (strcmp(masterSceneManagerCBHandler.masterSceneList.front().c_str(), masterSceneIDForDependencyCheck.c_str()) != 0) {
+            break;
+        } else {
+            masterSceneManagerCBHandler.masterSceneList.pop_front();
+        }
+    }
     LSFString masterSceneID = masterSceneManagerCBHandler.masterSceneList.front();
     localStatus = masterSceneManager.UpdateMasterScene(masterSceneID, masterScene);
     ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
@@ -11509,6 +11514,13 @@ TEST_F(ControllerClientTest, Controller_Client_GetMasterSceneDataSet) {
     getMasterSceneDataSetName = false;
 
     localStatus = CONTROLLER_CLIENT_OK;
+    while (masterSceneManagerCBHandler.masterSceneList.size()) {
+        if (strcmp(masterSceneManagerCBHandler.masterSceneList.front().c_str(), masterSceneIDForDependencyCheck.c_str()) != 0) {
+            break;
+        } else {
+            masterSceneManagerCBHandler.masterSceneList.pop_front();
+        }
+    }
     LSFString masterSceneID = masterSceneManagerCBHandler.masterSceneList.front();
     localStatus = masterSceneManager.GetMasterSceneDataSet(masterSceneID);
     ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
@@ -11540,9 +11552,6 @@ TEST_F(ControllerClientTest, Controller_Client_GetMasterSceneDataSet) {
 
     LSFString language("en");
     EXPECT_EQ(language, masterSceneManagerCBHandler.getMasterSceneNameReplyCBLanguage);
-
-    LSFString name("New Name");
-    EXPECT_EQ(name, masterSceneManagerCBHandler.getMasterSceneNameReplyCBMasterSceneName);
 }
 
 TEST_F(ControllerClientTest, Controller_Client_GetMasterScene) {
@@ -11584,6 +11593,13 @@ TEST_F(ControllerClientTest, Controller_Client_GetMasterScene) {
     replyReceivedFlag = false;
 
     localStatus = CONTROLLER_CLIENT_OK;
+    while (masterSceneManagerCBHandler.masterSceneList.size()) {
+        if (strcmp(masterSceneManagerCBHandler.masterSceneList.front().c_str(), masterSceneIDForDependencyCheck.c_str()) != 0) {
+            break;
+        } else {
+            masterSceneManagerCBHandler.masterSceneList.pop_front();
+        }
+    }
     LSFString masterSceneID = masterSceneManagerCBHandler.masterSceneList.front();
     localStatus = masterSceneManager.GetMasterScene(masterSceneID);
     ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
@@ -11621,30 +11637,10 @@ TEST_F(ControllerClientTest, Controller_Client_DeleteMasterScene) {
     EXPECT_EQ(LSF_OK, controllerClientCBHandler.connectedToControllerServiceCBStatus);
 
     replyReceivedFlag = false;
-
-    localStatus = CONTROLLER_CLIENT_OK;
-    localStatus = masterSceneManager.GetAllMasterSceneIDs();
-    ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
-
-    //wait to receive reply
-    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
-        if (replyReceivedFlag) {
-            break;
-        }
-        sleep(2);
-    }
-
-    EXPECT_EQ(LSF_OK, masterSceneManagerCBHandler.getAllMasterSceneIDsReplyCBStatus);
-
-    size_t listSize = 1;
-    EXPECT_LE(listSize, masterSceneManagerCBHandler.masterSceneList.size());
-
-    replyReceivedFlag = false;
     signalReceivedFlag = false;
 
     localStatus = CONTROLLER_CLIENT_OK;
-    LSFString masterSceneID = masterSceneManagerCBHandler.masterSceneList.front();
-    localStatus = masterSceneManager.DeleteMasterScene(masterSceneID);
+    localStatus = masterSceneManager.DeleteMasterScene(masterSceneIDForDependencyCheck);
     ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
 
     //wait to receive reply
@@ -11656,7 +11652,7 @@ TEST_F(ControllerClientTest, Controller_Client_DeleteMasterScene) {
     }
 
     EXPECT_EQ(LSF_OK, masterSceneManagerCBHandler.deleteMasterSceneReplyCBStatus);
-    EXPECT_EQ(masterSceneID, masterSceneManagerCBHandler.deleteMasterSceneReplyCBID);
+    EXPECT_EQ(masterSceneIDForDependencyCheck, masterSceneManagerCBHandler.deleteMasterSceneReplyCBID);
 
     //wait to receive signal
     for (size_t msecs = 0; msecs < 2100; msecs += 5) {

@@ -54,7 +54,9 @@ static std::string lampGroupFile = "LampGroups.lsf";
 static std::string presetFile = "Presets.lsf";
 static std::string transitionEffectFile = "TransitionEffect.lsf";
 static std::string pulseEffectFile = "PulseEffect.lsf";
+static std::string sceneElementFile = "SceneElement.lsf";
 static std::string sceneFile = "Scenes.lsf";
+static std::string sceneWithSceneElementFile = "SceneWithSceneElement.lsf";
 static std::string masterSceneFile = "MasterScenes.lsf";
 static std::string storeFile = "LightingControllerService";
 static std::string factoryConfigFilePath = factoryConfigFile;
@@ -63,7 +65,9 @@ static std::string lampGroupFilePath = lampGroupFile;
 static std::string presetFilePath = presetFile;
 static std::string transitionEffectFilePath = transitionEffectFile;
 static std::string pulseEffectFilePath = pulseEffectFile;
+static std::string sceneElementFilePath = sceneElementFile;
 static std::string sceneFilePath = sceneFile;
+static std::string sceneWithSceneElementFilePath = sceneWithSceneElementFile;
 static std::string masterSceneFilePath = masterSceneFile;
 static std::string storeFilePath = storeFile;
 static std::string storeLocation;
@@ -113,7 +117,9 @@ static void parseCommandLine(int argc, char** argv)
                 presetFilePath = absDirPath + presetFile;
                 transitionEffectFilePath = absDirPath + transitionEffectFile;
                 pulseEffectFilePath = absDirPath + pulseEffectFile;
+                sceneElementFilePath = absDirPath + sceneElementFile;
                 sceneFilePath = absDirPath + sceneFile;
+                sceneWithSceneElementFilePath = absDirPath + sceneWithSceneElementFile;
                 masterSceneFilePath = absDirPath + masterSceneFile;
                 storeFilePath = storeLocation + "/" + storeFile;
             }
@@ -148,7 +154,7 @@ void RunService(bool listenToInterrupts)
 
 
     lsf::ControllerServiceManager* controllerSvcManagerPtr =
-        new lsf::ControllerServiceManager(factoryConfigFilePath, configFilePath, lampGroupFilePath, presetFilePath, transitionEffectFilePath, pulseEffectFilePath, sceneFilePath, masterSceneFilePath);
+        new lsf::ControllerServiceManager(factoryConfigFilePath, configFilePath, lampGroupFilePath, presetFilePath, transitionEffectFilePath, pulseEffectFilePath, sceneElementFilePath, sceneFilePath, sceneWithSceneElementFilePath, masterSceneFilePath);
 
     if (controllerSvcManagerPtr == NULL) {
         QCC_LogError(ER_OUT_OF_MEMORY, ("%s: Failed to start the Controller Service Manager", __func__));

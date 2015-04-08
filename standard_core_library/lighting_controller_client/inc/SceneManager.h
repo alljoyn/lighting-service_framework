@@ -62,6 +62,15 @@ class SceneManagerCallback {
     virtual void GetSceneNameReplyCB(const LSFResponseCode& responseCode, const LSFString& sceneID, const LSFString& language, const LSFString& sceneName) { }
 
     /**
+     * Indicates that a reply has been received for the method call GetSceneVersion method call.
+     *
+     * @param responseCode   The response code
+     * @param sceneID    The Lamp Group ID
+     * @param sceneVersion  The Lamp Group Version
+     */
+    virtual void GetSceneVersionReplyCB(const LSFResponseCode& responseCode, const LSFString& sceneID, const uint32_t& sceneVersion) { }
+
+    /**
      * Response to SceneManager::SetSceneName.
      *
      * @param responseCode    The response code: \n
@@ -181,10 +190,10 @@ class SceneManagerCallback {
      * @param responseCode    The response code: \n
      *  return LSF_OK \n
      *  return LSF_ERR_NOT_FOUND - scene not found \n
-     * @param sceneID           The id of the scene
-     * @param sceneElementIDs   The list of scene elements IDs that comprise the scene
+     * @param sceneID The id of the scene
+     * @param scene   Scene Data
      */
-    virtual void GetSceneWithSceneElementsReplyCB(const LSFResponseCode& responseCode, const LSFString& sceneID, const LSFStringList& sceneElementIDs) { }
+    virtual void GetSceneWithSceneElementsReplyCB(const LSFResponseCode& responseCode, const LSFString& sceneID, const SceneWithSceneElements& scene) { }
 
     /**
      * Response to SceneManager::ApplyScene.
@@ -236,6 +245,18 @@ class SceneManager : public Manager {
     ControllerClientStatus GetSceneName(const LSFString& sceneID, const LSFString& language = LSFString("en"));
 
     /**
+     * Get the version of a Lamp Group. \n
+     * Response in SceneManagerCallback::GetSceneVersionCB
+     *
+     * @param sceneID    The Lamp Group ID
+     * @return
+     *      - CONTROLLER_CLIENT_OK if successful
+     *      - An error status otherwise
+     *
+     */
+    ControllerClientStatus GetSceneVersion(const LSFString& sceneID);
+
+    /**
      * Set the name of a Scene. \n
      * Response in SceneManagerCallback::SetSceneNameReplyCB
      *
@@ -277,11 +298,11 @@ class SceneManager : public Manager {
      *
      * @param trackingID  Controller Client returns a tracking ID in this variable which the application
      *                    can use to associate the reply for this call with the request
-     * @param sceneElementIDs       The list of scene element IDs that comprise the Scene
-     * @param sceneName             The scene name
-     * @param language              The scene language
+     * @param scene       Scene with Scene Elements
+     * @param sceneName   The scene name
+     * @param language    The scene language
      */
-    ControllerClientStatus CreateSceneWithSceneElements(uint32_t& trackingID, const LSFStringList& sceneElementIDs, const LSFString& sceneName, const LSFString& language = LSFString("en"));
+    ControllerClientStatus CreateSceneWithSceneElements(uint32_t& trackingID, const SceneWithSceneElements& scene, const LSFString& sceneName, const LSFString& language = LSFString("en"));
 
     /**
      * Modify an existing scene. \n
@@ -297,9 +318,9 @@ class SceneManager : public Manager {
      * Response in SceneManagerCallback::UpdateSceneWithSceneElementsReplyCB \n
      *
      * @param sceneID           The id of the scene to modify
-     * @param sceneElementIDs   The updated scene elements IDs list
+     * @param scene             Scene Data
      */
-    ControllerClientStatus UpdateSceneWithSceneElements(const LSFString& sceneID, const LSFStringList& sceneElementIDs);
+    ControllerClientStatus UpdateSceneWithSceneElements(const LSFString& sceneID, const SceneWithSceneElements& scene);
 
     /**
      * Delete an existing scene. \n
@@ -342,6 +363,15 @@ class SceneManager : public Manager {
      * @param language   The requested language
      */
     ControllerClientStatus GetSceneDataSet(const LSFString& sceneID, const LSFString& language = LSFString("en"));
+
+    /**
+     * Get the Scene Info and Name. \n
+     * Combination of GetScene and GetScneneName. Responses are accordingly. \n
+     *
+     * @param sceneID    The ID of the master scene
+     * @param language   The requested language
+     */
+    ControllerClientStatus GetSceneWithSceneElementsDataSet(const LSFString& sceneID, const LSFString& language = LSFString("en"));
 
   private:
 

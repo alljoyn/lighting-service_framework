@@ -210,6 +210,7 @@ static const char* interfaces[] =
     ControllerServiceLampGroupInterfaceName,
     ControllerServicePresetInterfaceName,
     ControllerServiceSceneInterfaceName,
+    ControllerServiceSceneElementInterfaceName,
     ControllerServiceMasterSceneInterfaceName,
     ConfigServiceInterfaceName,
     AboutInterfaceName,
@@ -228,6 +229,7 @@ ControllerClient::ControllerClient(
     lampGroupManagerPtr(NULL),
     presetManagerPtr(NULL),
     sceneManagerPtr(NULL),
+    sceneElementManagerPtr(NULL),
     masterSceneManagerPtr(NULL),
     transitionEffectManagerPtr(NULL),
     pulseEffectManagerPtr(NULL),
@@ -1385,6 +1387,24 @@ void ControllerClient::AddMethodHandlers()
         AddMethodReplyWithResponseCodeAndIDHandler("ApplyScene", sceneManagerPtr, &SceneManager::ApplySceneReply);
     }
 
+    if (sceneElementManagerPtr) {
+        AddSignalHandler("SceneElementsNameChanged", sceneElementManagerPtr, &SceneElementManager::SceneElementsNameChanged);
+        AddSignalHandler("SceneElementsCreated", sceneElementManagerPtr, &SceneElementManager::SceneElementsCreated);
+        AddSignalHandler("SceneElementsUpdated", sceneElementManagerPtr, &SceneElementManager::SceneElementsUpdated);
+        AddSignalHandler("SceneElementsDeleted", sceneElementManagerPtr, &SceneElementManager::SceneElementsDeleted);
+        AddSignalHandler("SceneElementsApplied", sceneElementManagerPtr, &SceneElementManager::SceneElementsApplied);
+
+        AddMethodReplyWithResponseCodeAndListOfIDsHandler("GetAllSceneElementIDs", sceneElementManagerPtr, &SceneElementManager::GetAllSceneElementIDsReply);
+
+        AddMethodReplyWithResponseCodeIDLanguageAndNameHandler("GetSceneElementName", sceneElementManagerPtr, &SceneElementManager::GetSceneElementNameReply);
+
+        AddMethodReplyWithResponseCodeIDAndNameHandler("SetSceneElementName", sceneElementManagerPtr, &SceneElementManager::SetSceneElementNameReply);
+        AddMethodReplyWithResponseCodeIDAndTrackingIDHandler("CreateSceneElement", sceneElementManagerPtr, &SceneElementManager::CreateSceneElementReply);
+        AddMethodReplyWithResponseCodeAndIDHandler("UpdateSceneElement", sceneElementManagerPtr, &SceneElementManager::UpdateSceneElementReply);
+        AddMethodReplyWithResponseCodeAndIDHandler("DeleteSceneElement", sceneElementManagerPtr, &SceneElementManager::DeleteSceneElementReply);
+        AddMethodReplyWithResponseCodeAndIDHandler("ApplySceneElement", sceneElementManagerPtr, &SceneElementManager::ApplySceneElementReply);
+    }
+
     if (masterSceneManagerPtr) {
         AddSignalHandler("MasterScenesNameChanged", masterSceneManagerPtr, &MasterSceneManager::MasterScenesNameChanged);
         AddSignalHandler("MasterScenesCreated", masterSceneManagerPtr, &MasterSceneManager::MasterScenesCreated);
@@ -1414,6 +1434,7 @@ void ControllerClient::AddSignalHandlers()
     const InterfaceDescription* controllerServiceTransitionEffectInterface = currentLeader.proxyObject.GetInterface(ControllerServiceTransitionEffectInterfaceName);
     const InterfaceDescription* controllerServicePulseEffectInterface = currentLeader.proxyObject.GetInterface(ControllerServicePulseEffectInterfaceName);
     const InterfaceDescription* controllerServiceSceneInterface = currentLeader.proxyObject.GetInterface(ControllerServiceSceneInterfaceName);
+    const InterfaceDescription* controllerServiceSceneElementInterface = currentLeader.proxyObject.GetInterface(ControllerServiceSceneElementInterfaceName);
     const InterfaceDescription* controllerServiceMasterSceneInterface = currentLeader.proxyObject.GetInterface(ControllerServiceMasterSceneInterfaceName);
 
     const SignalEntry signalEntries[] = {
@@ -1444,6 +1465,11 @@ void ControllerClient::AddSignalHandlers()
         { controllerServiceSceneInterface->GetMember("ScenesUpdated"), static_cast<MessageReceiver::SignalHandler>(&ControllerClient::SignalWithArgDispatcher) },
         { controllerServiceSceneInterface->GetMember("ScenesDeleted"), static_cast<MessageReceiver::SignalHandler>(&ControllerClient::SignalWithArgDispatcher) },
         { controllerServiceSceneInterface->GetMember("ScenesApplied"), static_cast<MessageReceiver::SignalHandler>(&ControllerClient::SignalWithArgDispatcher) },
+        { controllerServiceSceneElementInterface->GetMember("SceneElementsNameChanged"), static_cast<MessageReceiver::SignalHandler>(&ControllerClient::SignalWithArgDispatcher) },
+        { controllerServiceSceneElementInterface->GetMember("SceneElementsCreated"), static_cast<MessageReceiver::SignalHandler>(&ControllerClient::SignalWithArgDispatcher) },
+        { controllerServiceSceneElementInterface->GetMember("SceneElementsUpdated"), static_cast<MessageReceiver::SignalHandler>(&ControllerClient::SignalWithArgDispatcher) },
+        { controllerServiceSceneElementInterface->GetMember("SceneElementsDeleted"), static_cast<MessageReceiver::SignalHandler>(&ControllerClient::SignalWithArgDispatcher) },
+        { controllerServiceSceneElementInterface->GetMember("SceneElementsApplied"), static_cast<MessageReceiver::SignalHandler>(&ControllerClient::SignalWithArgDispatcher) },
         { controllerServiceMasterSceneInterface->GetMember("MasterScenesNameChanged"), static_cast<MessageReceiver::SignalHandler>(&ControllerClient::SignalWithArgDispatcher) },
         { controllerServiceMasterSceneInterface->GetMember("MasterScenesCreated"), static_cast<MessageReceiver::SignalHandler>(&ControllerClient::SignalWithArgDispatcher) },
         { controllerServiceMasterSceneInterface->GetMember("MasterScenesUpdated"), static_cast<MessageReceiver::SignalHandler>(&ControllerClient::SignalWithArgDispatcher) },

@@ -45,6 +45,8 @@ const char* ControllerServicePresetInterfaceName = "org.allseen.LSF.ControllerSe
 const char* ControllerServiceTransitionEffectInterfaceName = "org.allseen.LSF.ControllerService.TransitionEffect";
 const char* ControllerServicePulseEffectInterfaceName = "org.allseen.LSF.ControllerService.PulseEffect";
 const char* ControllerServiceSceneInterfaceName = "org.allseen.LSF.ControllerService.Scene";
+const char* ControllerServiceSceneWithSceneElementsInterfaceName = "org.allseen.LSF.ControllerService.SceneWithSceneElements";
+const char* ControllerServiceSceneElementInterfaceName = "org.allseen.LSF.ControllerService.SceneElement";
 const char* ControllerServiceMasterSceneInterfaceName = "org.allseen.LSF.ControllerService.MasterScene";
 ajn::SessionPort ControllerServiceSessionPort = 43;
 
@@ -55,6 +57,8 @@ const uint32_t ControllerServicePresetInterfaceVersion = 1;
 const uint32_t ControllerServiceTransitionEffectInterfaceVersion = 1;
 const uint32_t ControllerServicePulseEffectInterfaceVersion = 1;
 const uint32_t ControllerServiceSceneInterfaceVersion = 1;
+const uint32_t ControllerServiceSceneWithSceneElementsInterfaceVersion = 1;
+const uint32_t ControllerServiceSceneElementInterfaceVersion = 1;
 const uint32_t ControllerServiceMasterSceneInterfaceVersion = 1;
 const uint32_t ControllerServiceLeaderElectionAndStateSyncInterfaceVersion = 1;
 
@@ -1448,7 +1452,7 @@ void PulseLampsLampGroupsWithPreset::Get(ajn::MsgArg* component) const
 }
 
 Scene::Scene() :
-    invalidArgs(false)
+    invalidArgs(true)
 {
     QCC_DbgTrace(("%s", __func__));
     transitionToStateComponent.clear();
@@ -1820,6 +1824,132 @@ LSFResponseCode MasterScene::IsDependentOnScene(LSFString& sceneID)
     }
 
     return responseCode;
+}
+
+SceneWithSceneElements::SceneWithSceneElements()
+{
+    sceneElements.clear();
+    //QCC_DbgPrintf(("%s: %s", __func__, this->c_str()));
+}
+
+SceneWithSceneElements::SceneWithSceneElements(const ajn::MsgArg& sceneElementList)
+{
+    Set(sceneElementList);
+    //QCC_DbgPrintf(("%s: %s", __func__, this->c_str()));
+}
+
+SceneWithSceneElements::SceneWithSceneElements(LSFStringList sceneElementList) :
+    sceneElements(sceneElementList)
+{
+    //QCC_DbgPrintf(("%s: %s", __func__, this->c_str()));
+}
+
+SceneWithSceneElements::SceneWithSceneElements(const SceneWithSceneElements& other)
+{
+    sceneElements.clear();
+    sceneElements = other.sceneElements;
+    //QCC_DbgPrintf(("%s: %s", __func__, this->c_str()));
+}
+
+const char* SceneWithSceneElements::c_str(void) const
+{
+    QCC_DbgPrintf(("%s", __func__));
+    static qcc::String ret;
+    ret.clear();
+    ret = qcc::String("SceneWithSceneElements::SceneElements:") + qcc::String("\n");
+    for (LSFStringList::const_iterator it = sceneElements.begin(); it != sceneElements.end(); it++) {
+        ret += qcc::String((*it).c_str()) + qcc::String("\n");
+    }
+    return ret.c_str();
+}
+
+SceneWithSceneElements& SceneWithSceneElements::operator=(const SceneWithSceneElements& other)
+{
+    sceneElements.clear();
+    sceneElements = other.sceneElements;
+    //QCC_DbgPrintf(("%s: %s", __func__, this->c_str()));
+    return *this;
+}
+
+void SceneWithSceneElements::Set(const ajn::MsgArg& sceneElementList)
+{
+    sceneElements.clear();
+
+    MsgArg* gidsArray;
+    size_t gidsSize;
+    sceneElementList.Get("as", &gidsSize, &gidsArray);
+    CreateUniqueList(sceneElements, gidsArray, gidsSize);
+
+    //QCC_DbgPrintf(("%s: %s", __func__, this->c_str()));
+}
+
+void SceneWithSceneElements::Get(ajn::MsgArg* sceneElementList) const
+{
+    QCC_DbgPrintf(("%s", __func__));
+    size_t gidsVecSize = sceneElements.size();
+    if (gidsVecSize) {
+        const char** gidsVec = new const char*[gidsVecSize];
+        size_t i = 0;
+        for (LSFStringList::const_iterator it = sceneElements.begin(); it != sceneElements.end(); it++) {
+            gidsVec[i++] = it->c_str();
+        }
+        sceneElementList->Set("as", gidsVecSize, gidsVec);
+        delete [] gidsVec;
+        sceneElementList->SetOwnershipFlags(MsgArg::OwnsArgs);
+    } else {
+        sceneElementList->Set("as", 0, NULL);
+    }
+}
+
+LSFResponseCode SceneWithSceneElements::IsDependentOnSceneElement(LSFString& sceneElementID)
+{
+    QCC_DbgPrintf(("%s", __func__));
+    LSFResponseCode responseCode = LSF_OK;
+
+    LSFStringList::iterator findIt = std::find(sceneElements.begin(), sceneElements.end(), sceneElementID);
+    if (findIt != sceneElements.end()) {
+        responseCode = LSF_ERR_DEPENDENCY;
+    }
+
+    return responseCode;
+}
+
+SceneElement::SceneElement(LSFStringList& lampList, LSFStringList& lampGroupList, LSFString& effectId) :
+    lamps(lampList), lampGroups(lampGroupList), effectID(effectId), invalidArgs(false)
+{
+    QCC_DbgPrintf(("%s", __func__));
+}
+
+SceneElement::SceneElement(const ajn::MsgArg& lampList, const ajn::MsgArg& lampGroupList, const ajn::MsgArg& effectId)
+{
+    QCC_DbgPrintf(("%s", __func__));
+    Set(lampList, lampGroupList, effectId);
+}
+
+const char* SceneElement::c_str(void) const
+{
+    QCC_DbgPrintf(("%s", __func__));
+    return "";
+}
+
+SceneElement::SceneElement(const SceneElement& other)
+{
+    QCC_DbgPrintf(("%s", __func__));
+}
+
+SceneElement& SceneElement::operator=(const SceneElement& other)
+{
+    return *this;
+}
+
+void SceneElement::Set(const ajn::MsgArg& lampState, const ajn::MsgArg& presetId, const ajn::MsgArg& transPeriod)
+{
+
+}
+
+void SceneElement::Get(ajn::MsgArg* lampState, ajn::MsgArg* presetId, ajn::MsgArg* transPeriod) const
+{
+
 }
 
 }

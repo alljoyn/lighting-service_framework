@@ -111,6 +111,16 @@ extern const char* ControllerServicePulseEffectInterfaceName;
 extern const char* ControllerServiceSceneInterfaceName;
 
 /**
+ * Controller Service Scene 1.1 Interface Name
+ */
+extern const char* ControllerServiceSceneWithSceneElementsInterfaceName;
+
+/**
+ * Controller Service Scene Element Interface Name
+ */
+extern const char* ControllerServiceSceneElementInterfaceName;
+
+/**
  * Controller Service Master Scene Interface Name
  */
 extern const char* ControllerServiceMasterSceneInterfaceName;
@@ -154,6 +164,16 @@ extern const uint32_t ControllerServicePulseEffectInterfaceVersion;
  * Controller Service Scene Interface Version
  */
 extern const uint32_t ControllerServiceSceneInterfaceVersion;
+
+/**
+ * Controller Service Scene 1.1 Interface Version
+ */
+extern const uint32_t ControllerServiceSceneWithSceneElementsInterfaceVersion;
+
+/**
+ * Controller Service Scene Element Interface Version
+ */
+extern const uint32_t ControllerServiceSceneElementInterfaceVersion;
 
 /**
  * Controller Service Master Scene Interface Version
@@ -254,12 +274,13 @@ uint32_t GetTimestampInSeconds(void);
  * Enum defining the LSF Blob Type
  */
 typedef enum _LSFBlobType {
-    LSF_PRESET,            /**< Preset type */
-    LSF_LAMP_GROUP,        /**< Lamp Group type */
-    LSF_SCENE,             /**< Scene type */
-    LSF_MASTER_SCENE,      /**< Master Scene type */
-    LSF_TRANSITION_EFFECT, /**< Transition Effect type */
-    LSF_PULSE_EFFECT       /**< Pulse Effect type */
+    LSF_PRESET,               /**< Preset type */
+    LSF_LAMP_GROUP,           /**< Lamp Group type */
+    LSF_SCENE,                /**< Scene type */
+    LSF_MASTER_SCENE,         /**< Master Scene type */
+    LSF_TRANSITION_EFFECT,    /**< Transition Effect type */
+    LSF_PULSE_EFFECT,         /**< Pulse Effect type */
+    LSF_BLOB_TYPE_LAST_VALUE  /**< Last value */
 } LSFBlobType;
 
 /**
@@ -718,28 +739,20 @@ class LampGroup {
 typedef std::map<LSFString, std::pair<LSFString, LampGroup> > LampGroupMap;
 
 /**
- * Enum specifying the pre-defined effect types
- */
-typedef enum _LSFEffectType {
-    /**
-     * Static Effect
-     */
-    STATIC_EFFECT,
-    /**
-     * Transition Effect
-     */
-    TRANSITION_EFFECT,
-    /**
-     * Pulse Effect
-     */
-    PULSE_EFFECT
-} LSFEffectType;
-
-/**
  * Class defining a Effect ID component of a Scene
  */
-class SceneElementWithEffectID {
+class SceneElement {
   public:
+    /**
+     * Default Constructor
+     */
+    SceneElement() :
+        invalidArgs(true)
+    {
+        lamps.clear();
+        lampGroups.clear();
+        effectID.clear();
+    }
     /**
      * Parameterized Constructor
      *
@@ -747,18 +760,19 @@ class SceneElementWithEffectID {
      * @param lampGroupList List of Lamp Group IDs
      * @param effectID      Effect ID
      */
-    SceneElementWithEffectID(LSFStringList& lampList, LSFStringList& lampGroupList, LSFString& effectID, LSFEffectType effectType);
+    SceneElement(LSFStringList& lampList, LSFStringList& lampGroupList, LSFString& effectId);
 
     /**
      * Parameterized Constructor
      *
-     * @param component      MsgArg with an array of Lamp IDs,
-     *                       array of Lamp Group IDs and a EffectID
+     * @param lampList      List of Lamp IDs
+     * @param lampGroupList List of Lamp Group IDs
+     * @param effectID      Effect ID
      */
-    SceneElementWithEffectID(const ajn::MsgArg& component);
+    SceneElement(const ajn::MsgArg& lampList, const ajn::MsgArg& lampGroupList, const ajn::MsgArg& effectId);
 
     /**
-     * Return the details of the SceneElementWithEffectID as a string
+     * Return the details of the SceneElement as a string
      *
      * @return string
      */
@@ -769,29 +783,32 @@ class SceneElementWithEffectID {
      *
      * @param other Component to copy from
      */
-    SceneElementWithEffectID(const SceneElementWithEffectID& other);
+    SceneElement(const SceneElement& other);
 
     /**
      * Assignment operator
      *
      * @param other Component to assign from
      */
-    SceneElementWithEffectID& operator=(const SceneElementWithEffectID& other);
+    SceneElement& operator=(const SceneElement& other);
 
     /**
-     * Set the SceneElementWithEffectID
+     * Set the SceneElement
      *
-     * @param component      MsgArg with an array of Lamp IDs,
-     *                       array of Lamp Group IDs and a EffectID
+     * @param lampList      List of Lamp IDs
+     * @param lampGroupList List of Lamp Group IDs
+     * @param effectID      Effect ID
      */
-    void Set(const ajn::MsgArg& component);
+    void Set(const ajn::MsgArg& lampList, const ajn::MsgArg& lampGroupList, const ajn::MsgArg& effectId);
 
     /**
      * Get the component as a MsgArg
      *
-     * @param component       Msgarg holding the component
+     * @param lampList      List of Lamp IDs
+     * @param lampGroupList List of Lamp Group IDs
+     * @param effectID      Effect ID
      */
-    void Get(ajn::MsgArg* component) const;
+    void Get(ajn::MsgArg* lampList, ajn::MsgArg* lampGroupList, ajn::MsgArg* effectId) const;
 
     /**
      * List of Lamps
@@ -809,15 +826,15 @@ class SceneElementWithEffectID {
     LSFString effectID;
 
     /**
-     * Effect Type
-     */
-    LSFEffectType effectType;
-
-    /**
      * Indicated invalid arguments
      */
     bool invalidArgs;
 };
+
+/*
+ * std::map<sceneElementID, std::pair<sceneElementName, SceneElement>>
+ */
+typedef std::map<LSFString, std::pair<LSFString, SceneElement> > SceneElementMap;
 
 /**
  * Class defining a Transition Effect
@@ -946,6 +963,16 @@ typedef std::map<LSFString, std::pair<LSFString, TransitionEffect> > TransitionE
 class TransitionLampsLampGroupsToState {
   public:
     /**
+     * Default Constructor
+     */
+    TransitionLampsLampGroupsToState() :
+        transitionPeriod(0), invalidArgs(true)
+    {
+        lamps.clear();
+        lampGroups.clear();
+        state = LampState();
+    }
+    /**
      * Parameterized Constructor
      *
      * @param lampList      List of Lamp IDs
@@ -1041,6 +1068,16 @@ class TransitionLampsLampGroupsToState {
  */
 class TransitionLampsLampGroupsToPreset {
   public:
+    /**
+     * Default Constructor
+     */
+    TransitionLampsLampGroupsToPreset() :
+        transitionPeriod(0), invalidArgs(true)
+    {
+        lamps.clear();
+        lampGroups.clear();
+        presetID.clear();
+    }
     /**
      * TransitionLampsLampGroupsToPreset CTOR
      *
@@ -1243,6 +1280,17 @@ typedef std::map<LSFString, std::pair<LSFString, PulseEffect> > PulseEffectMap;
 class PulseLampsLampGroupsWithState {
   public:
     /**
+     * Default Constructor
+     */
+    PulseLampsLampGroupsWithState() :
+        pulsePeriod(0), pulseDuration(0), numPulses(0), invalidArgs(true)
+    {
+        lamps.clear();
+        lampGroups.clear();
+        fromState = LampState();
+        toState = LampState();
+    }
+    /**
      * PulseLampsLampGroupsWithState CTOR
      * @param lampList
      * @param lampGroupList
@@ -1330,6 +1378,17 @@ class PulseLampsLampGroupsWithState {
 class PulseLampsLampGroupsWithPreset {
   public:
     /**
+     * Default Constructor
+     */
+    PulseLampsLampGroupsWithPreset() :
+        pulsePeriod(0), pulseDuration(0), numPulses(0), invalidArgs(true)
+    {
+        lamps.clear();
+        lampGroups.clear();
+        fromPreset.clear();
+        toPreset.clear();
+    }
+    /**
      * PulseLampsLampGroupsWithPreset CTOR
      */
     PulseLampsLampGroupsWithPreset(LSFStringList& lampList, LSFStringList& lampGroupList, LSFString& fromPreset, LSFString& toPreset, uint32_t& period, uint32_t& duration, uint32_t& numOfPulses);
@@ -1394,52 +1453,6 @@ class PulseLampsLampGroupsWithPreset {
      */
     bool invalidArgs;
 };
-
-/**
- * Scene Element Data Type. \n
- * Spesifies the type of data in a particular SceneElement
- */
-typedef enum _SceneElementDataType {
-    /* Transition To State Type */
-    TRANSITION_TO_STATE,
-    /* Transition To Preset Type */
-    TRANSITION_TO_PRESET,
-    /* Pulse With State Type */
-    PULSE_WITH_STATE,
-    /* Pulse With Preset Type */
-    PULSE_WITH_PRESET,
-    /* Scene Element With EffectID Type */
-    SCENE_ELEMENT_WITH_EFFECT_ID
-} SceneElementDataType;
-
-/**
- * Scene Element Data. \n
- * Used the hold on value amongst the different possible types of Scene Element
- * TODO change this later
- */
-typedef struct _SceneElementData {
-    /* Transition To State Type */
-    TransitionLampsLampGroupsToState transitionToState;
-    /* Transition To Preset Type */
-    TransitionLampsLampGroupsToPreset transitionToPreset;
-    /* Pulse With State Type */
-    PulseLampsLampGroupsWithState pulseWithState;
-    /* Pulse With Preset Type */
-    PulseLampsLampGroupsWithPreset pulseWithPreset;
-    /* Scene Element With EffectID Type */
-    SceneElementWithEffectID sceneElementWithEffectID;
-} SceneElementData;
-
-/**
- * Scene Element Type. \n
- * Holds the retrieved value of a scene element
- */
-typedef struct _SceneElement {
-    /* Specifies the data type of the scene element */
-    SceneElementDataType dataType;
-    /* Holds the data assocaited with the scene element */
-    SceneElementData data;
-} SceneElement;
 
 typedef std::list<TransitionLampsLampGroupsToState> TransitionLampsLampGroupsToStateList;
 typedef std::list<TransitionLampsLampGroupsToPreset> TransitionLampsLampGroupsToPresetList;
@@ -1588,6 +1601,63 @@ class MasterScene {
  * std::map<masterSceneID, std::pair<masterSceneName, masterScene>>
  */
 typedef std::map<LSFString, std::pair<LSFString, MasterScene> > MasterSceneMap;
+
+/**
+ * class that manages the master scene
+ */
+class SceneWithSceneElements {
+  public:
+    /**
+     * class CTOR
+     */
+    SceneWithSceneElements();
+    /**
+     * class CTOR
+     */
+    SceneWithSceneElements(const ajn::MsgArg& sceneElementsList);
+    /**
+     * class CTOR
+     */
+    SceneWithSceneElements(LSFStringList sceneElementsList);
+    /**
+     * class DTOR
+     */
+    ~SceneWithSceneElements() { sceneElements.clear(); }
+    /**
+     * a string representation of the instance
+     */
+    const char* c_str(void) const;
+    /**
+     * copy constructor
+     */
+    SceneWithSceneElements(const SceneWithSceneElements& other);
+    /**
+     * operator=
+     */
+    SceneWithSceneElements& operator=(const SceneWithSceneElements& other);
+    /**
+     * set scene list
+     */
+    void Set(const ajn::MsgArg& sceneElementsList);
+    /**
+     * get scene list
+     */
+    void Get(ajn::MsgArg* sceneElementsList) const;
+    /**
+     * is master scene dependent of scene
+     */
+    LSFResponseCode IsDependentOnSceneElement(LSFString& sceneElementID);
+
+    /**
+     * list of scenes
+     */
+    LSFStringList sceneElements;
+};
+
+/*
+ * std::map<sceneID, std::pair<sceneName, SceneWithSceneElements>>
+ */
+typedef std::map<LSFString, std::pair<LSFString, SceneWithSceneElements> > SceneWithSceneElementsMap;
 
 }
 

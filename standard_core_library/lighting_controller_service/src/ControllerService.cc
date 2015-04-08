@@ -219,6 +219,7 @@ ControllerService::ControllerService(
     lampGroupManager(*this, lampManager, &sceneManager, lampGroupFile),
     presetManager(*this, &sceneManager, presetFile),
     sceneManager(*this, lampGroupManager, &masterSceneManager, sceneFile),
+    sceneElementManager(&sceneManager),
     masterSceneManager(*this, sceneManager, masterSceneFile),
     transitionEffectManager(*this, &lampGroupManager, &sceneManager, ""),
     pulseEffectManager(*this, &lampGroupManager, &sceneManager, ""),
@@ -247,7 +248,9 @@ ControllerService::ControllerService(
     const std::string& presetFile,
     const std::string& transitionEffectFile,
     const std::string& pulseEffectFile,
+    const std::string& sceneElementsFile,
     const std::string& sceneFile,
+    const std::string& sceneWithSceneElementsFile,
     const std::string& masterSceneFile) :
     BusObject(ControllerServiceObjectPath),
     updatesAllowed(false),
@@ -259,6 +262,7 @@ ControllerService::ControllerService(
     lampGroupManager(*this, lampManager, &sceneManager, lampGroupFile),
     presetManager(*this, &sceneManager, presetFile),
     sceneManager(*this, lampGroupManager, &masterSceneManager, sceneFile),
+    sceneElementManager(&sceneManager),
     masterSceneManager(*this, sceneManager, masterSceneFile),
     transitionEffectManager(*this, &lampGroupManager, &sceneManager, transitionEffectFile),
     pulseEffectManager(*this, &lampGroupManager, &sceneManager, pulseEffectFile),
@@ -296,6 +300,7 @@ ControllerService::ControllerService(
     lampGroupManager(*this, lampManager, &sceneManager, lampGroupFile),
     presetManager(*this, &sceneManager, presetFile),
     sceneManager(*this, lampGroupManager, &masterSceneManager, sceneFile),
+    sceneElementManager(&sceneManager),
     masterSceneManager(*this, sceneManager, masterSceneFile),
     transitionEffectManager(*this, &lampGroupManager, &sceneManager, ""),
     pulseEffectManager(*this, &lampGroupManager, &sceneManager, ""),
@@ -323,7 +328,9 @@ ControllerService::ControllerService(
     const std::string& presetFile,
     const std::string& transitionEffectFile,
     const std::string& pulseEffectFile,
+    const std::string& sceneElementsFile,
     const std::string& sceneFile,
+    const std::string& sceneWithSceneElementsFile,
     const std::string& masterSceneFile) :
     BusObject(ControllerServiceObjectPath),
     updatesAllowed(false),
@@ -335,6 +342,7 @@ ControllerService::ControllerService(
     lampGroupManager(*this, lampManager, &sceneManager, lampGroupFile),
     presetManager(*this, &sceneManager, presetFile),
     sceneManager(*this, lampGroupManager, &masterSceneManager, sceneFile),
+    sceneElementManager(&sceneManager),
     masterSceneManager(*this, sceneManager, masterSceneFile),
     transitionEffectManager(*this, &lampGroupManager, &sceneManager, transitionEffectFile),
     pulseEffectManager(*this, &lampGroupManager, &sceneManager, pulseEffectFile),
@@ -458,6 +466,14 @@ void ControllerService::Initialize()
     AddMethodHandler("DeleteScene", &sceneManager, &SceneManager::DeleteScene);
     AddMethodHandler("GetScene", &sceneManager, &SceneManager::GetScene);
     AddMethodHandler("ApplyScene", &sceneManager, &SceneManager::ApplyScene);
+    AddMethodHandler("GetAllSceneElementIDs", &sceneElementManager, &SceneElementManager::GetAllSceneElementIDs);
+    AddMethodHandler("GetSceneElementName", &sceneElementManager, &SceneElementManager::GetSceneElementName);
+    AddMethodHandler("SetSceneElementName", &sceneElementManager, &SceneElementManager::SetSceneElementName);
+    AddMethodHandler("CreateSceneElement", &sceneElementManager, &SceneElementManager::CreateSceneElement);
+    AddMethodHandler("UpdateSceneElement", &sceneElementManager, &SceneElementManager::UpdateSceneElement);
+    AddMethodHandler("DeleteSceneElement", &sceneElementManager, &SceneElementManager::DeleteSceneElement);
+    AddMethodHandler("GetSceneElement", &sceneElementManager, &SceneElementManager::GetSceneElement);
+    AddMethodHandler("ApplySceneElement", &sceneElementManager, &SceneElementManager::ApplySceneElement);
     AddMethodHandler("GetAllMasterSceneIDs", &masterSceneManager, &MasterSceneManager::GetAllMasterSceneIDs);
     AddMethodHandler("GetMasterSceneName", &masterSceneManager, &MasterSceneManager::GetMasterSceneName);
     AddMethodHandler("SetMasterSceneName", &masterSceneManager, &MasterSceneManager::SetMasterSceneName);
@@ -551,6 +567,7 @@ QStatus ControllerService::RegisterMethodHandlers(void)
     const InterfaceDescription* controllerServiceTransitionEffectInterface = bus.GetInterface(ControllerServiceTransitionEffectInterfaceName);
     const InterfaceDescription* controllerServicePulseEffectInterface = bus.GetInterface(ControllerServicePulseEffectInterfaceName);
     const InterfaceDescription* controllerServiceSceneInterface = bus.GetInterface(ControllerServiceSceneInterfaceName);
+    const InterfaceDescription* controllerServiceSceneElementInterface = bus.GetInterface(ControllerServiceSceneElementInterfaceName);
     const InterfaceDescription* controllerServiceMasterSceneInterface = bus.GetInterface(ControllerServiceMasterSceneInterfaceName);
 
     /*
@@ -628,6 +645,14 @@ QStatus ControllerService::RegisterMethodHandlers(void)
         { controllerServiceSceneInterface->GetMember("DeleteScene"), static_cast<MessageReceiver::MethodHandler>(&ControllerService::MethodCallDispatcher) },
         { controllerServiceSceneInterface->GetMember("GetScene"), static_cast<MessageReceiver::MethodHandler>(&ControllerService::MethodCallDispatcher) },
         { controllerServiceSceneInterface->GetMember("ApplyScene"), static_cast<MessageReceiver::MethodHandler>(&ControllerService::MethodCallDispatcher) },
+        { controllerServiceSceneElementInterface->GetMember("GetAllSceneElementIDs"), static_cast<MessageReceiver::MethodHandler>(&ControllerService::MethodCallDispatcher) },
+        { controllerServiceSceneElementInterface->GetMember("GetSceneElementName"), static_cast<MessageReceiver::MethodHandler>(&ControllerService::MethodCallDispatcher) },
+        { controllerServiceSceneElementInterface->GetMember("SetSceneElementName"), static_cast<MessageReceiver::MethodHandler>(&ControllerService::MethodCallDispatcher) },
+        { controllerServiceSceneElementInterface->GetMember("CreateSceneElement"), static_cast<MessageReceiver::MethodHandler>(&ControllerService::MethodCallDispatcher) },
+        { controllerServiceSceneElementInterface->GetMember("UpdateSceneElement"), static_cast<MessageReceiver::MethodHandler>(&ControllerService::MethodCallDispatcher) },
+        { controllerServiceSceneElementInterface->GetMember("DeleteSceneElement"), static_cast<MessageReceiver::MethodHandler>(&ControllerService::MethodCallDispatcher) },
+        { controllerServiceSceneElementInterface->GetMember("GetSceneElement"), static_cast<MessageReceiver::MethodHandler>(&ControllerService::MethodCallDispatcher) },
+        { controllerServiceSceneElementInterface->GetMember("ApplySceneElement"), static_cast<MessageReceiver::MethodHandler>(&ControllerService::MethodCallDispatcher) },
         { controllerServiceMasterSceneInterface->GetMember("GetAllMasterSceneIDs"), static_cast<MessageReceiver::MethodHandler>(&ControllerService::MethodCallDispatcher) },
         { controllerServiceMasterSceneInterface->GetMember("GetMasterSceneName"), static_cast<MessageReceiver::MethodHandler>(&ControllerService::MethodCallDispatcher) },
         { controllerServiceMasterSceneInterface->GetMember("SetMasterSceneName"), static_cast<MessageReceiver::MethodHandler>(&ControllerService::MethodCallDispatcher) },
@@ -704,6 +729,7 @@ QStatus ControllerService::Start(const char* keyStoreFileLocation)
         { ControllerServiceLampGroupDescription, ControllerServiceLampGroupInterfaceName },
         { ControllerServicePresetDescription, ControllerServicePresetInterfaceName },
         { ControllerServiceSceneDescription, ControllerServiceSceneInterfaceName },
+        { ControllerServiceSceneElementDescription, ControllerServiceSceneElementInterfaceName },
         { ControllerServiceMasterSceneDescription, ControllerServiceMasterSceneInterfaceName },
         { ControllerServiceTransitionEffectDescription, ControllerServiceTransitionEffectInterfaceName },
         { ControllerServicePulseEffectDescription, ControllerServicePulseEffectInterfaceName }
@@ -1382,6 +1408,8 @@ QStatus ControllerService::Get(const char*ifcName, const char*propName, MsgArg& 
             status = val.Set("u", presetManager.GetControllerServicePresetInterfaceVersion());
         } else if (0 == strcmp(ifcName, ControllerServiceSceneInterfaceName)) {
             status = val.Set("u", sceneManager.GetControllerServiceSceneInterfaceVersion());
+        } else if (0 == strcmp(ifcName, ControllerServiceSceneElementInterfaceName)) {
+            status = val.Set("u", sceneElementManager.GetControllerServiceSceneElementInterfaceVersion());
         } else if (0 == strcmp(ifcName, ControllerServiceMasterSceneInterfaceName)) {
             status = val.Set("u", masterSceneManager.GetControllerServiceMasterSceneInterfaceVersion());
         } else if (0 == strcmp(ifcName, LeaderElectionAndStateSyncInterfaceName)) {
