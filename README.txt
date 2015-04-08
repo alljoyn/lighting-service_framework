@@ -9,15 +9,15 @@ Building the Lighting Service Framework core modules on Ubuntu
 
 core/
 
-	service_framework/   (https://git.allseenalliance.org/cgit/lighting/service_framework.git Commit ID: af3036b86c1f98da26c47c2ff637fec09149f8fe i.e. Tag: v14.06)
+	service_framework/   (https://git.allseenalliance.org/cgit/lighting/service_framework.git Commit ID: 2e04a5afea1685e065483ade14510a6f1acf0380 i.e. Tag: v14.12)
 
-	ajtcl/   (https://git.allseenalliance.org/cgit/core/ajtcl.git Gerrit Patch Set:git fetch https://git.allseenalliance.org/gerrit/core/ajtcl refs/changes/35/2135/3 && git checkout FETCH_HEAD)
+	ajtcl/   (https://git.allseenalliance.org/cgit/core/ajtcl.git Commit ID: af24e93af4d6cd55aae8a2b97635d8004fdae8c6)
 
-	alljoyn/ (https://git.allseenalliance.org/cgit/core/alljoyn.git Commit ID:9d096987205609053a9a656ebd72972ea92eff17)
+	alljoyn/ (https://git.allseenalliance.org/cgit/core/alljoyn.git Commit ID:108de2eff845662cd41558c1939cd9d17410f711 i.e. Tag: v14.12b)
 
-base_tcl/ (https://git.allseenalliance.org/cgit/services/base_tcl.git Commit ID:0e6bebd229c16e7f5d714da23080463da0075951)
+base_tcl/ (https://git.allseenalliance.org/cgit/services/base_tcl.git Commit ID:c0867c9bd03680197a811ee462247eaaed7011cb)
 
-base/ (https://git.allseenalliance.org/cgit/services/base.git Commit ID:4998792e980b91967af5c1524748408abed304e4)
+base/ (https://git.allseenalliance.org/cgit/services/base.git Commit ID:a9a6489ebc8eb6ce1a57d78b16ea0ad794fcf048)
 
 3) Open a command terminal and from under the core/service_framework/ directory, run the command "scons" to build the core modules
 

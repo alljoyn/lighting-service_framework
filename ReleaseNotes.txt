@@ -1,0 +1,43 @@
+AllSeen Lighting Service Framework 14.12 Release Notes
+======================================================
+
+Platform Support
+----------------
+ 1) Linux Ubuntu 12.04 LTS (32 and 64 bit)
+
+
+Features added in Version 14.12
+--------------------------------
+ASALIGHT-139: Add support in Lamp Service OEM Layer to handle the transitioning and pulsing of individual state fields
+ASALIGHT-147: Modify Controller Service and Controller Client to use the 14.12 About API
+ASALIGHT-111: Add support for LampsLost API to inform the application about when to remove a lamp from an active list
+ASALIGHT-168: Update routerconfig.xml as per updates in 14.12 AllJoyn Core
+ASALIGHT-167: Build LampService for OpenWRT Platforms
+
+Issues Addressed in Version 14.12
+----------------------------------
+ASALIGHT-141: Controller Service erroneously generates LampsFound signal instead of LampNameChanged signal in some cases
+ASALIGHT-145: SceneManager::ReplaceMap() function parses multiple SceneComponents into one SceneComponent
+ASALIGHT-143: The Controller Service should check if the pointer returned by NotificationService::initSend() is valid and return an error accordingly
+ASALIGHT-164: Fix a race condition in the LSF Controller Client library
+ASALIGHT-140: Add bound checks on array arguments where-ever applicable in the Controller Service, Controller Client and Lamp Service
+ASALIGHT-142: Moving test codes to "samples" folder
+
+Known Issues in Version 14.12
+------------------------------
+ASALIGHT-176: Check if busHandler is NULL in ControllerClient.cc and return an error status from Start() accordingly
+ASALIGHT-146: Investigate concurrency issues with the c_str() functions implemented in LSFTypes
+ASALIGHT-128: Add support to restrict the LSF user traffic in the Controller Service
+ASALIGHT-124: Modify the Lamp Service to use the new heartbeat feature that will added in AllJoyn Core
+ASALIGHT-115: Lamp service not always responsive to state change actions from controller service
+
+For a complete list of open issues:
+https://jira.allseenalliance.org/issues/?jql=project %3D ASALIGHT AND status in (Open%2C "In Progress"%2C Reopened%2C New)
+
+Compatibility
+-------------
+Back-compatible with the 14.06 release
+
+Change history
+--------------
+
