@@ -25,13 +25,14 @@
 
 #ifdef LSF_BINDINGS
 #include <lsf/controllerservice/Manager.h>
+#include <lsf/controllerservice/LampGroupManager.h>
 #else
 #include <Manager.h>
+#include <LampGroupManager.h>
 #endif
 
 #include <Mutex.h>
 #include <LSFTypes.h>
-#include <LampGroupManager.h>
 
 #include <string>
 #include <map>

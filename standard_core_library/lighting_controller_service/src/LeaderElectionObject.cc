@@ -361,6 +361,9 @@ void LeaderElectionObject::OnGetChecksumAndModificationTimestampReply(ajn::Messa
             case LSF_PULSE_EFFECT:
                 controller.GetPulseEffectManager().GetBlobInfo(myChecksum, myTimestamp);
                 break;
+
+            case LSF_BLOB_TYPE_LAST_VALUE:
+                break;
             }
 
             uint64_t currentTimeStamp = GetTimestampInMs();

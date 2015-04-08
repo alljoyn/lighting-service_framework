@@ -128,7 +128,7 @@ class MasterSceneManager : public Manager {
      * Get All master scenes. \n
      * Return asynchronous answer - the all master scenes by its reference parameter \n
      * @param masterSceneMap of type MasterSceneMap - reference of MasterSceneMap to get all master scenes \n
-     * @return LSF_OK on succedd.
+     * @return LSF_OK on success.
      */
     LSFResponseCode GetAllMasterScenes(MasterSceneMap& masterSceneMap);
     /**

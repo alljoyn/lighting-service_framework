@@ -62,6 +62,15 @@ class SceneElementManagerCallback {
     virtual void GetSceneElementNameReplyCB(const LSFResponseCode& responseCode, const LSFString& sceneElementID, const LSFString& language, const LSFString& sceneElementName) { }
 
     /**
+     * Indicates that a reply has been received for the method call GetSceneElementVersion method call.
+     *
+     * @param responseCode   The response code
+     * @param sceneElementID    The Scene Element ID
+     * @param sceneElementVersion  The Scene Element Version
+     */
+    virtual void GetSceneElementVersionReplyCB(const LSFResponseCode& responseCode, const LSFString& sceneElementID, const uint32_t& sceneElementVersion) { }
+
+    /**
      * Response to SceneElementManager::SetSceneElementName.
      *
      * @param responseCode    The response code: \n
@@ -82,7 +91,7 @@ class SceneElementManagerCallback {
     virtual void SceneElementsNameChangedCB(const LSFStringList& sceneElementIDs) { }
 
     /**
-     * Response to SceneElementManager::CreateTransitionToStateSceneElement.
+     * Response to SceneElementManager::CreateSceneElement.
      *
      * @param responseCode    The response code: \n
      *  LSF_OK - operation succeeded \n
@@ -92,59 +101,7 @@ class SceneElementManagerCallback {
      * @param sceneElementID    The id of the new SceneElement
      * @param trackingID     The tracking ID that the application can use to associate the method call with the reply
      */
-    virtual void CreateTransitionToStateSceneElementReplyCB(const LSFResponseCode& responseCode, const LSFString& sceneElementID, const uint32_t& trackingID) { }
-
-    /**
-     * Response to SceneElementManager::CreateTransitionToPresetSceneElement.
-     *
-     * @param responseCode    The response code: \n
-     *  LSF_OK - operation succeeded \n
-     *  LSF_ERR_INVALID_ARGS - Language not supported, sceneElement name is empty, Invalid SceneElement components specified, ame length exceeds \n
-     *  LSF_ERR_RESOURCES - Could not allocate memory \n
-     *  LSF_ERR_NO_SLOT - No slot for new SceneElement \n
-     * @param sceneElementID    The id of the new SceneElement
-     * @param trackingID     The tracking ID that the application can use to associate the method call with the reply
-     */
-    virtual void CreateTransitionToPresetSceneElementReplyCB(const LSFResponseCode& responseCode, const LSFString& sceneElementID, const uint32_t& trackingID) { }
-
-    /**
-     * Response to SceneElementManager::CreatePulseWithStateSceneElement.
-     *
-     * @param responseCode    The response code: \n
-     *  LSF_OK - operation succeeded \n
-     *  LSF_ERR_INVALID_ARGS - Language not supported, sceneElement name is empty, Invalid SceneElement components specified, ame length exceeds \n
-     *  LSF_ERR_RESOURCES - Could not allocate memory \n
-     *  LSF_ERR_NO_SLOT - No slot for new SceneElement \n
-     * @param sceneElementID    The id of the new SceneElement
-     * @param trackingID     The tracking ID that the application can use to associate the method call with the reply
-     */
-    virtual void CreatePulseWithStateSceneElementReplyCB(const LSFResponseCode& responseCode, const LSFString& sceneElementID, const uint32_t& trackingID) { }
-
-    /**
-     * Response to SceneElementManager::CreatePulseWithPresetSceneElement.
-     *
-     * @param responseCode    The response code: \n
-     *  LSF_OK - operation succeeded \n
-     *  LSF_ERR_INVALID_ARGS - Language not supported, sceneElement name is empty, Invalid SceneElement components specified, ame length exceeds \n
-     *  LSF_ERR_RESOURCES - Could not allocate memory \n
-     *  LSF_ERR_NO_SLOT - No slot for new SceneElement \n
-     * @param sceneElementID    The id of the new SceneElement
-     * @param trackingID     The tracking ID that the application can use to associate the method call with the reply
-     */
-    virtual void CreatePulseWithPresetSceneElementReplyCB(const LSFResponseCode& responseCode, const LSFString& sceneElementID, const uint32_t& trackingID) { }
-
-    /**
-     * Response to SceneElementManager::CreateSceneElementWithEffectID.
-     *
-     * @param responseCode    The response code: \n
-     *  LSF_OK - operation succeeded \n
-     *  LSF_ERR_INVALID_ARGS - Language not supported, sceneElement name is empty, Invalid SceneElement components specified, ame length exceeds \n
-     *  LSF_ERR_RESOURCES - Could not allocate memory \n
-     *  LSF_ERR_NO_SLOT - No slot for new SceneElement \n
-     * @param sceneElementID The id of the new SceneElement
-     * @param trackingID     The tracking ID that the application can use to associate the method call with the reply
-     */
-    virtual void CreateSceneElementWithEffectIDReplyCB(const LSFResponseCode& responseCode, const LSFString& sceneElementID, const uint32_t& trackingID) { }
+    virtual void CreateSceneElementReplyCB(const LSFResponseCode& responseCode, const LSFString& sceneElementID, const uint32_t& trackingID) { }
 
     /**
      *  This signal is fired any time a sceneElement is been created.
@@ -154,7 +111,7 @@ class SceneElementManagerCallback {
     virtual void SceneElementsCreatedCB(const LSFStringList& sceneElementIDs) { }
 
     /**
-     * Response to SceneElementManager::UpdateTransitionToStateSceneElement.
+     * Response to SceneElementManager::UpdateSceneElement.
      *
      * @param responseCode    The response code: \n
      *  LSF_OK - operation succeeded \n
@@ -163,55 +120,7 @@ class SceneElementManagerCallback {
      *  LSF_ERR_NO_SLOT - No slot for new SceneElement \n
      * @param sceneElementID    The id of the new SceneElement
      */
-    virtual void UpdateTransitionToStateSceneElementReplyCB(const LSFResponseCode& responseCode, const LSFString& sceneElementID) { }
-
-    /**
-     * Response to SceneElementManager::UpdateTransitionToPresetSceneElement.
-     *
-     * @param responseCode    The response code: \n
-     *  LSF_OK - operation succeeded \n
-     *  LSF_ERR_INVALID_ARGS - Language not supported, sceneElement name is empty, Invalid SceneElement components specified, ame length exceeds \n
-     *  LSF_ERR_RESOURCES - Could not allocate memory \n
-     *  LSF_ERR_NO_SLOT - No slot for new SceneElement \n
-     * @param sceneElementID    The id of the new SceneElement
-     */
-    virtual void UpdateTransitionToPresetSceneElementReplyCB(const LSFResponseCode& responseCode, const LSFString& sceneElementID) { }
-
-    /**
-     * Response to SceneElementManager::UpdatePulseWithStateSceneElement.
-     *
-     * @param responseCode    The response code: \n
-     *  LSF_OK - operation succeeded \n
-     *  LSF_ERR_INVALID_ARGS - Language not supported, sceneElement name is empty, Invalid SceneElement components specified, ame length exceeds \n
-     *  LSF_ERR_RESOURCES - Could not allocate memory \n
-     *  LSF_ERR_NO_SLOT - No slot for new SceneElement \n
-     * @param sceneElementID    The id of the new SceneElement
-     */
-    virtual void UpdatePulseWithStateSceneElementReplyCB(const LSFResponseCode& responseCode, const LSFString& sceneElementID) { }
-
-    /**
-     * Response to SceneElementManager::UpdatePulseWithPresetSceneElement.
-     *
-     * @param responseCode    The response code: \n
-     *  LSF_OK - operation succeeded \n
-     *  LSF_ERR_INVALID_ARGS - Language not supported, sceneElement name is empty, Invalid SceneElement components specified, ame length exceeds \n
-     *  LSF_ERR_RESOURCES - Could not allocate memory \n
-     *  LSF_ERR_NO_SLOT - No slot for new SceneElement \n
-     * @param sceneElementID    The id of the new SceneElement
-     */
-    virtual void UpdatePulseWithPresetSceneElementReplyCB(const LSFResponseCode& responseCode, const LSFString& sceneElementID) { }
-
-    /**
-     * Response to SceneElementManager::UpdateSceneElementWithEffectID.
-     *
-     * @param responseCode    The response code: \n
-     *  LSF_OK - operation succeeded \n
-     *  LSF_ERR_INVALID_ARGS - Language not supported, sceneElement name is empty, Invalid SceneElement components specified, ame length exceeds \n
-     *  LSF_ERR_RESOURCES - Could not allocate memory \n
-     *  LSF_ERR_NO_SLOT - No slot for new SceneElement \n
-     * @param sceneElementID    The id of the new SceneElement
-     */
-    virtual void UpdateSceneElementWithEffectIDReplyCB(const LSFResponseCode& responseCode, const LSFString& sceneElementID) { }
+    virtual void UpdateSceneElementReplyCB(const LSFResponseCode& responseCode, const LSFString& sceneElementID) { }
 
     /**
      * This signal is fired any time a sceneElement has been updated.
@@ -298,6 +207,18 @@ class SceneElementManager : public Manager {
     ControllerClientStatus GetSceneElementName(const LSFString& sceneElementID, const LSFString& language = LSFString("en"));
 
     /**
+     * Get the version of a Scene Element. \n
+     * Response in SceneElementManagerCallback::GetSceneElementVersionCB
+     *
+     * @param sceneElementID    The Scene Element ID
+     * @return
+     *      - CONTROLLER_CLIENT_OK if successful
+     *      - An error status otherwise
+     *
+     */
+    ControllerClientStatus GetSceneElementVersion(const LSFString& sceneElementID);
+
+    /**
      * Set the name of a SceneElement. \n
      * Response in SceneElementManagerCallback::SetSceneElementNameReplyCB
      *
@@ -308,99 +229,25 @@ class SceneElementManager : public Manager {
     ControllerClientStatus SetSceneElementName(const LSFString& sceneElementID, const LSFString& sceneElementName, const LSFString& language = LSFString("en"));
 
     /**
-     *  Create a new TransitionToState SceneElement. \n
-     *  Response in SceneElementManagerCallback::CreateTransitionToStateSceneElementReplyCB
+     *  Create a new SceneElement. \n
+     *  Response in SceneElementManagerCallback::CreateElementReplyCB
      *
+     * @param trackingID  Controller Client returns a tracking ID in this variable which the application
+     *                    can use to associate the reply for this call with the request
      * @param sceneElement      The sceneElement of type TransitionLampsLampGroupsToState
      * @param sceneElementName  The sceneElement name
      * @param language          The sceneElement language
      */
-    ControllerClientStatus CreateTransitionToStateSceneElement(const TransitionLampsLampGroupsToState& sceneElement, const LSFString& sceneElementName, const LSFString& language = LSFString("en"));
-
-    /**
-     *  Create a new TransitionToPreset SceneElement. \n
-     *  Response in SceneElementManagerCallback::CreateTransitionToPresetSceneElementReplyCB
-     *
-     * @param sceneElement      The sceneElement of type TransitionLampsLampGroupsToPreset
-     * @param sceneElementName  The sceneElement name
-     * @param language          The sceneElement language
-     */
-    ControllerClientStatus CreateTransitionToPresetSceneElement(const TransitionLampsLampGroupsToPreset& sceneElement, const LSFString& sceneElementName, const LSFString& language = LSFString("en"));
-
-    /**
-     *  Create a new PulseWithState SceneElement. \n
-     *  Response in SceneElementManagerCallback::CreatePulseWithStateSceneElementReplyCB
-     *
-     * @param sceneElement      The sceneElement of type PulseLampsLampGroupsWithState
-     * @param sceneElementName  The sceneElement name
-     * @param language          The sceneElement language
-     */
-    ControllerClientStatus CreatePulseWithStateSceneElement(const PulseLampsLampGroupsWithState& sceneElement, const LSFString& sceneElementName, const LSFString& language = LSFString("en"));
-
-    /**
-     *  Create a new PulseWithPreset SceneElement. \n
-     *  Response in SceneElementManagerCallback::CreatePulseWithPresetSceneElementReplyCB
-     *
-     * @param sceneElement      The sceneElement of type PulseLampsLampGroupsWithPreset
-     * @param sceneElementName  The sceneElement name
-     * @param language          The sceneElement language
-     */
-    ControllerClientStatus CreatePulseWithPresetSceneElement(const PulseLampsLampGroupsWithPreset& sceneElement, const LSFString& sceneElementName, const LSFString& language = LSFString("en"));
-
-    /**
-     *  Create a new SceneElement with EffectID. \n
-     *  Response in SceneElementManagerCallback::CreateSceneElementWithEffectIDReplyCB
-     *
-     * @param sceneElement      The sceneElement with EffectID
-     * @param sceneElementName  The sceneElement name
-     * @param language          The sceneElement language
-     */
-    ControllerClientStatus CreateSceneElementWithEffectID(const SceneElementWithEffectID& sceneElement, const LSFString& sceneElementName, const LSFString& language = LSFString("en"));
+    ControllerClientStatus CreateSceneElement(uint32_t& trackingID, const SceneElement& sceneElement, const LSFString& sceneElementName, const LSFString& language = LSFString("en"));
 
     /**
      * Modify an existing sceneElement. \n
-     * Response in SceneElementManagerCallback::UpdateTransitionToStateSceneElementReplyCB \n
+     * Response in SceneElementManagerCallback::UpdateElementReplyCB \n
      *
      * @param sceneElementID    The id of the sceneElement to modify
      * @param sceneElement      The new value of the sceneElement
      */
-    ControllerClientStatus UpdateTransitionToStateSceneElement(const LSFString& sceneElementID, const TransitionLampsLampGroupsToState& sceneElement);
-
-    /**
-     * Modify an existing sceneElement. \n
-     * Response in SceneElementManagerCallback::UpdateTransitionToPresetSceneElementReplyCB \n
-     *
-     * @param sceneElementID    The id of the sceneElement to modify
-     * @param sceneElement      The new value of the sceneElement
-     */
-    ControllerClientStatus UpdateTransitionToPresetSceneElement(const LSFString& sceneElementID, const TransitionLampsLampGroupsToPreset& sceneElement);
-
-    /**
-     * Modify an existing sceneElement. \n
-     * Response in SceneElementManagerCallback::UpdatePulseWithStateSceneElementReplyCB \n
-     *
-     * @param sceneElementID    The id of the sceneElement to modify
-     * @param sceneElement      The new value of the sceneElement
-     */
-    ControllerClientStatus UpdatePulseWithStateSceneElement(const LSFString& sceneElementID, const PulseLampsLampGroupsWithState& sceneElement);
-
-    /**
-     * Modify an existing sceneElement. \n
-     * Response in SceneElementManagerCallback::UpdatePulseWithPresetSceneElementReplyCB \n
-     *
-     * @param sceneElementID    The id of the sceneElement to modify
-     * @param sceneElement      The new value of the sceneElement
-     */
-    ControllerClientStatus UpdatePulseWithPresetSceneElement(const LSFString& sceneElementID, const PulseLampsLampGroupsWithPreset& sceneElement);
-
-    /**
-     * Modify an existing sceneElement. \n
-     * Response in SceneElementManagerCallback::UpdateSceneElementWithEffectIDReplyCB \n
-     *
-     * @param sceneElementID    The id of the sceneElement to modify
-     * @param sceneElement      The new value of the sceneElement
-     */
-    ControllerClientStatus UpdateSceneElementWithEffectID(const LSFString& sceneElementID, const SceneElementWithEffectID& sceneElement);
+    ControllerClientStatus UpdateSceneElement(const LSFString& sceneElementID, const SceneElement& sceneElement);
 
     /**
      * Delete an existing sceneElement. \n
@@ -482,44 +329,12 @@ class SceneElementManager : public Manager {
         callback.GetSceneElementNameReplyCB(responseCode, lsfId, language, lsfName);
     }
 
-    void CreateTransitionToStateSceneElementReply(LSFResponseCode& responseCode, LSFString& lsfId, uint32_t& trackingID) {
-        callback.CreateTransitionToStateSceneElementReplyCB(responseCode, lsfId, trackingID);
+    void CreateSceneElementReply(LSFResponseCode& responseCode, LSFString& lsfId, uint32_t& trackingID) {
+        callback.CreateSceneElementReplyCB(responseCode, lsfId, trackingID);
     }
 
-    void CreateTransitionToPresetSceneElementReply(LSFResponseCode& responseCode, LSFString& lsfId, uint32_t& trackingID) {
-        callback.CreateTransitionToPresetSceneElementReplyCB(responseCode, lsfId, trackingID);
-    }
-
-    void CreatePulseWithStateSceneElementReply(LSFResponseCode& responseCode, LSFString& lsfId, uint32_t& trackingID) {
-        callback.CreatePulseWithStateSceneElementReplyCB(responseCode, lsfId, trackingID);
-    }
-
-    void CreatePulseWithPresetSceneElementReply(LSFResponseCode& responseCode, LSFString& lsfId, uint32_t& trackingID) {
-        callback.CreatePulseWithPresetSceneElementReplyCB(responseCode, lsfId, trackingID);
-    }
-
-    void CreateSceneElementWithEffectIDReply(LSFResponseCode& responseCode, LSFString& lsfId, uint32_t& trackingID) {
-        callback.CreateSceneElementWithEffectIDReplyCB(responseCode, lsfId, trackingID);
-    }
-
-    void UpdateTransitionToStateSceneElementReply(LSFResponseCode& responseCode, LSFString& lsfId) {
-        callback.UpdateTransitionToStateSceneElementReplyCB(responseCode, lsfId);
-    }
-
-    void UpdateTransitionToPresetSceneElementReply(LSFResponseCode& responseCode, LSFString& lsfId) {
-        callback.UpdateTransitionToPresetSceneElementReplyCB(responseCode, lsfId);
-    }
-
-    void UpdatePulseWithStateSceneElementReply(LSFResponseCode& responseCode, LSFString& lsfId) {
-        callback.UpdatePulseWithStateSceneElementReplyCB(responseCode, lsfId);
-    }
-
-    void UpdatePulseWithPresetSceneElementReply(LSFResponseCode& responseCode, LSFString& lsfId) {
-        callback.UpdatePulseWithPresetSceneElementReplyCB(responseCode, lsfId);
-    }
-
-    void UpdateSceneElementWithEffectIDReply(LSFResponseCode& responseCode, LSFString& lsfId) {
-        callback.UpdateSceneElementWithEffectIDReplyCB(responseCode, lsfId);
+    void UpdateSceneElementReply(LSFResponseCode& responseCode, LSFString& lsfId) {
+        callback.UpdateSceneElementReplyCB(responseCode, lsfId);
     }
 
     SceneElementManagerCallback& callback;

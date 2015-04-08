@@ -74,6 +74,15 @@ class PresetManagerCallback {
     virtual void GetPresetNameReplyCB(const LSFResponseCode& responseCode, const LSFString& presetID, const LSFString& language, const LSFString& presetName) { }
 
     /**
+     * Indicates that a reply has been received for the method call GetPresetVersion method call.
+     *
+     * @param responseCode   The response code
+     * @param presetID    The Preset ID
+     * @param presetVersion  The Preset Version
+     */
+    virtual void GetPresetVersionReplyCB(const LSFResponseCode& responseCode, const LSFString& presetID, const uint32_t& presetVersion) { }
+
+    /**
      * Response to PresetManager::SetPresetName. \n
      * response code LSF_OK on success. \n
      *      LSF_ERR_INVALID_ARGS - language not supported, name is too long. \n
@@ -215,6 +224,18 @@ class PresetManager : public Manager {
      * @param language
      */
     ControllerClientStatus GetPresetName(const LSFString& presetID, const LSFString& language = LSFString("en"));
+
+    /**
+     * Get the version of a Preset. \n
+     * Response in PresetManagerCallback::GetPresetVersionCB
+     *
+     * @param presetID    The Preset ID
+     * @return
+     *      - CONTROLLER_CLIENT_OK if successful
+     *      - An error status otherwise
+     *
+     */
+    ControllerClientStatus GetPresetVersion(const LSFString& presetID);
 
     /**
      * Set the name of a Preset. \n

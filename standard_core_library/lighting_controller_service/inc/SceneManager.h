@@ -26,9 +26,11 @@
 #ifdef LSF_BINDINGS
 #include <lsf/controllerservice/Manager.h>
 #include <lsf/controllerservice/LampGroupManager.h>
+#include <lsf/controllerservice/SceneElementManager.h>
 #else
 #include <Manager.h>
 #include <LampGroupManager.h>
+#include <SceneElementManager.h>
 #endif
 
 #include <Mutex.h>
@@ -50,6 +52,7 @@ class SceneObject;
 class SceneManager : public Manager {
     friend class MasterSceneManager;
     friend class SceneObject;
+    friend class SceneElementManager;
   public:
     /**
      * SceneManager CTOR
@@ -101,7 +104,9 @@ class SceneManager : public Manager {
      * Return asynchronous reply with response code: \n
      *  LSF_OK - operation succeeded
      */
-    void GetAllSceneIDs(ajn::Message& message);
+    void GetAllSceneIDs(ajn::Message& message) {
+        GetAllSceneIDsInternal(message);
+    }
     /**
      * Get Scene name. \n
      * @param message type Message contains: scene unique id (type 's') and requested language (type 's') \n
@@ -110,7 +115,9 @@ class SceneManager : public Manager {
      *  LSF_ERR_NOT_FOUND  - the scene not found \n
      *  LSF_ERR_INVALID_ARGS - Language not supported
      */
-    void GetSceneName(ajn::Message& message);
+    void GetSceneName(ajn::Message& message) {
+        GetSceneNameInternal(message);
+    }
     /**
      * Set Scene name. \n
      * @param message with  MsgArgs -  unique id (signature 's'), name (signature 's'), language (signature 's'). \n
@@ -120,7 +127,9 @@ class SceneManager : public Manager {
      *  LSF_ERR_EMPTY_NAME - scene name is empty \n
      *  LSF_ERR_RESOURCES - blob length is longer than MAX_FILE_LEN
      */
-    void SetSceneName(ajn::Message& message);
+    void SetSceneName(ajn::Message& message) {
+        SetSceneNameInternal(message);
+    }
     /**
      * Delete Scene \n
      * @param message type Message. Contains one MsgArg with scene id. \n
@@ -128,7 +137,9 @@ class SceneManager : public Manager {
      *  LSF_OK - operation succeeded \n
      *  LSF_ERR_NOT_FOUND - can't find scene id
      */
-    void DeleteScene(ajn::Message& message);
+    void DeleteScene(ajn::Message& message) {
+        DeleteSceneInternal(message);
+    }
     /**
      * Create Scene and sending signal 'ScenesCreated' \n
      * @param message (type Message) with 4 message arguments as parameters (type ajn::MsgArg). \n
@@ -144,7 +155,9 @@ class SceneManager : public Manager {
      *  LSF_ERR_RESOURCES - Could not allocate memory \n
      *  LSF_ERR_NO_SLOT - No slot for new Scene
      */
-    void CreateScene(ajn::Message& message);
+    void CreateScene(ajn::Message& message) {
+        CreateSceneInternal(message);
+    }
     /**
      * Modify an existing scene and then sending signal 'ScenesUpdated' \n
      * @param message (type Message) with 4 message arguments as parameters (type ajn::MsgArg). \n
@@ -154,7 +167,9 @@ class SceneManager : public Manager {
      *      PulseLampsLampGroupsWithState \n
      *      PulseLampsLampGroupsWithPreset
      */
-    void UpdateScene(ajn::Message& message);
+    void UpdateScene(ajn::Message& message) {
+        UpdateSceneInternal(message);
+    }
     /**
      * Get Scene. - reply asynchronously with scene content: \n
      *  TransitionLampsLampGroupsToState \n
@@ -165,7 +180,9 @@ class SceneManager : public Manager {
      *  return LSF_OK \n
      *  return LSF_ERR_NOT_FOUND - scene not found
      */
-    void GetScene(ajn::Message& message);
+    void GetScene(ajn::Message& message) {
+        GetSceneInternal(message);
+    }
     /**
      * Apply Scene. \n
      * @param message type Message with MsgArg parameter - scene id (type 's') \n
@@ -173,7 +190,9 @@ class SceneManager : public Manager {
      *  LSF_OK - on success \n
      *  LSF_ERR_NOT_FOUND - scene id not found in current list of scenes
      */
-    void ApplyScene(ajn::Message& message);
+    void ApplyScene(ajn::Message& message) {
+        ApplySceneInternal(message);
+    }
     /**
      * Send Scene Or Master Scene Applied Signal. \n
      * Sending signals in case a scene applied: \n
@@ -188,7 +207,7 @@ class SceneManager : public Manager {
      * Get All Scenes. \n
      * Return asynchronous answer - the all scenes by its reference parameter \n
      * @param sceneMap of type SceneMap - reference of sceneMap to get all scenes \n
-     * @return LSF_OK on succedd.
+     * @return LSF_OK on success.
      */
     LSFResponseCode GetAllScenes(SceneMap& sceneMap);
     /**
@@ -238,7 +257,7 @@ class SceneManager : public Manager {
 
     void ReplaceMap(std::istringstream& stream);
 
-    LSFResponseCode ApplySceneInternal(ajn::Message message, LSFStringList& sceneList, LSFString sceneOrMasterSceneId);
+    LSFResponseCode ApplySceneNestedInternal(ajn::Message message, LSFStringList& sceneList, LSFString sceneOrMasterSceneId);
 
     typedef std::map<LSFString, SceneObject*> SceneObjectMap;
 
@@ -250,6 +269,15 @@ class SceneManager : public Manager {
 
     std::string GetString(const SceneObjectMap& items);
     std::string GetString(const std::string& name, const std::string& id, const Scene& scene);
+
+    void GetAllSceneIDsInternal(ajn::Message& message, bool isSceneElement = false);
+    void GetSceneNameInternal(ajn::Message& message, bool isSceneElement = false);
+    void SetSceneNameInternal(ajn::Message& message, bool isSceneElement = false);
+    void DeleteSceneInternal(ajn::Message& message, bool isSceneElement = false);
+    void CreateSceneInternal(ajn::Message& message, bool isSceneElement = false);
+    void UpdateSceneInternal(ajn::Message& message, bool isSceneElement = false);
+    void GetSceneInternal(ajn::Message& message, bool isSceneElement = false);
+    void ApplySceneInternal(ajn::Message& message, bool isSceneElement = false);
 };
 
 /**

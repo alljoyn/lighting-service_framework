@@ -69,6 +69,15 @@ class LampGroupManagerCallback {
     virtual void GetLampGroupNameReplyCB(const LSFResponseCode& responseCode, const LSFString& lampGroupID, const LSFString& language, const LSFString& lampGroupName) { }
 
     /**
+     * Indicates that a reply has been received for the method call GetLampGroupVersion method call.
+     *
+     * @param responseCode   The response code
+     * @param lampGroupID    The Lamp Group ID
+     * @param lampGroupVersion  The Lamp Group Version
+     */
+    virtual void GetLampGroupVersionReplyCB(const LSFResponseCode& responseCode, const LSFString& lampGroupID, const uint32_t& lampGroupVersion) { }
+
+    /**
      * Indicates that a reply has been received for the SetLampGroupName method call.
      *
      * @param responseCode   The response code
@@ -328,6 +337,18 @@ class LampGroupManager : public Manager {
      *
      */
     ControllerClientStatus SetLampGroupName(const LSFString& lampGroupID, const LSFString& lampGroupName, const LSFString& language = LSFString("en"));
+
+    /**
+     * Get the version of a Lamp Group. \n
+     * Response in LampGroupManagerCallback::GetLampGroupVersionCB
+     *
+     * @param lampGroupID    The Lamp Group ID
+     * @return
+     *      - CONTROLLER_CLIENT_OK if successful
+     *      - An error status otherwise
+     *
+     */
+    ControllerClientStatus GetLampGroupVersion(const LSFString& lampGroupID);
 
     /**
      * Create a new Lamp Group. \n

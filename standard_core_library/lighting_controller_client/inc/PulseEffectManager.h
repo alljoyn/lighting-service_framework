@@ -94,6 +94,15 @@ class PulseEffectManagerCallback {
     virtual void GetPulseEffectNameReplyCB(const LSFResponseCode& responseCode, const LSFString& pulseEffectID, const LSFString& language, const LSFString& pulseEffectName) { }
 
     /**
+     * Indicates that a reply has been received for the method call GetPulseEffectVersion method call.
+     *
+     * @param responseCode   The response code
+     * @param pulseEffectID    The Pulse Effect ID
+     * @param pulseEffectVersion  The Pulse Effect Version
+     */
+    virtual void GetPulseEffectVersionReplyCB(const LSFResponseCode& responseCode, const LSFString& pulseEffectID, const uint32_t& pulseEffectVersion) { }
+
+    /**
      * Response to PulseEffectManager::SetPulseEffectName. \n
      * response code LSF_OK on success. \n
      *      LSF_ERR_INVALID_ARGS - language not supported, name is too long. \n
@@ -227,6 +236,18 @@ class PulseEffectManager : public Manager {
      * @param language
      */
     ControllerClientStatus GetPulseEffectName(const LSFString& pulseEffectID, const LSFString& language = LSFString("en"));
+
+    /**
+     * Get the version of a Pulse Effect. \n
+     * Response in PulseEffectManagerCallback::GetPulseEffectVersionCB
+     *
+     * @param pulseEffectID    The Pulse Effect ID
+     * @return
+     *      - CONTROLLER_CLIENT_OK if successful
+     *      - An error status otherwise
+     *
+     */
+    ControllerClientStatus GetPulseEffectVersion(const LSFString& pulseEffectID);
 
     /**
      * Set the name of a PulseEffect. \n

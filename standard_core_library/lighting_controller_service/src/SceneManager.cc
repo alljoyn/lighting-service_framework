@@ -105,7 +105,7 @@ void SceneObject::ApplySceneHandler(const InterfaceDescription::Member* member, 
     LSFStringList scenes;
     scenes.push_back(sceneId);
 
-    sceneManager.ApplySceneInternal(message, scenes, sceneId);
+    sceneManager.ApplySceneNestedInternal(message, scenes, sceneId);
     MethodReply(message);
 }
 
@@ -340,7 +340,7 @@ LSFResponseCode SceneManager::IsDependentOnPulseEffect(LSFString& pulseEffectID)
     return responseCode;
 }
 
-void SceneManager::GetAllSceneIDs(Message& message)
+void SceneManager::GetAllSceneIDsInternal(Message& message, bool isSceneElement)
 {
     QCC_DbgPrintf(("%s: %s", __func__, message->ToString().c_str()));
 
@@ -364,7 +364,7 @@ void SceneManager::GetAllSceneIDs(Message& message)
     controllerService.SendMethodReplyWithResponseCodeAndListOfIDs(message, responseCode, idList);
 }
 
-void SceneManager::GetSceneName(Message& message)
+void SceneManager::GetSceneNameInternal(Message& message, bool isSceneElement)
 {
     QCC_DbgPrintf(("%s: %s", __func__, message->ToString().c_str()));
     LSFString name;
@@ -410,7 +410,7 @@ void SceneManager::GetSceneName(Message& message)
     controllerService.SendMethodReplyWithResponseCodeIDLanguageAndName(message, responseCode, sceneID, language, name);
 }
 
-void SceneManager::SetSceneName(Message& message)
+void SceneManager::SetSceneNameInternal(Message& message, bool isSceneElement)
 {
     QCC_DbgPrintf(("%s: %s", __func__, message->ToString().c_str()));
     LSFResponseCode responseCode = LSF_ERR_NOT_FOUND;
@@ -490,7 +490,7 @@ void SceneManager::SetSceneName(Message& message)
     }
 }
 
-void SceneManager::CreateScene(Message& message)
+void SceneManager::CreateSceneInternal(Message& message, bool isSceneElement)
 {
     QCC_DbgPrintf(("%s: %s", __func__, message->ToString().c_str()));
 
@@ -578,7 +578,7 @@ void SceneManager::CreateScene(Message& message)
     }
 }
 
-void SceneManager::UpdateScene(Message& message)
+void SceneManager::UpdateSceneInternal(Message& message, bool isSceneElement)
 {
     QCC_DbgPrintf(("%s: %s", __func__, message->ToString().c_str()));
     LSFResponseCode responseCode = LSF_ERR_NOT_FOUND;
@@ -646,7 +646,7 @@ void SceneManager::UpdateScene(Message& message)
     }
 }
 
-void SceneManager::DeleteScene(Message& message)
+void SceneManager::DeleteSceneInternal(Message& message, bool isSceneElement)
 {
     QCC_DbgPrintf(("%s: %s", __func__, message->ToString().c_str()));
     LSFResponseCode responseCode = LSF_OK;
@@ -710,7 +710,7 @@ void SceneManager::DeleteScene(Message& message)
     }
 }
 
-void SceneManager::GetScene(Message& message)
+void SceneManager::GetSceneInternal(Message& message, bool isSceneElement)
 {
     QCC_DbgPrintf(("%s: %s", __func__, message->ToString().c_str()));
 
@@ -782,7 +782,7 @@ void SceneManager::SendSceneOrMasterSceneAppliedSignal(LSFString& sceneorMasterS
     }
 }
 
-void SceneManager::ApplyScene(ajn::Message& message)
+void SceneManager::ApplySceneInternal(Message& message, bool isSceneElement)
 {
     QCC_DbgPrintf(("%s: %s", __func__, message->ToString().c_str()));
     LSFResponseCode responseCode = LSF_OK;
@@ -805,14 +805,14 @@ void SceneManager::ApplyScene(ajn::Message& message)
     LSFStringList scenesList;
     scenesList.push_back(sceneID);
 
-    responseCode = ApplySceneInternal(message, scenesList, sceneID);
+    responseCode = ApplySceneNestedInternal(message, scenesList, sceneID);
 
     if (LSF_OK != responseCode) {
         controllerService.SendMethodReplyWithResponseCodeAndID(message, responseCode, sceneID);
     }
 }
 
-LSFResponseCode SceneManager::ApplySceneInternal(ajn::Message message, LSFStringList& sceneList, LSFString sceneOrMasterSceneId)
+LSFResponseCode SceneManager::ApplySceneNestedInternal(ajn::Message message, LSFStringList& sceneList, LSFString sceneOrMasterSceneId)
 {
     QCC_DbgPrintf(("%s: sceneList.size() = %d", __func__, sceneList.size()));
     LSFResponseCode responseCode = LSF_OK;
