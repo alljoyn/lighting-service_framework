@@ -2,5 +2,4 @@
 #
 139102f0421fe2b600cbffd8e124a246f244414c	GitHub Replication
 31950f1fbc66fbbf03dc02d1c658f3b3cd9436df	Non-Interactive Users
-ee1fe7febfa92c6e7decf4291a8cb967bdb389eb	Lighting
-ldap:cn=lighting_service_framework,ou=groups,cn=allseen,dc=codeaurora,dc=org	ldap/lighting_service_framework
+65a511921ae811c47aebd20a3ba672b6316fc6a9	LightingApps
