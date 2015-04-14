@@ -33,6 +33,7 @@ PresetManager::PresetManager(ControllerService& controllerSvc, SceneManager* sce
 {
     QCC_DbgTrace(("%s", __func__));
     presets.clear();
+    presetUpdates.clear();
 }
 
 LSFResponseCode PresetManager::GetAllPresets(PresetMap& presetMap)
@@ -80,6 +81,7 @@ LSFResponseCode PresetManager::Reset(void)
          * Clear the Presets
          */
         presets.clear();
+        presetUpdates.clear();
         blobLength = 0;
         ScheduleFileWrite();
         tempStatus = presetsLock.Unlock();
@@ -355,7 +357,7 @@ void PresetManager::CreatePreset(Message& msg)
         if (ER_OK == status) {
             if (presets.size() < OEM_CS_MAX_SUPPORTED_NUM_LSF_ENTITY) {
                 std::string newPresetStr = GetString(name, presetID, preset);
-                size_t newlen = blobLength + newPresetStr.length();
+                size_t newlen = blobLength + newPresetStr.length() + presetID.length();
                 if (newlen < MAX_FILE_LEN) {
                     blobLength = newlen;
                     presets[presetID].first = name;
@@ -428,7 +430,7 @@ void PresetManager::UpdatePreset(Message& msg)
             PresetMap::iterator it = presets.find(presetId);
             if (it != presets.end()) {
                 size_t newlen = blobLength;
-                // sub len of old group, add len of new group
+                // sub len of old preset, add len of new preset
                 newlen -= GetString(it->second.first, presetID, it->second.second).length();
                 newlen += GetString(it->second.first, presetID, preset).length();
 
@@ -436,6 +438,9 @@ void PresetManager::UpdatePreset(Message& msg)
                     blobLength = newlen;
                     presets[presetID].second = preset;
                     responseCode = LSF_OK;
+                    if (presetUpdates.find(presetID) == presetUpdates.end()) {
+                        presetUpdates.insert(presetID);
+                    }
                     updated = true;
                     ScheduleFileWrite();
                 } else {
@@ -493,8 +498,11 @@ void PresetManager::DeletePreset(Message& msg)
         if (ER_OK == status) {
             PresetMap::iterator it = presets.find(presetId);
             if (it != presets.end()) {
-                blobLength -= GetString(it->second.first, presetId, it->second.second).length();
+                blobLength -= ((GetString(it->second.first, presetId, it->second.second).length()) + presetID.length());
                 presets.erase(it);
+                if (presetUpdates.find(presetID) != presetUpdates.end()) {
+                    presetUpdates.erase(presetID);
+                }
                 deleted = true;
                 ScheduleFileWrite();
             } else {
@@ -693,6 +701,11 @@ void PresetManager::ReadSavedData(void)
 
     blobLength = stream.str().size();
     ReplaceMap(stream);
+
+    std::istringstream updateStream;
+    if (ValidateUpdateFileAndRead(updateStream)) {
+        ReplaceUpdatesList(updateStream);
+    }
 }
 
 void PresetManager::HandleReceivedBlob(const std::string& blob, uint32_t checksum, uint64_t timestamp)
@@ -734,12 +747,37 @@ void PresetManager::ReplaceMap(std::istringstream& stream)
                     presets.clear();
                     firstIteration = false;
                 }
+                blobLength += presetId.length();
                 LampState state;
                 ParseLampState(stream, state);
 
                 std::pair<LSFString, LampState> thePair = std::make_pair(presetName, state);
                 presets[presetId] = thePair;
                 //QCC_DbgPrintf(("%s: Added ID=%s, Name=%s, State=%s", __func__, presetId.c_str(), presets[presetId].first.c_str(), presets[presetId].second.c_str()));
+            }
+        }
+    }
+}
+
+void PresetManager::ReplaceUpdatesList(std::istringstream& stream)
+{
+    QCC_DbgTrace(("%s", __func__));
+    bool firstIteration = true;
+    while (!stream.eof()) {
+        std::string id = ParseString(stream);
+        if (0 == strcmp(id.c_str(), resetID.c_str())) {
+            QCC_DbgPrintf(("The file has a reset entry. Clearing the list"));
+            presetUpdates.clear();
+        } else if (0 == strcmp(id.c_str(), initialStateID.c_str())) {
+            QCC_DbgPrintf(("The file has a initialState entry. So we ignore it"));
+        } else {
+            if (firstIteration) {
+                presetUpdates.clear();
+                firstIteration = false;
+            }
+            if (!id.empty()) {
+                presetUpdates.insert(id);
+                QCC_DbgPrintf(("%s: Add %s to updates list", __func__, id.c_str()));
             }
         }
     }
@@ -794,17 +832,42 @@ std::string PresetManager::GetString(const PresetMap& items)
     return stream.str();
 }
 
-bool PresetManager::GetString(std::string& output, uint32_t& checksum, uint64_t& timestamp)
+std::string PresetManager::GetUpdatesString(const std::set<LSFString>& updates)
+{
+    QCC_DbgTrace(("%s", __func__));
+    std::ostringstream stream;
+    if (0 == updates.size()) {
+        if (initialState) {
+            QCC_DbgPrintf(("%s: This is the initial state entry", __func__));
+            stream << initialStateID << std::endl;
+        } else {
+            QCC_DbgPrintf(("%s: File is being reset", __func__));
+            stream << resetID << std::endl;
+        }
+    } else {
+        for (std::set<LSFString>::const_iterator it = updates.begin(); it != updates.end(); ++it) {
+            stream << *it << std::endl;
+        }
+    }
+
+    return stream.str();
+}
+
+bool PresetManager::GetString(std::string& output, std::string& updates, uint32_t& checksum, uint64_t& timestamp, uint32_t& updatesChksum, uint64_t& updatesTs)
 {
     PresetMap mapCopy;
     mapCopy.clear();
+    std::set<LSFString> updatesCopy;
+    updatesCopy.clear();
     bool ret = false;
     output.clear();
+    updates.clear();
 
     presetsLock.Lock();
     // we can't hold this lock for the entire time!
     if (updated) {
         mapCopy = presets;
+        updatesCopy = presetUpdates;
         updated = false;
         ret = true;
     }
@@ -812,19 +875,25 @@ bool PresetManager::GetString(std::string& output, uint32_t& checksum, uint64_t&
 
     if (ret) {
         output = GetString(mapCopy);
+        updates = GetUpdatesString(updatesCopy);
         presetsLock.Lock();
         if (blobUpdateCycle) {
             checksum = checkSum;
+            updatesChksum = updatesCheckSum;
             timestamp = timeStamp;
+            updatesTs = updatesTimeStamp;
             blobUpdateCycle = false;
         } else {
             if (initialState) {
                 timeStamp = timestamp = 0UL;
+                updatesTimeStamp = updatesTs = 0UL;
                 initialState = false;
             } else {
                 timeStamp = timestamp = GetTimestampInMs();
+                updatesTimeStamp = updatesTs = GetTimestampInMs();
             }
             checkSum = checksum = GetChecksum(output);
+            updatesCheckSum = updatesChksum = GetChecksum(updates);
         }
         presetsLock.Unlock();
     }
@@ -832,20 +901,38 @@ bool PresetManager::GetString(std::string& output, uint32_t& checksum, uint64_t&
     return ret;
 }
 
+void PresetManager::HandleReceivedUpdateBlob(const std::string& blob, uint32_t checksum, uint64_t timestamp)
+{
+    QCC_DbgPrintf(("%s", __func__));
+    uint64_t currentTimestamp = GetTimestampInMs();
+    presetsLock.Lock();
+    if (((updatesTimeStamp == 0) || ((currentTimestamp - updatesTimeStamp) > timestamp)) && (updatesCheckSum != checksum)) {
+        std::istringstream stream(blob.c_str());
+        ReplaceUpdatesList(stream);
+        updatesTimeStamp = currentTimestamp;
+        updatesCheckSum = checksum;
+        ScheduleFileWrite(true);
+    }
+    presetsLock.Unlock();
+}
+
 void PresetManager::ReadWriteFile()
 {
     QCC_DbgPrintf(("%s", __func__));
 
-    if (filePath.empty()) {
+    if (filePath.empty() || updateFilePath.empty()) {
         return;
     }
 
     std::string output;
     uint32_t checksum;
     uint64_t timestamp;
+    std::string updates;
+    uint32_t updateChecksum;
+    uint64_t updateTimestamp;
     bool status = false;
 
-    status = GetString(output, checksum, timestamp);
+    status = GetString(output, updates, checksum, timestamp, updateChecksum, updateTimestamp);
 
     if (status) {
         WriteFileWithChecksumAndTimestamp(output, checksum, timestamp);
@@ -853,33 +940,52 @@ void PresetManager::ReadWriteFile()
             uint64_t currentTime = GetTimestampInMs();
             controllerService.SendBlobUpdate(LSF_PRESET, output, checksum, (currentTime - timestamp));
         }
+
+        WriteUpdatesFileWithChecksumAndTimestamp(updates, updateChecksum, updateTimestamp);
+        if (updateTimestamp != 0UL) {
+            uint64_t currentTime = GetTimestampInMs();
+            controllerService.SendBlobUpdate(LSF_PRESET_UPDATE, updates, updateChecksum, (currentTime - updateTimestamp));
+        }
     }
 
     std::list<ajn::Message> tempMessageList;
+    std::list<ajn::Message> tempUpdateMessageList;
 
     readMutex.Lock();
     if (read) {
         tempMessageList = readBlobMessages;
         readBlobMessages.clear();
+        tempUpdateMessageList = readUpdateBlobMessages;
+        readUpdateBlobMessages.clear();
         read = false;
     }
     readMutex.Unlock();
 
-    if ((tempMessageList.size() || sendUpdate) && !status) {
+    if ((tempMessageList.size() || tempUpdateMessageList.size() || sendUpdate) && !status) {
         std::istringstream stream;
-        status = ValidateFileAndReadInternal(checksum, timestamp, stream);
-        if (status) {
+        bool fileStatus = ValidateFileAndReadInternal(checksum, timestamp, stream);
+        if (fileStatus) {
             output = stream.str();
+            while (!tempMessageList.empty()) {
+                uint64_t currentTime = GetTimestampInMs();
+                controllerService.SendGetBlobReply(tempMessageList.front(), LSF_PRESET, output, checksum, (currentTime - timestamp));
+                tempMessageList.pop_front();
+            }
         } else {
             QCC_LogError(ER_FAIL, ("%s: Preset persistent store corrupted", __func__));
         }
-    }
 
-    if (status) {
-        while (tempMessageList.size()) {
-            uint64_t currentTime = GetTimestampInMs();
-            controllerService.SendGetBlobReply(tempMessageList.front(), LSF_PRESET, output, checksum, (currentTime - timestamp));
-            tempMessageList.pop_front();
+        std::istringstream updateStream;
+        bool updateStatus = ValidateUpdateFileAndReadInternal(updateChecksum, updateTimestamp, updateStream);
+        if (updateStatus) {
+            updates = updateStream.str();
+            while (!tempUpdateMessageList.empty()) {
+                uint64_t currentTime = GetTimestampInMs();
+                controllerService.SendGetBlobReply(tempUpdateMessageList.front(), LSF_PRESET_UPDATE, updates, updateChecksum, (currentTime - updateTimestamp));
+                tempUpdateMessageList.pop_front();
+            }
+        } else {
+            QCC_LogError(ER_FAIL, ("%s: Preset Update persistent store corrupted", __func__));
         }
     }
 
@@ -887,6 +993,7 @@ void PresetManager::ReadWriteFile()
         sendUpdate = false;
         uint64_t currentTime = GetTimestampInMs();
         controllerService.GetLeaderElectionObj().SendBlobUpdate(LSF_PRESET, output, checksum, (currentTime - timestamp));
+        controllerService.GetLeaderElectionObj().SendBlobUpdate(LSF_PRESET_UPDATE, updates, updateChecksum, (currentTime - updateTimestamp));
     }
 }
 

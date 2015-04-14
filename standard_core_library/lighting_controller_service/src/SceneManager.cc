@@ -159,6 +159,7 @@ SceneManager::SceneManager(ControllerService& controllerSvc, LampGroupManager& l
 {
     QCC_DbgPrintf(("%s", __func__));
     scenes.clear();
+    sceneUpdates.clear();
 }
 
 void SceneManager::UnregsiterSceneEventActionObjects(void)
@@ -230,6 +231,7 @@ LSFResponseCode SceneManager::Reset(void)
          * Clear the Scenes
          */
         scenes.clear();
+        sceneUpdates.clear();
         blobLength = 0;
         ScheduleFileWrite();
         tempStatus = scenesLock.Unlock();
@@ -521,7 +523,7 @@ void SceneManager::CreateScene(Message& message)
         if (ER_OK == status) {
             if (scenes.size() < OEM_CS_MAX_SUPPORTED_NUM_LSF_ENTITY) {
                 std::string newSceneStr = GetString(name, sceneID, scene);
-                size_t newlen = blobLength + newSceneStr.length();
+                size_t newlen = blobLength + newSceneStr.length() + sceneID.length();
 
                 if (newlen < MAX_FILE_LEN) {
                     SceneObject* newObj = new SceneObject(*this, sceneID, scene, name);
@@ -599,7 +601,7 @@ void SceneManager::UpdateScene(Message& message)
             SceneObjectMap::iterator it = scenes.find(uniqueId);
             if (it != scenes.end()) {
                 size_t newlen = blobLength;
-                // sub len of old group, add len of new group
+                // sub len of old scene, add len of new scene
                 newlen -= GetString(it->second->sceneName, uniqueId, it->second->scene).length();
                 newlen += GetString(it->second->sceneName, uniqueId, scene).length();
 
@@ -607,6 +609,9 @@ void SceneManager::UpdateScene(Message& message)
                     blobLength = newlen;
                     it->second->scene = scene;
                     responseCode = LSF_OK;
+                    if (sceneUpdates.find(sceneID) == sceneUpdates.end()) {
+                        sceneUpdates.insert(sceneID);
+                    }
                     updated = true;
                     ScheduleFileWrite();
                 } else {
@@ -665,10 +670,13 @@ void SceneManager::DeleteScene(Message& message)
         if (ER_OK == status) {
             SceneObjectMap::iterator it = scenes.find(sceneId);
             if (it != scenes.end()) {
-                blobLength -= GetString(it->second->sceneName, sceneID, it->second->scene).length();
+                blobLength -= ((GetString(it->second->sceneName, sceneID, it->second->scene).length()) + sceneID.length());
 
                 sceneObjPtr = it->second;
                 scenes.erase(it);
+                if (sceneUpdates.find(sceneID) != sceneUpdates.end()) {
+                    sceneUpdates.erase(sceneID);
+                }
                 deleted = true;
                 ScheduleFileWrite();
             } else {
@@ -891,6 +899,11 @@ void SceneManager::ReadSavedData()
 
     blobLength = stream.str().size();
     ReplaceMap(stream);
+
+    std::istringstream updateStream;
+    if (ValidateUpdateFileAndRead(updateStream)) {
+        ReplaceUpdatesList(updateStream);
+    }
 }
 
 void SceneManager::ReplaceMap(std::istringstream& stream)
@@ -928,6 +941,7 @@ void SceneManager::ReplaceMap(std::istringstream& stream)
                     scenes.clear();
                     firstIteration = false;
                 }
+                blobLength += id.length();
                 do {
                     token = ParseString(stream);
                     if (token == "TransitionLampsLampGroupsToState") {
@@ -1085,6 +1099,30 @@ static void OutputState(std::ostream& stream, const std::string& name, const Lam
     }
 }
 
+void SceneManager::ReplaceUpdatesList(std::istringstream& stream)
+{
+    QCC_DbgTrace(("%s", __func__));
+    bool firstIteration = true;
+    while (!stream.eof()) {
+        std::string id = ParseString(stream);
+        if (0 == strcmp(id.c_str(), resetID.c_str())) {
+            QCC_DbgPrintf(("The file has a reset entry. Clearing the list"));
+            sceneUpdates.clear();
+        } else if (0 == strcmp(id.c_str(), initialStateID.c_str())) {
+            QCC_DbgPrintf(("The file has a initialState entry. So we ignore it"));
+        } else {
+            if (firstIteration) {
+                sceneUpdates.clear();
+                firstIteration = false;
+            }
+            if (!id.empty()) {
+                sceneUpdates.insert(id);
+                QCC_DbgPrintf(("%s: Add %s to updates list", __func__, id.c_str()));
+            }
+        }
+    }
+}
+
 std::string SceneManager::GetString(const std::string& name, const std::string& id, const Scene& scene)
 {
     std::ostringstream stream;
@@ -1183,17 +1221,42 @@ std::string SceneManager::GetString(const SceneObjectMap& items)
     return stream.str();
 }
 
-bool SceneManager::GetString(std::string& output, uint32_t& checksum, uint64_t& timestamp)
+std::string SceneManager::GetUpdatesString(const std::set<LSFString>& updates)
+{
+    QCC_DbgTrace(("%s", __func__));
+    std::ostringstream stream;
+    if (0 == updates.size()) {
+        if (initialState) {
+            QCC_DbgPrintf(("%s: This is the initial state entry", __func__));
+            stream << initialStateID << std::endl;
+        } else {
+            QCC_DbgPrintf(("%s: File is being reset", __func__));
+            stream << resetID << std::endl;
+        }
+    } else {
+        for (std::set<LSFString>::const_iterator it = updates.begin(); it != updates.end(); ++it) {
+            stream << *it << std::endl;
+        }
+    }
+
+    return stream.str();
+}
+
+bool SceneManager::GetString(std::string& output, std::string& updates, uint32_t& checksum, uint64_t& timestamp, uint32_t& updatesChksum, uint64_t& updatesTs)
 {
     SceneObjectMap mapCopy;
     mapCopy.clear();
+    std::set<LSFString> updatesCopy;
+    updatesCopy.clear();
     bool ret = false;
     output.clear();
+    updates.clear();
 
     scenesLock.Lock();
     // we can't hold this lock for the entire time!
     if (updated) {
         mapCopy = scenes;
+        updatesCopy = sceneUpdates;
         updated = false;
         ret = true;
     }
@@ -1201,19 +1264,25 @@ bool SceneManager::GetString(std::string& output, uint32_t& checksum, uint64_t& 
 
     if (ret) {
         output = GetString(mapCopy);
+        updates = GetUpdatesString(updatesCopy);
         scenesLock.Lock();
         if (blobUpdateCycle) {
             checksum = checkSum;
+            updatesChksum = updatesCheckSum;
             timestamp = timeStamp;
+            updatesTs = updatesTimeStamp;
             blobUpdateCycle = false;
         } else {
             if (initialState) {
                 timeStamp = timestamp = 0UL;
+                updatesTimeStamp = updatesTs = 0UL;
                 initialState = false;
             } else {
                 timeStamp = timestamp = GetTimestampInMs();
+                updatesTimeStamp = updatesTs = GetTimestampInMs();
             }
             checkSum = checksum = GetChecksum(output);
+            updatesCheckSum = updatesChksum = GetChecksum(updates);
         }
         scenesLock.Unlock();
     }
@@ -1236,20 +1305,38 @@ void SceneManager::HandleReceivedBlob(const std::string& blob, uint32_t checksum
     scenesLock.Unlock();
 }
 
+void SceneManager::HandleReceivedUpdateBlob(const std::string& blob, uint32_t checksum, uint64_t timestamp)
+{
+    QCC_DbgPrintf(("%s", __func__));
+    uint64_t currentTimestamp = GetTimestampInMs();
+    scenesLock.Lock();
+    if (((updatesTimeStamp == 0) || ((currentTimestamp - updatesTimeStamp) > timestamp)) && (updatesCheckSum != checksum)) {
+        std::istringstream stream(blob.c_str());
+        ReplaceUpdatesList(stream);
+        updatesTimeStamp = currentTimestamp;
+        updatesCheckSum = checksum;
+        ScheduleFileWrite(true);
+    }
+    scenesLock.Unlock();
+}
+
 void SceneManager::ReadWriteFile()
 {
     QCC_DbgPrintf(("%s", __func__));
 
-    if (filePath.empty()) {
+    if (filePath.empty() || updateFilePath.empty()) {
         return;
     }
 
     std::string output;
     uint32_t checksum;
     uint64_t timestamp;
+    std::string updates;
+    uint32_t updateChecksum;
+    uint64_t updateTimestamp;
     bool status = false;
 
-    status = GetString(output, checksum, timestamp);
+    status = GetString(output, updates, checksum, timestamp, updateChecksum, updateTimestamp);
 
     if (status) {
         WriteFileWithChecksumAndTimestamp(output, checksum, timestamp);
@@ -1257,33 +1344,52 @@ void SceneManager::ReadWriteFile()
             uint64_t currentTime = GetTimestampInMs();
             controllerService.SendBlobUpdate(LSF_SCENE, output, checksum, (currentTime - timestamp));
         }
+
+        WriteUpdatesFileWithChecksumAndTimestamp(updates, updateChecksum, updateTimestamp);
+        if (updateTimestamp != 0UL) {
+            uint64_t currentTime = GetTimestampInMs();
+            controllerService.SendBlobUpdate(LSF_SCENE_UPDATE, updates, updateChecksum, (currentTime - updateTimestamp));
+        }
     }
 
     std::list<ajn::Message> tempMessageList;
+    std::list<ajn::Message> tempUpdateMessageList;
 
     readMutex.Lock();
     if (read) {
         tempMessageList = readBlobMessages;
         readBlobMessages.clear();
+        tempUpdateMessageList = readUpdateBlobMessages;
+        readUpdateBlobMessages.clear();
         read = false;
     }
     readMutex.Unlock();
 
-    if ((tempMessageList.size() || sendUpdate) && !status) {
+    if ((tempMessageList.size() || tempUpdateMessageList.size() || sendUpdate) && !status) {
         std::istringstream stream;
-        status = ValidateFileAndReadInternal(checksum, timestamp, stream);
-        if (status) {
+        bool fileStatus = ValidateFileAndReadInternal(checksum, timestamp, stream);
+        if (fileStatus) {
             output = stream.str();
+            while (!tempMessageList.empty()) {
+                uint64_t currentTime = GetTimestampInMs();
+                controllerService.SendGetBlobReply(tempMessageList.front(), LSF_SCENE, output, checksum, (currentTime - timestamp));
+                tempMessageList.pop_front();
+            }
         } else {
             QCC_LogError(ER_FAIL, ("%s: Scene persistent store corrupted", __func__));
         }
-    }
 
-    if (status) {
-        while (!tempMessageList.empty()) {
-            uint64_t currentTime = GetTimestampInMs();
-            controllerService.SendGetBlobReply(tempMessageList.front(), LSF_SCENE, output, checksum, (currentTime - timestamp));
-            tempMessageList.pop_front();
+        std::istringstream updateStream;
+        bool updateStatus = ValidateUpdateFileAndReadInternal(updateChecksum, updateTimestamp, updateStream);
+        if (updateStatus) {
+            updates = updateStream.str();
+            while (!tempUpdateMessageList.empty()) {
+                uint64_t currentTime = GetTimestampInMs();
+                controllerService.SendGetBlobReply(tempUpdateMessageList.front(), LSF_SCENE_UPDATE, updates, updateChecksum, (currentTime - updateTimestamp));
+                tempUpdateMessageList.pop_front();
+            }
+        } else {
+            QCC_LogError(ER_FAIL, ("%s: Scene Update persistent store corrupted", __func__));
         }
     }
 
@@ -1291,6 +1397,7 @@ void SceneManager::ReadWriteFile()
         sendUpdate = false;
         uint64_t currentTime = GetTimestampInMs();
         controllerService.GetLeaderElectionObj().SendBlobUpdate(LSF_SCENE, output, checksum, (currentTime - timestamp));
+        controllerService.GetLeaderElectionObj().SendBlobUpdate(LSF_SCENE_UPDATE, updates, updateChecksum, (currentTime - updateTimestamp));
     }
 }
 

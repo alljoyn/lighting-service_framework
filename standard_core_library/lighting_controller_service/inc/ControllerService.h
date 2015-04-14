@@ -52,6 +52,7 @@
 #include <alljoyn/AboutObj.h>
 #include <alljoyn/AboutIcon.h>
 #include <alljoyn/AboutData.h>
+#include <UnknownBlobGroupManager.h>
 
 namespace lsf {
 
@@ -222,6 +223,11 @@ class ControllerService : public ajn::BusObject, public ajn::services::ConfigSer
      * @return PulseEffectManager
      */
     PulseEffectManager& GetPulseEffectManager(void) { return pulseEffectManager; };
+    /**
+     * Get reference to Unknown Blob Manager object
+     * @return UnknownBlobGroupManager
+     */
+    UnknownBlobGroupManager& GetUnknownBlobGroupManager(void) { return unknownBlobGroupManager; };
     /**
      * Send Method Reply \n
      * Reply for asynchronous method call \n
@@ -399,6 +405,8 @@ class ControllerService : public ajn::BusObject, public ajn::services::ConfigSer
      */
     LSFAboutDataStore& GetAboutDataStore(void) { return aboutDataStore; };
 
+    std::string GetStorePath(void) { return storePath; };
+
   private:
 
     void Initialize();
@@ -445,6 +453,7 @@ class ControllerService : public ajn::BusObject, public ajn::services::ConfigSer
     MasterSceneManager masterSceneManager;
     TransitionEffectManager transitionEffectManager;
     PulseEffectManager pulseEffectManager;
+    UnknownBlobGroupManager unknownBlobGroupManager;
 
     void OnAccepMultipointSessionJoiner(const char* joiner);
     void SessionLost(ajn::SessionId sessionId);
@@ -530,6 +539,8 @@ class ControllerService : public ajn::BusObject, public ajn::services::ConfigSer
     ControllerServiceRank rank;
 
     bool deprecatedConstructorUsed;
+
+    std::string storePath;
 };
 /**
  * controller service management class. \n

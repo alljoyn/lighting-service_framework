@@ -211,6 +211,7 @@ ControllerService::ControllerService(
     masterSceneManager(*this, sceneManager, masterSceneFile),
     transitionEffectManager(*this, &sceneManager, ""),
     pulseEffectManager(*this, &sceneManager, ""),
+    unknownBlobGroupManager(*this),
     internalAboutDataStore(this, factoryConfigFile.c_str(), configFile.c_str()),
     aboutDataStore(internalAboutDataStore),
     aboutIcon(),
@@ -226,6 +227,15 @@ ControllerService::ControllerService(
     deprecatedConstructorUsed(true)
 {
     QCC_LogError(ER_FAIL, ("%s: DEPRECATED CONSTRUCTOR. Please use the constructor with AboutDataStore", __func__));
+
+    std::string refFileName = lampGroupFile;
+    std::string findStr = "LampGroups.lsf";
+    size_t replaceLocation = refFileName.find(findStr);
+    if (replaceLocation != std::string::npos) {
+        refFileName.erase(replaceLocation, findStr.length());
+        storePath = refFileName;
+        QCC_DbgPrintf(("Store Path = %s", storePath.c_str()));
+    }
 }
 
 ControllerService::ControllerService(
@@ -251,6 +261,7 @@ ControllerService::ControllerService(
     masterSceneManager(*this, sceneManager, masterSceneFile),
     transitionEffectManager(*this, &sceneManager, transitionEffectFile),
     pulseEffectManager(*this, &sceneManager, pulseEffectFile),
+    unknownBlobGroupManager(*this),
     internalAboutDataStore(this, factoryConfigFile.c_str(), configFile.c_str()),
     aboutDataStore(aboutData),
     aboutIcon(),
@@ -265,7 +276,14 @@ ControllerService::ControllerService(
     rank(),
     deprecatedConstructorUsed(false)
 {
-
+    std::string refFileName = lampGroupFile;
+    std::string findStr = "LampGroups.lsf";
+    size_t replaceLocation = refFileName.find(findStr);
+    if (replaceLocation != std::string::npos) {
+        refFileName.erase(replaceLocation, findStr.length());
+        storePath = refFileName;
+        QCC_DbgPrintf(("Store Path = %s", storePath.c_str()));
+    }
 }
 
 ControllerService::ControllerService(
@@ -288,6 +306,7 @@ ControllerService::ControllerService(
     masterSceneManager(*this, sceneManager, masterSceneFile),
     transitionEffectManager(*this, &sceneManager, ""),
     pulseEffectManager(*this, &sceneManager, ""),
+    unknownBlobGroupManager(*this),
     internalAboutDataStore(this, factoryConfigFile.c_str(), configFile.c_str()),
     aboutDataStore(internalAboutDataStore),
     aboutIcon(),
@@ -303,6 +322,14 @@ ControllerService::ControllerService(
     deprecatedConstructorUsed(true)
 {
     QCC_DbgTrace(("%s:factoryConfigFile=%s, configFile=%s, lampGroupFile=%s, presetFile=%s, sceneFile=%s, masterSceneFile=%s", __func__, factoryConfigFile.c_str(), configFile.c_str(), lampGroupFile.c_str(), presetFile.c_str(), sceneFile.c_str(), masterSceneFile.c_str()));
+    std::string refFileName = lampGroupFile;
+    std::string findStr = "LampGroups.lsf";
+    size_t replaceLocation = refFileName.find(findStr);
+    if (replaceLocation != std::string::npos) {
+        refFileName.erase(replaceLocation, findStr.length());
+        storePath = refFileName;
+        QCC_DbgPrintf(("Store Path = %s", storePath.c_str()));
+    }
 }
 
 ControllerService::ControllerService(
@@ -327,6 +354,7 @@ ControllerService::ControllerService(
     masterSceneManager(*this, sceneManager, masterSceneFile),
     transitionEffectManager(*this, &sceneManager, transitionEffectFile),
     pulseEffectManager(*this, &sceneManager, pulseEffectFile),
+    unknownBlobGroupManager(*this),
     internalAboutDataStore(this, factoryConfigFile.c_str(), configFile.c_str()),
     aboutDataStore(internalAboutDataStore),
     aboutIcon(),
@@ -344,6 +372,14 @@ ControllerService::ControllerService(
     QCC_DbgTrace(("%s:factoryConfigFile=%s, configFile=%s, lampGroupFile=%s, presetFile=%s, sceneFile=%s, masterSceneFile=%s transitionEffectFile=%s pulseEffectFile=%s", __func__,
                   factoryConfigFile.c_str(), configFile.c_str(), lampGroupFile.c_str(), presetFile.c_str(), sceneFile.c_str(), masterSceneFile.c_str(),
                   transitionEffectFile.c_str(), pulseEffectFile.c_str()));
+    std::string refFileName = lampGroupFile;
+    std::string findStr = "LampGroups.lsf";
+    size_t replaceLocation = refFileName.find(findStr);
+    if (replaceLocation != std::string::npos) {
+        refFileName.erase(replaceLocation, findStr.length());
+        storePath = refFileName;
+        QCC_DbgPrintf(("Store Path = %s", storePath.c_str()));
+    }
 }
 
 void ControllerService::FoundLocalOnboardingService(const char* busName, SessionPort port)
@@ -374,6 +410,7 @@ void ControllerService::Initialize()
     masterSceneManager.ReadSavedData();
     transitionEffectManager.ReadSavedData();
     pulseEffectManager.ReadSavedData();
+    unknownBlobGroupManager.ReadSavedData();
 
     messageHandlersLock.Lock();
     AddMethodHandler("LightingResetControllerService", this, &ControllerService::LightingResetControllerService);
@@ -1149,6 +1186,13 @@ void ControllerService::LightingResetControllerService(Message& msg)
         failure++;
     }
     numResets++;
+
+    uint32_t numBlobs = 0;
+    uint32_t numFailures = 0;
+    if (LSF_OK != unknownBlobGroupManager.Reset(numBlobs, numFailures)) {
+        failure += numFailures;
+    }
+    numResets += numBlobs;
 
     if (failure) {
         if (failure == numResets) {

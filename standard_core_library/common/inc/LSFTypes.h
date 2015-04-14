@@ -254,12 +254,19 @@ uint32_t GetTimestampInSeconds(void);
  * Enum defining the LSF Blob Type
  */
 typedef enum _LSFBlobType {
-    LSF_PRESET,            /**< Preset type */
-    LSF_LAMP_GROUP,        /**< Lamp Group type */
-    LSF_SCENE,             /**< Scene type */
-    LSF_MASTER_SCENE,      /**< Master Scene type */
-    LSF_TRANSITION_EFFECT, /**< Transition Effect type */
-    LSF_PULSE_EFFECT       /**< Pulse Effect type */
+    LSF_PRESET = 0,                        /**< Preset type */
+    LSF_LAMP_GROUP = 1,                    /**< Lamp Group type */
+    LSF_SCENE = 2,                         /**< Scene type */
+    LSF_MASTER_SCENE = 3,                  /**< Master Scene type */
+    LSF_TRANSITION_EFFECT = 4,             /**< Transition Effect type */
+    LSF_PULSE_EFFECT = 5,                  /**< Pulse Effect type */
+    LSF_PRESET_UPDATE = 6,                 /**< Preset Update type */
+    LSF_LAMP_GROUP_UPDATE = 7,             /**< Lamp Group Update type */
+    LSF_SCENE_UPDATE = 8,                  /**< Scene Update type */
+    LSF_MASTER_SCENE_UPDATE = 9,           /**< Master Scene Update type */
+    LSF_TRANSITION_EFFECT_UPDATE = 10,     /**< Transition Effect Update type */
+    LSF_PULSE_EFFECT_UPDATE = 11,          /**< Pulse Effect Update type */
+    LSF_BLOB_TYPE_LAST_VALUE = 0xFFFFFFFF  /**< Last value */
 } LSFBlobType;
 
 /**

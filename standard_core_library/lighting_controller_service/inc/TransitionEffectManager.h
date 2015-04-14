@@ -146,6 +146,10 @@ class TransitionEffectManager : public Manager {
      */
     void HandleReceivedBlob(const std::string& blob, uint32_t checksum, uint64_t timestamp);
     /**
+     * Handle Received Update Blob
+     */
+    void HandleReceivedUpdateBlob(const std::string& blob, uint32_t checksum, uint64_t timestamp);
+    /**
      * Get Controller Service TransitionEffect Interface Version. \n
      * @return 32 unsigned integer version. \n
      */
@@ -154,7 +158,7 @@ class TransitionEffectManager : public Manager {
      * Get the transitionEffects information as a string. \n
      * @return true if data is written to file
      */
-    virtual bool GetString(std::string& output, uint32_t& checksum, uint64_t& timestamp);
+    bool GetString(std::string& output, std::string& updates, uint32_t& checksum, uint64_t& timestamp, uint32_t& updatesChksum, uint64_t& updatesTs);
     /**
      * Get blob information about checksum and time stamp.
      */
@@ -163,17 +167,29 @@ class TransitionEffectManager : public Manager {
         GetBlobInfoInternal(checksum, timestamp);
         transitionEffectsLock.Unlock();
     }
+    /**
+     * Get blob information about checksum and time stamp.
+     */
+    void GetUpdateBlobInfo(uint32_t& checksum, uint64_t& timestamp) {
+        transitionEffectsLock.Lock();
+        GetUpdateBlobInfoInternal(checksum, timestamp);
+        transitionEffectsLock.Unlock();
+    }
 
   private:
 
     void ReplaceMap(std::istringstream& stream);
 
+    void ReplaceUpdatesList(std::istringstream& stream);
+
     TransitionEffectMap transitionEffects;
+    std::set<LSFString> transitionEffectUpdates;    /**< List of TransitionEffectIDs that were updated */
     Mutex transitionEffectsLock;
     SceneManager* sceneManagerPtr;
     size_t blobLength;
 
     std::string GetString(const TransitionEffectMap& items);
+    std::string GetUpdatesString(const std::set<LSFString>& updates);
     std::string GetString(const std::string& name, const std::string& id, const TransitionEffect& transitionEffect);
 };
 

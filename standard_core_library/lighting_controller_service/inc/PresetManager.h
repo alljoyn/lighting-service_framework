@@ -177,6 +177,10 @@ class PresetManager : public Manager {
      */
     void HandleReceivedBlob(const std::string& blob, uint32_t checksum, uint64_t timestamp);
     /**
+     * Handle Received Update Blob
+     */
+    void HandleReceivedUpdateBlob(const std::string& blob, uint32_t checksum, uint64_t timestamp);
+    /**
      * Get Controller Service Preset Interface Version. \n
      * @return 32 unsigned integer version. \n
      */
@@ -185,7 +189,7 @@ class PresetManager : public Manager {
      * Get the presets information as a string. \n
      * @return true if data is written to file
      */
-    virtual bool GetString(std::string& output, uint32_t& checksum, uint64_t& timestamp);
+    bool GetString(std::string& output, std::string& updates, uint32_t& checksum, uint64_t& timestamp, uint32_t& updatesChksum, uint64_t& updatesTs);
     /**
      * Get blob information about checksum and time stamp.
      */
@@ -194,19 +198,31 @@ class PresetManager : public Manager {
         GetBlobInfoInternal(checksum, timestamp);
         presetsLock.Unlock();
     }
+    /**
+     * Get blob information about checksum and time stamp.
+     */
+    void GetUpdateBlobInfo(uint32_t& checksum, uint64_t& timestamp) {
+        presetsLock.Lock();
+        GetUpdateBlobInfoInternal(checksum, timestamp);
+        presetsLock.Unlock();
+    }
 
   private:
 
     void ReplaceMap(std::istringstream& stream);
 
+    void ReplaceUpdatesList(std::istringstream& stream);
+
     LSFResponseCode SetDefaultLampStateInternal(LampState& state);
 
     PresetMap presets;
+    std::set<LSFString> presetUpdates;    /**< List of PresetIDs that were updated */
     Mutex presetsLock;
     SceneManager* sceneManagerPtr;
     size_t blobLength;
 
     std::string GetString(const PresetMap& items);
+    std::string GetUpdatesString(const std::set<LSFString>& updates);
     std::string GetString(const std::string& name, const std::string& id, const LampState& preset);
 };
 

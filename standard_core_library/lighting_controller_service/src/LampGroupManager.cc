@@ -36,6 +36,7 @@ LampGroupManager::LampGroupManager(ControllerService& controllerSvc, LampManager
 {
     QCC_DbgTrace(("%s", __func__));
     lampGroups.clear();
+    lampGroupUpdates.clear();
 }
 
 LSFResponseCode LampGroupManager::GetAllLampGroups(LampGroupMap& lampGroupMap)
@@ -81,6 +82,7 @@ LSFResponseCode LampGroupManager::Reset(void)
          * Clear the LampGroups
          */
         lampGroups.clear();
+        lampGroupUpdates.clear();
         blobLength = 0;
 
         ScheduleFileWrite();
@@ -328,7 +330,11 @@ void LampGroupManager::CreateLampGroup(Message& message)
         if (ER_OK == status) {
             if (lampGroups.size() < OEM_CS_MAX_SUPPORTED_NUM_LSF_ENTITY) {
                 std::string newGroupStr = GetString(name, lampGroupID, lampGroup);
-                size_t newlen = blobLength + newGroupStr.length();
+                /*
+                 * We have to add the lampGroupID length because we need to store
+                 * the IDs of the updated lamp groups to the updates file
+                 */
+                size_t newlen = blobLength + newGroupStr.length() + lampGroupID.length();
                 if (newlen < MAX_FILE_LEN) {
                     blobLength = newlen;
                     lampGroups[lampGroupID].first = name;
@@ -409,6 +415,9 @@ void LampGroupManager::UpdateLampGroup(Message& message)
                     blobLength = newlen;
                     it->second.second = lampGroup;
                     responseCode = LSF_OK;
+                    if (lampGroupUpdates.find(lampGroupID) == lampGroupUpdates.end()) {
+                        lampGroupUpdates.insert(lampGroupID);
+                    }
                     updated = true;
                     ScheduleFileWrite();
                 } else {
@@ -466,9 +475,12 @@ void LampGroupManager::DeleteLampGroup(Message& message)
         if (ER_OK == status) {
             LampGroupMap::iterator it = lampGroups.find(lampGroupId);
             if (it != lampGroups.end()) {
-                blobLength -= GetString(it->second.first, lampGroupId, it->second.second).length();
+                blobLength -= ((GetString(it->second.first, lampGroupId, it->second.second).length()) + lampGroupID.length());
 
                 lampGroups.erase(it);
+                if (lampGroupUpdates.find(lampGroupID) != lampGroupUpdates.end()) {
+                    lampGroupUpdates.erase(lampGroupID);
+                }
                 deleted = true;
                 ScheduleFileWrite();
             } else {
@@ -979,6 +991,11 @@ void LampGroupManager::ReadSavedData()
 
     blobLength = stream.str().size();
     ReplaceMap(stream);
+
+    std::istringstream updateStream;
+    if (ValidateUpdateFileAndRead(updateStream)) {
+        ReplaceUpdatesList(updateStream);
+    }
 }
 
 void LampGroupManager::ReplaceMap(std::istringstream& stream)
@@ -1002,6 +1019,7 @@ void LampGroupManager::ReplaceMap(std::istringstream& stream)
                     lampGroups.clear();
                     firstIteration = false;
                 }
+                blobLength += id.length();
                 LampGroup group;
                 do {
                     token = ParseString(stream);
@@ -1019,6 +1037,30 @@ void LampGroupManager::ReplaceMap(std::istringstream& stream)
 
                 std::pair<LSFString, LampGroup> thePair(name, group);
                 lampGroups[id] = thePair;
+            }
+        }
+    }
+}
+
+void LampGroupManager::ReplaceUpdatesList(std::istringstream& stream)
+{
+    QCC_DbgTrace(("%s", __func__));
+    bool firstIteration = true;
+    while (!stream.eof()) {
+        std::string id = ParseString(stream);
+        if (0 == strcmp(id.c_str(), resetID.c_str())) {
+            QCC_DbgPrintf(("The file has a reset entry. Clearing the list"));
+            lampGroupUpdates.clear();
+        } else if (0 == strcmp(id.c_str(), initialStateID.c_str())) {
+            QCC_DbgPrintf(("The file has a initialState entry. So we ignore it"));
+        } else {
+            if (firstIteration) {
+                lampGroupUpdates.clear();
+                firstIteration = false;
+            }
+            if (!id.empty()) {
+                lampGroupUpdates.insert(id);
+                QCC_DbgPrintf(("%s: Add %s to updates list", __func__, id.c_str()));
             }
         }
     }
@@ -1074,18 +1116,43 @@ std::string LampGroupManager::GetString(const LampGroupMap& items)
     return stream.str();
 }
 
-bool LampGroupManager::GetString(std::string& output, uint32_t& checksum, uint64_t& timestamp)
+std::string LampGroupManager::GetUpdatesString(const std::set<LSFString>& updates)
+{
+    QCC_DbgTrace(("%s", __func__));
+    std::ostringstream stream;
+    if (0 == updates.size()) {
+        if (initialState) {
+            QCC_DbgPrintf(("%s: This is the initial state entry", __func__));
+            stream << initialStateID << std::endl;
+        } else {
+            QCC_DbgPrintf(("%s: File is being reset", __func__));
+            stream << resetID << std::endl;
+        }
+    } else {
+        for (std::set<LSFString>::const_iterator it = updates.begin(); it != updates.end(); ++it) {
+            stream << *it << std::endl;
+        }
+    }
+
+    return stream.str();
+}
+
+bool LampGroupManager::GetString(std::string& output, std::string& updates, uint32_t& checksum, uint64_t& timestamp, uint32_t& updatesChksum, uint64_t& updatesTs)
 {
     QCC_DbgTrace(("%s", __func__));
     LampGroupMap mapCopy;
     mapCopy.clear();
+    std::set<LSFString> updatesCopy;
+    updatesCopy.clear();
     bool ret = false;
     output.clear();
+    updates.clear();
 
     lampGroupsLock.Lock();
     // we can't hold this lock for the entire time!
     if (updated) {
         mapCopy = lampGroups;
+        updatesCopy = lampGroupUpdates;
         updated = false;
         ret = true;
     }
@@ -1093,19 +1160,25 @@ bool LampGroupManager::GetString(std::string& output, uint32_t& checksum, uint64
 
     if (ret) {
         output = GetString(mapCopy);
+        updates = GetUpdatesString(updatesCopy);
         lampGroupsLock.Lock();
         if (blobUpdateCycle) {
             checksum = checkSum;
+            updatesChksum = updatesCheckSum;
             timestamp = timeStamp;
+            updatesTs = updatesTimeStamp;
             blobUpdateCycle = false;
         } else {
             if (initialState) {
                 timeStamp = timestamp = 0UL;
+                updatesTimeStamp = updatesTs = 0UL;
                 initialState = false;
             } else {
                 timeStamp = timestamp = GetTimestampInMs();
+                updatesTimeStamp = updatesTs = GetTimestampInMs();
             }
             checkSum = checksum = GetChecksum(output);
+            updatesCheckSum = updatesChksum = GetChecksum(updates);
         }
         lampGroupsLock.Unlock();
     }
@@ -1128,20 +1201,38 @@ void LampGroupManager::HandleReceivedBlob(const std::string& blob, uint32_t chec
     lampGroupsLock.Unlock();
 }
 
+void LampGroupManager::HandleReceivedUpdateBlob(const std::string& blob, uint32_t checksum, uint64_t timestamp)
+{
+    QCC_DbgPrintf(("%s", __func__));
+    uint64_t currentTimestamp = GetTimestampInMs();
+    lampGroupsLock.Lock();
+    if (((updatesTimeStamp == 0) || ((currentTimestamp - updatesTimeStamp) > timestamp)) && (updatesCheckSum != checksum)) {
+        std::istringstream stream(blob.c_str());
+        ReplaceUpdatesList(stream);
+        updatesTimeStamp = currentTimestamp;
+        updatesCheckSum = checksum;
+        ScheduleFileWrite(true);
+    }
+    lampGroupsLock.Unlock();
+}
+
 void LampGroupManager::ReadWriteFile()
 {
     QCC_DbgPrintf(("%s", __func__));
 
-    if (filePath.empty()) {
+    if (filePath.empty() || updateFilePath.empty()) {
         return;
     }
 
     std::string output;
     uint32_t checksum;
     uint64_t timestamp;
+    std::string updates;
+    uint32_t updateChecksum;
+    uint64_t updateTimestamp;
     bool status = false;
 
-    status = GetString(output, checksum, timestamp);
+    status = GetString(output, updates, checksum, timestamp, updateChecksum, updateTimestamp);
 
     if (status) {
         WriteFileWithChecksumAndTimestamp(output, checksum, timestamp);
@@ -1149,33 +1240,52 @@ void LampGroupManager::ReadWriteFile()
             uint64_t currentTime = GetTimestampInMs();
             controllerService.SendBlobUpdate(LSF_LAMP_GROUP, output, checksum, (currentTime - timestamp));
         }
+
+        WriteUpdatesFileWithChecksumAndTimestamp(updates, updateChecksum, updateTimestamp);
+        if (updateTimestamp != 0UL) {
+            uint64_t currentTime = GetTimestampInMs();
+            controllerService.SendBlobUpdate(LSF_LAMP_GROUP_UPDATE, updates, updateChecksum, (currentTime - updateTimestamp));
+        }
     }
 
     std::list<ajn::Message> tempMessageList;
+    std::list<ajn::Message> tempUpdateMessageList;
 
     readMutex.Lock();
     if (read) {
         tempMessageList = readBlobMessages;
         readBlobMessages.clear();
+        tempUpdateMessageList = readUpdateBlobMessages;
+        readUpdateBlobMessages.clear();
         read = false;
     }
     readMutex.Unlock();
 
-    if ((tempMessageList.size() || sendUpdate) && !status) {
+    if ((tempMessageList.size() || tempUpdateMessageList.size() || sendUpdate) && !status) {
         std::istringstream stream;
-        status = ValidateFileAndReadInternal(checksum, timestamp, stream);
-        if (status) {
+        bool fileStatus = ValidateFileAndReadInternal(checksum, timestamp, stream);
+        if (fileStatus) {
             output = stream.str();
+            while (!tempMessageList.empty()) {
+                uint64_t currentTime = GetTimestampInMs();
+                controllerService.SendGetBlobReply(tempMessageList.front(), LSF_LAMP_GROUP, output, checksum, (currentTime - timestamp));
+                tempMessageList.pop_front();
+            }
         } else {
             QCC_LogError(ER_FAIL, ("%s: Lamp Group persistent store corrupted", __func__));
         }
-    }
 
-    if (status) {
-        while (!tempMessageList.empty()) {
-            uint64_t currentTime = GetTimestampInMs();
-            controllerService.SendGetBlobReply(tempMessageList.front(), LSF_LAMP_GROUP, output, checksum, (currentTime - timestamp));
-            tempMessageList.pop_front();
+        std::istringstream updateStream;
+        bool updateStatus = ValidateUpdateFileAndReadInternal(updateChecksum, updateTimestamp, updateStream);
+        if (updateStatus) {
+            updates = updateStream.str();
+            while (!tempUpdateMessageList.empty()) {
+                uint64_t currentTime = GetTimestampInMs();
+                controllerService.SendGetBlobReply(tempUpdateMessageList.front(), LSF_LAMP_GROUP_UPDATE, updates, updateChecksum, (currentTime - updateTimestamp));
+                tempUpdateMessageList.pop_front();
+            }
+        } else {
+            QCC_LogError(ER_FAIL, ("%s: Lamp Group Update persistent store corrupted", __func__));
         }
     }
 
@@ -1183,6 +1293,7 @@ void LampGroupManager::ReadWriteFile()
         sendUpdate = false;
         uint64_t currentTime = GetTimestampInMs();
         controllerService.GetLeaderElectionObj().SendBlobUpdate(LSF_LAMP_GROUP, output, checksum, (currentTime - timestamp));
+        controllerService.GetLeaderElectionObj().SendBlobUpdate(LSF_LAMP_GROUP_UPDATE, updates, updateChecksum, (currentTime - updateTimestamp));
     }
 }
 

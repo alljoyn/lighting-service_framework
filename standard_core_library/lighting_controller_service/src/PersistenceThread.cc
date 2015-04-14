@@ -49,6 +49,7 @@ void PersistenceThread::Run()
             service.GetSceneManager().ReadWriteFile();
             service.GetTransitionEffectManager().ReadWriteFile();
             service.GetPulseEffectManager().ReadWriteFile();
+            service.GetUnknownBlobGroupManager().ReadWriteFile();
         }
     }
     QCC_DbgPrintf(("%s: Exited", __func__));
