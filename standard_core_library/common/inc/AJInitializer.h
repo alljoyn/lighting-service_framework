@@ -1,13 +1,3 @@
-#ifndef LSF_FILE_PARSER_H
-#define LSF_FILE_PARSER_H
-/**
- * \ingroup ControllerService
- */
-/**
- * @file
- * This file provides definitions for file parser
- */
-
 /******************************************************************************
  * Copyright AllSeen Alliance. All rights reserved.
  *
@@ -24,44 +14,40 @@
  *    OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  ******************************************************************************/
 
-#include <string>
-#include <iostream>
-#include <fstream>
-#include <LSFTypes.h>
-#include "LSFNamespaceSpecifier.h"
+#ifndef AJINITIALIZER_H_
+#define AJINITIALIZER_H_
 
-namespace lsf {
-
-OPTIONAL_NAMESPACE_CONTROLLER_SERVICE
-
-extern const std::string resetID;
-
-extern const std::string initialStateID;
-
-void ParseLampState(std::istream& stream, LampState& state);
+#include <alljoyn/Status.h>
 
 /**
- * Read a string from the stream.  Spaces will be included between double-quotes
- *
- * @param stream    The stream
- * @return          The next token in the stream
+ * class AJInitializer
+ * Utility class for handling AllJoyn lifecycle methods
  */
-std::string ParseString(std::istream& stream);
+class AJInitializer {
+  public:
+    /**
+     * Calls AllJoynInit(). If bundled router is enabled it also calls AllJoynRouterInit()
+     * @return ER_OK if initialization succeeded
+     */
+    QStatus Initialize();
 
-template <typename T>
-T ParseValue(std::istream& stream)
-{
-    T t;
-    stream >> t;
-    return t;
-}
+    /**
+     * ~AJInitializer
+     * Calls AllJoynRouterShutdown() if bundled router is enabled and then calls AllJoynShutdown()
+     */
+    ~AJInitializer();
+};
 
-std::ostream& WriteValue(std::ostream& stream, const std::string& name);
+/**
+* class AJInitWrapper
+* Utility class wrapping AJInitializer functionality into a no-arg constructor
+*/
+class AJInitWrapper {
+    public:
+        AJInitializer ajInit;
 
-std::ostream& WriteString(std::ostream& stream, const std::string& name);
+        AJInitWrapper();
+};
 
-OPTIONAL_NAMESPACE_CLOSE
+#endif /* AJINITIALIZER_H_ */
 
-} //lsf
-
-#endif

@@ -256,10 +256,6 @@ void LeaderElectionObject::OnGetBlobReply(ajn::Message& message, void* context)
                 controller.GetPresetManager().HandleReceivedBlob(args[1].v_string.str, args[2].v_uint32, args[3].v_uint64);
                 break;
 
-            case LSF_MASTER_SCENE:
-                controller.GetMasterSceneManager().HandleReceivedBlob(args[1].v_string.str, args[2].v_uint32, args[3].v_uint64);
-                break;
-
             case LSF_LAMP_GROUP:
                 controller.GetLampGroupManager().HandleReceivedBlob(args[1].v_string.str, args[2].v_uint32, args[3].v_uint64);
                 break;
@@ -268,12 +264,23 @@ void LeaderElectionObject::OnGetBlobReply(ajn::Message& message, void* context)
                 controller.GetSceneManager().HandleReceivedBlob(args[1].v_string.str, args[2].v_uint32, args[3].v_uint64);
                 break;
 
+            case LSF_MASTER_SCENE:
+                controller.GetMasterSceneManager().HandleReceivedBlob(args[1].v_string.str, args[2].v_uint32, args[3].v_uint64);
+                break;
+
             case LSF_TRANSITION_EFFECT:
                 controller.GetTransitionEffectManager().HandleReceivedBlob(args[1].v_string.str, args[2].v_uint32, args[3].v_uint64);
                 break;
 
             case LSF_PULSE_EFFECT:
                 controller.GetPulseEffectManager().HandleReceivedBlob(args[1].v_string.str, args[2].v_uint32, args[3].v_uint64);
+                break;
+
+            case LSF_SCENE_ELEMENT:
+                controller.GetSceneElementManager().HandleReceivedBlob(args[1].v_string.str, args[2].v_uint32, args[3].v_uint64);
+                break;
+
+            case LSF_BLOB_TYPE_LAST_VALUE:
                 break;
             }
         }
@@ -342,10 +349,6 @@ void LeaderElectionObject::OnGetChecksumAndModificationTimestampReply(ajn::Messa
                 controller.GetPresetManager().GetBlobInfo(myChecksum, myTimestamp);
                 break;
 
-            case LSF_MASTER_SCENE:
-                controller.GetMasterSceneManager().GetBlobInfo(myChecksum, myTimestamp);
-                break;
-
             case LSF_LAMP_GROUP:
                 controller.GetLampGroupManager().GetBlobInfo(myChecksum, myTimestamp);
                 break;
@@ -354,12 +357,20 @@ void LeaderElectionObject::OnGetChecksumAndModificationTimestampReply(ajn::Messa
                 controller.GetSceneManager().GetBlobInfo(myChecksum, myTimestamp);
                 break;
 
+            case LSF_MASTER_SCENE:
+                controller.GetMasterSceneManager().GetBlobInfo(myChecksum, myTimestamp);
+                break;
+
             case LSF_TRANSITION_EFFECT:
                 controller.GetTransitionEffectManager().GetBlobInfo(myChecksum, myTimestamp);
                 break;
 
             case LSF_PULSE_EFFECT:
                 controller.GetPulseEffectManager().GetBlobInfo(myChecksum, myTimestamp);
+                break;
+
+            case LSF_SCENE_ELEMENT:
+                controller.GetSceneElementManager().GetBlobInfo(myChecksum, myTimestamp);
                 break;
 
             case LSF_BLOB_TYPE_LAST_VALUE:

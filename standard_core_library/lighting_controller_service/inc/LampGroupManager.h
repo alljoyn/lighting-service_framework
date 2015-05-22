@@ -27,9 +27,11 @@
 #ifdef LSF_BINDINGS
 #include <lsf/controllerservice/Manager.h>
 #include <lsf/controllerservice/LampManager.h>
+#include <lsf/controllerservice/SceneElementManager.h>
 #else
 #include <Manager.h>
 #include <LampManager.h>
+#include <SceneElementManager.h>
 #endif
 
 #include <LSFTypes.h>
@@ -60,7 +62,7 @@ class LampGroupManager : public Manager {
     /**
      * LampGroupManager constructor
      */
-    LampGroupManager(ControllerService& controllerSvc, LampManager& lampMgr, SceneManager* sceneMgrPtr, const std::string& lampGroupFile);
+    LampGroupManager(ControllerService& controllerSvc, LampManager& lampMgr, SceneManager* sceneMgrPtr, SceneElementManager* sceneElementMgrPtr, const std::string& lampGroupFile);
     /**
      * Clear all lamp groups from LampGroupManager. \n
      * sends signal to the controller client 'org.allseen.LSF.ControllerService.LampGroup' 'LampGroupsDeleted' indicating all the deleted groups. \n
@@ -261,6 +263,7 @@ class LampGroupManager : public Manager {
     Mutex lampGroupsLock;                               /**< lamp groups lock */
     LampManager& lampManager;                           /**< lamp manager */
     SceneManager* sceneManagerPtr;                      /**< scene manager pointer */
+    SceneElementManager* sceneElementManagerPtr;        /**< scene element manager pointer */
     size_t blobLength;                                  /**< blob length */
     /**
      * get lamp group string

@@ -44,6 +44,7 @@ namespace lsf {
 
 OPTIONAL_NAMESPACE_CONTROLLER_SERVICE
 
+class LampGroupManager;
 class MasterSceneManager;
 class SceneObject;
 /**
@@ -57,14 +58,14 @@ class SceneManager : public Manager {
     /**
      * SceneManager CTOR
      */
-    SceneManager(ControllerService& controllerSvc, LampGroupManager& lampGroupMgr, MasterSceneManager* masterSceneMgr, const std::string& sceneFile);
+    SceneManager(ControllerService& controllerSvc, LampGroupManager& lampGroupMgr, SceneElementManager* sceneElementMgr, MasterSceneManager* masterSceneMgr, const std::string& sceneFile);
     /**
-     * UnregsiterSceneEventActionObjects. \n
+     * UnregisterSceneEventActionObjects. \n
      * The method is called during controller service stop(). \n
      * Deletes all SceneObject instances. \n
      * No event and action is possible after this method.
      */
-    void UnregsiterSceneEventActionObjects(void);
+    void UnregisterSceneEventActionObjects(void);
     /**
      * Clearing all scenes.
      * @return
@@ -159,6 +160,23 @@ class SceneManager : public Manager {
         CreateSceneInternal(message);
     }
     /**
+     * Create Scene with SceneElements and sending signal 'ScenesCreated' \n
+     * @param message (type Message) with 3 message arguments as parameters (type ajn::MsgArg). \n
+     * The arguments should have the following types: \n
+     *      LSFStringList (list of SceneElement IDs)\n
+     *      LSFString (name of the Scene)\n
+     *      LSFString (language code for the name of the Scene)\n
+     *
+     * Return asynchronous reply with response code: \n
+     *  LSF_OK - operation succeeded \n
+     *  LSF_ERR_INVALID_ARGS - Language not supported, scene name is empty, Invalid Scene components specified, ame length exceeds \n
+     *  LSF_ERR_RESOURCES - Could not allocate memory \n
+     *  LSF_ERR_NO_SLOT - No slot for new Scene
+     */
+    void CreateSceneWithSceneElements(ajn::Message& message) {
+        CreateSceneInternal(message, true);
+    }
+    /**
      * Modify an existing scene and then sending signal 'ScenesUpdated' \n
      * @param message (type Message) with 4 message arguments as parameters (type ajn::MsgArg). \n
      * The arguments should have the following types: \n
@@ -169,6 +187,16 @@ class SceneManager : public Manager {
      */
     void UpdateScene(ajn::Message& message) {
         UpdateSceneInternal(message);
+    }
+    /**
+     * Modify an existing scene with SceneElements and then sending signal 'ScenesUpdated' \n
+     * @param message (type Message) with 2 message arguments as parameters (type ajn::MsgArg). \n
+     * The arguments should have the following types: \n
+     *      LSFString (ID of the Scene to modify)\n
+     *      LSFStringList (updated list of SceneElement IDs)\n
+     */
+    void UpdateSceneWithSceneElements(ajn::Message& message) {
+        UpdateSceneInternal(message, true);
     }
     /**
      * Get Scene. - reply asynchronously with scene content: \n
@@ -182,6 +210,16 @@ class SceneManager : public Manager {
      */
     void GetScene(ajn::Message& message) {
         GetSceneInternal(message);
+    }
+    /**
+     * Get Scene with SceneElements - reply asynchronously with scene content: \n
+     *      LSFStringList (list of SceneElement IDs)\n
+     * @param message type Message contains MsgArg with parameter unique id (type 's') \n
+     *  return LSF_OK \n
+     *  return LSF_ERR_NOT_FOUND - scene not found
+     */
+    void GetSceneWithSceneElements(ajn::Message& message) {
+        GetSceneInternal(message, true);
     }
     /**
      * Apply Scene. \n
@@ -264,11 +302,13 @@ class SceneManager : public Manager {
     SceneObjectMap scenes;
     Mutex scenesLock;
     LampGroupManager& lampGroupManager;
+    SceneElementManager* sceneElementManager;
     MasterSceneManager* masterSceneManager;
     size_t blobLength;
 
     std::string GetString(const SceneObjectMap& items);
     std::string GetString(const std::string& name, const std::string& id, const Scene& scene);
+    std::string GetString(const std::string& name, const std::string& id, const SceneWithSceneElements& sceneWithSceneElements);
 
     void GetAllSceneIDsInternal(ajn::Message& message, bool isSceneElement = false);
     void GetSceneNameInternal(ajn::Message& message, bool isSceneElement = false);
@@ -297,7 +337,7 @@ class SceneObject : public BusObject, public Translator {
      * @param tempScene
      * @param name  The scene name
      */
-    SceneObject(SceneManager& sceneMgr, LSFString& sceneid, Scene& tempScene, LSFString& name);
+    SceneObject(SceneManager& sceneMgr, LSFString& sceneid, Scene& tempScene, SceneWithSceneElements& tempSceneWithSceneElements, bool hasElements, LSFString& name);
     /**
      * SceneObject DTOR
      */
@@ -337,10 +377,48 @@ class SceneObject : public BusObject, public Translator {
      * BusObject override member
      */
     void ObjectRegistered(void);
+    /**
+     * Check if this scene object depends on specific present
+     * @param presetID - the preset id
+     * @return LSF_OK if there is not dependency \n
+     *         LSF_ERR_DEPENDENCY if there is dependency
+     */
+    LSFResponseCode IsDependentOnPreset(LSFString& presetID) {
+        return hasElements ? sceneWithSceneElements.IsDependentOnPreset(presetID) : scene.IsDependentOnPreset(presetID);
+    }
+    /**
+     * Check if this scene object depends on specific lamp group
+     * @param lampGroupID - the lamp group id
+     * @return LSF_OK if there is not dependency \n
+     *         LSF_ERR_DEPENDENCY if there is dependency
+     */
+    LSFResponseCode IsDependentOnLampGroup(LSFString& lampGroupID) {
+        return hasElements ? sceneWithSceneElements.IsDependentOnLampGroup(lampGroupID) : scene.IsDependentOnLampGroup(lampGroupID);
+    }
+    /**
+     * Check if this scene object depends on specific transition effect
+     * @param transitionEffectID - the transition effect id
+     * @return LSF_OK if there is not dependency \n
+     *         LSF_ERR_DEPENDENCY if there is dependency
+     */
+    LSFResponseCode IsDependentOnTransitionEffect(LSFString& transitionEffectID) {
+        return hasElements && sceneWithSceneElements.IsDependentOnTransitionEffect(transitionEffectID) ? LSF_ERR_DEPENDENCY : LSF_OK;
+    }
+    /**
+     * Check if this scene object depends on specific pulse effect
+     * @param pulseEffectID - the pulse effect id
+     * @return LSF_OK if there is not dependency \n
+     *         LSF_ERR_DEPENDENCY if there is dependency
+     */
+    LSFResponseCode IsDependentOnPulseEffect(LSFString& pulseEffectID) {
+        return hasElements && sceneWithSceneElements.IsDependentOnPulseEffect(pulseEffectID) ? LSF_ERR_DEPENDENCY : LSF_OK;
+    }
 
     SceneManager& sceneManager;         /**< Scene manager reference count */
     LSFString sceneId;                  /**< Scene id */
-    Scene scene;                        /**< Scene object */
+    Scene scene;                        /**< Scene object with embedded elements */
+    SceneWithSceneElements sceneWithSceneElements; /**< Scene object with referenced elements */
+    bool hasElements;                   /**< Which scene data structure is populated */
     Mutex sceneNameMutex;               /**< Scene name mutex */
     LSFString sceneName;                /**< Scene name */
     const InterfaceDescription::Member* appliedSceneMember;          /**< applied scene signal */

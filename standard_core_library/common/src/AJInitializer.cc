@@ -1,13 +1,3 @@
-#ifndef LSF_FILE_PARSER_H
-#define LSF_FILE_PARSER_H
-/**
- * \ingroup ControllerService
- */
-/**
- * @file
- * This file provides definitions for file parser
- */
-
 /******************************************************************************
  * Copyright AllSeen Alliance. All rights reserved.
  *
@@ -24,44 +14,34 @@
  *    OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  ******************************************************************************/
 
-#include <string>
-#include <iostream>
-#include <fstream>
-#include <LSFTypes.h>
-#include "LSFNamespaceSpecifier.h"
+#include "AJInitializer.h"
+#include <alljoyn/Init.h>
 
-namespace lsf {
-
-OPTIONAL_NAMESPACE_CONTROLLER_SERVICE
-
-extern const std::string resetID;
-
-extern const std::string initialStateID;
-
-void ParseLampState(std::istream& stream, LampState& state);
-
-/**
- * Read a string from the stream.  Spaces will be included between double-quotes
- *
- * @param stream    The stream
- * @return          The next token in the stream
- */
-std::string ParseString(std::istream& stream);
-
-template <typename T>
-T ParseValue(std::istream& stream)
+QStatus AJInitializer::Initialize()
 {
-    T t;
-    stream >> t;
-    return t;
+    QStatus status = AllJoynInit();
+    if (status != ER_OK) {
+        return status;
+    }
+#ifdef ROUTER
+    status = AllJoynRouterInit();
+    if (status != ER_OK) {
+        AllJoynShutdown();
+        return status;
+    }
+#endif
+    return status;
 }
 
-std::ostream& WriteValue(std::ostream& stream, const std::string& name);
-
-std::ostream& WriteString(std::ostream& stream, const std::string& name);
-
-OPTIONAL_NAMESPACE_CLOSE
-
-} //lsf
-
+AJInitializer::~AJInitializer()
+{
+#ifdef ROUTER
+    AllJoynRouterShutdown();
 #endif
+    AllJoynShutdown();
+}
+
+AJInitWrapper::AJInitWrapper() {
+    ajInit.Initialize();
+}
+

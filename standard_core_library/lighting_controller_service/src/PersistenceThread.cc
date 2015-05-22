@@ -56,6 +56,7 @@ void PersistenceThread::Run()
             service.GetLampGroupManager().ReadWriteFile();
             service.GetMasterSceneManager().ReadWriteFile();
             service.GetPresetManager().ReadWriteFile();
+            service.GetSceneElementManager().ReadWriteFile();
             service.GetSceneManager().ReadWriteFile();
             service.GetTransitionEffectManager().ReadWriteFile();
             service.GetPulseEffectManager().ReadWriteFile();

@@ -25,8 +25,12 @@
 
 #ifdef LSF_BINDINGS
 #include <lsf/controllerservice/Manager.h>
+#include <lsf/controllerservice/TransitionEffectManager.h>
+#include <lsf/controllerservice/PulseEffectManager.h>
 #else
 #include <Manager.h>
+#include <TransitionEffectManager.h>
+#include <PulseEffectManager.h>
 #endif
 
 #include <Mutex.h>
@@ -45,13 +49,31 @@ class SceneManager;
 /**
  * sceneElement management class
  */
-class SceneElementManager {
+class SceneElementManager : public Manager {
+
     friend class SceneManager;
+
   public:
     /**
      * SceneElementManager CTOR
      */
-    SceneElementManager(SceneManager* sceneMgr);
+    SceneElementManager(ControllerService& controllerSvc, TransitionEffectManager* transistionEffectMgr, PulseEffectManager* pulseEffectMgr, const std::string& sceneElementFile);
+    /**
+     * SceneElementManager DTOR
+     */
+    ~SceneElementManager() { }
+    /**
+     * Clear all scene elements from the SceneElementManager. \n
+     * sends signal to the controller client 'org.allseen.LSF.ControllerService.SceneElement' 'SceneElementsDeleted' indicating all the deleted scene elements. \n
+     * @return LSF_OK on success
+     */
+    LSFResponseCode Reset(void);
+    /**
+     * Is Dependent On Lamp Group - is there a scene element that depends on the specified group. \n
+     * @param lampGroupID - lamp group unique identifier
+     * @return LSF_OK if not depend
+     */
+    LSFResponseCode IsDependentOnLampGroup(LSFString& lampGroupID);
     /**
      * Get All SceneElement IDs. \n
      * Return asynchronous reply with response code: \n
@@ -131,6 +153,13 @@ class SceneElementManager {
      */
     void ApplySceneElement(ajn::Message& message);
     /**
+     * Apply multiple SceneElements. \n
+     * @param sceneElementIDs list of scene element IDs to apply \n
+     * @return LSF_OK on success
+     *  LSF_ERR_NOT_FOUND - sceneElement id not found in current list of sceneElements
+     */
+    LSFResponseCode ApplySceneElementInternal(ajn::Message& message, LSFStringList& sceneElementIDs);
+    /**
      * Get All SceneElements. \n
      * Return asynchronous answer - the all sceneElements by its reference parameter \n
      * @param sceneElementMap of type SceneElementMap - reference of sceneElementMap to get all sceneElements \n
@@ -138,15 +167,59 @@ class SceneElementManager {
      */
     LSFResponseCode GetAllSceneElements(SceneElementMap& sceneElementMap);
     /**
-     * Get the version of the sceneElement inerface. \n
+     * Update persistent data
+     */
+    void ReadWriteFile();
+    /**
+     * Read Saved Data from persistent data
+     */
+    void ReadSavedData();
+    /**
+     * Get Blob Info about checksum and timestamp
+     */
+    void GetBlobInfo(uint32_t& checksum, uint64_t& timestamp) {
+        sceneElementsLock.Lock();
+        GetBlobInfoInternal(checksum, timestamp);
+        sceneElementsLock.Unlock();
+    }
+    /**
+     * Handle Received Blob
+     */
+    void HandleReceivedBlob(const std::string& blob, uint32_t checksum, uint64_t timestamp);
+    /**
+     * Get the version of the sceneElement interface. \n
      * Return asynchronously. \n
-     * @return version of the sceneElement inerface
+     * @return version of the sceneElement itnerface
      */
     uint32_t GetControllerServiceSceneElementInterfaceVersion(void);
 
-  private:
+  protected:
 
-    SceneManager* sceneManager;
+    SceneElementMap sceneElements;
+    Mutex sceneElementsLock;
+    TransitionEffectManager* transitionEffectManagerPtr;
+    PulseEffectManager* pulseEffectManagerPtr;
+    size_t blobLength;
+
+    /**
+     * Replace Map
+     */
+    void ReplaceMap(std::istringstream& stream);
+
+    /**
+     * Get String
+     */
+    virtual bool GetString(std::string& output, uint32_t& checksum, uint64_t& timestamp);
+
+    /**
+     * get scene element string
+     */
+    std::string GetString(const SceneElementMap& items);
+
+    /**
+     * get scene element string
+     */
+    std::string GetString(const std::string& name, const std::string& id, const SceneElement& sceneElement);
 };
 
 OPTIONAL_NAMESPACE_CLOSE

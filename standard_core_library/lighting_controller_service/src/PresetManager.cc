@@ -613,7 +613,7 @@ void PresetManager::SetDefaultLampState(Message& msg)
             responseCode = LSF_OK;
         }
 
-        controllerService.SendMethodReplyWithUint32Value(msg, (uint32_t &)responseCode);
+        controllerService.SendMethodReplyWithUint32Value(msg, (uint32_t)responseCode);
     }
 }
 

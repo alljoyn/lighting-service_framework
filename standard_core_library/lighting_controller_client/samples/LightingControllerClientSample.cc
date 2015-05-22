@@ -18,9 +18,12 @@
 #include <LampManager.h>
 #include <LampGroupManager.h>
 #include <PresetManager.h>
+#include <TransitionEffectManager.h>
+#include <SceneElementManager.h>
 #include <SceneManager.h>
 #include <MasterSceneManager.h>
 #include <ControllerServiceManager.h>
+#include <AJInitializer.h>
 
 #include <qcc/StringUtil.h>
 #include <alljoyn/BusAttachment.h>
@@ -34,13 +37,14 @@ using namespace ajn;
 
 #define QCC_MODULE "SAMPLE"
 
-bool connectedToControllerService = false;
-bool gotReply = false;
-bool gotSignal = false;
+volatile bool connectedToControllerService = false;
+volatile bool gotReply = false;
+volatile bool gotSignal = false;
 
 LSFStringList lampList;
 LSFStringList lampGroupList;
 LSFStringList presetList;
+LSFStringList allSceneElementIDs;
 LSFStringList sceneList;
 uint8_t lampIndex = 0;
 uint8_t lampGroupIndex = 0;
@@ -882,11 +886,63 @@ class PresetManagerCallbackHandler : public PresetManagerCallback {
     }
 };
 
+class TransitionEffectManagerCallbackHandler : public TransitionEffectManagerCallback {
+	 //TODO-IMPL
+};
+
+class SceneElementManagerCallbackHandler : public SceneElementManagerCallback {
+    void GetAllSceneElementIDsReplyCB(const LSFResponseCode& responseCode, const LSFStringList& sceneElementIDs) {
+        printf("\n%s(): responseCode = %s", __func__, LSFResponseCodeText(responseCode));
+        allSceneElementIDs = sceneElementIDs;
+        if (responseCode == LSF_OK) {
+            LSFStringList::const_iterator it = sceneElementIDs.begin();
+            uint8_t count = 1;
+            for (; it != sceneElementIDs.end(); ++it) {
+                printf("\n(%d)%s", count, (*it).c_str());
+                count++;
+            }
+            printf("\n");
+        }
+        gotReply = true;
+    }
+
+    void GetSceneElementReplyCB(const LSFResponseCode& responseCode, const LSFString& sceneElementID, const SceneElement& sceneElement) {
+        printf("\n%s(): responseCode = %s, sceneElementID=%s\n", __func__, LSFResponseCodeText(responseCode), sceneElementID.c_str());
+        if (responseCode == LSF_OK) {
+            printf("\nsceneElement=%s", sceneElement.c_str());
+        }
+        gotReply = true;
+        if (numRepliesToWait) {
+            numRepliesToWait--;
+        }
+    }
+
+    void ApplySceneElementReplyCB(const LSFResponseCode& responseCode, const LSFString& sceneElementID) {
+        printf("\n%s(): responseCode = %s, sceneElementID=%s\n", __func__, LSFResponseCodeText(responseCode), sceneElementID.c_str());
+        gotReply = true;
+        if (LSF_OK != responseCode) {
+            gotSignal = true;
+        }
+    }
+
+};
+
 class SceneManagerCallbackHandler : public SceneManagerCallback {
     void GetSceneReplyCB(const LSFResponseCode& responseCode, const LSFString& sceneID, const Scene& scene) {
         printf("\n%s(): responseCode = %s, sceneID=%s\n", __func__, LSFResponseCodeText(responseCode), sceneID.c_str());
         if (responseCode == LSF_OK) {
             printf("\nscene=%s", scene.c_str());
+        }
+        gotReply = true;
+        if (numRepliesToWait) {
+            numRepliesToWait--;
+        }
+    }
+
+    void GetSceneWithSceneElementsReplyCB(const LSFResponseCode& responseCode, const LSFString& sceneID, const SceneWithSceneElements& sceneWithSceneElements) {
+        printf("\n%s(): responseCode = %s, sceneID=%s\n", __func__, LSFResponseCodeText(responseCode), sceneID.c_str());
+        if (responseCode == LSF_OK) {
+            printf("\nsceneWithSceneElements=%s", sceneWithSceneElements.c_str());
         }
         gotReply = true;
         if (numRepliesToWait) {
@@ -946,6 +1002,18 @@ class SceneManagerCallbackHandler : public SceneManagerCallback {
         printf("\n%s: responseCode=%s\n", __func__, LSFResponseCodeText(responseCode));
         if (LSF_OK == responseCode) {
             printf("sceneID=%s\n", sceneID.c_str());
+            sceneList.push_back(sceneID);
+        } else {
+            gotSignal = true;
+        }
+        gotReply = true;
+    }
+
+    void CreateSceneWithSceneElementsReplyCB(const LSFResponseCode& responseCode, const LSFString& sceneID, const uint32_t& trackingID) {
+        printf("\n%s: responseCode=%s\n", __func__, LSFResponseCodeText(responseCode));
+        if (LSF_OK == responseCode) {
+            printf("sceneID=%s\n", sceneID.c_str());
+            printf("trackingID=%d\n", trackingID);
             sceneList.push_back(sceneID);
         } else {
             gotSignal = true;
@@ -1243,10 +1311,24 @@ void PrintHelp() {
     printf("(87):  GetMasterSceneDataSet\n");
     printf("(88):  Stop\n");
     printf("(89):  Start\n");
+    printf("(90):  CreateTransitionEffect               name\n");
+    printf("(91):  CreateSceneElement                   name effectID lampID\n");
+    printf("(92):  GetAllSceneElementIDs\n");
+    printf("(93):  GetSceneElement                      sceneElementID\n");
+    printf("(94):  ApplySceneElement                    sceneElementID\n");
+    printf("(95):  CreateSceneWithSceneElements         [name [sceneElementID ...]]\n");
+    printf("(96):  UpdateSceneWithSceneElements         sceneID [sceneElementID ...]\n");
+    printf("(97):  GetSceneWithSceneElements            sceneID\n");
 }
 
 int main()
 {
+    AJInitializer ajInit;
+    if (ajInit.Initialize() != ER_OK) {
+        printf("Failed to initialize AllJoyn\n");
+        return -1;
+    }
+
     bool waitForReply = false;
     bool waitForSignal = false;
     bool unrecognizedCommand = false;
@@ -1260,6 +1342,8 @@ int main()
     LampManagerCallbackHandler lampManagerCBHandler;
     LampGroupManagerCallbackHandler lampGroupManagerCBHandler;
     PresetManagerCallbackHandler presetManagerCBHandler;
+    TransitionEffectManagerCallbackHandler transitionEffectManagerCBHandler;
+    SceneElementManagerCallbackHandler sceneElementManagerCBHandler;
     SceneManagerCallbackHandler sceneManagerCBHandler;
     MasterSceneManagerCallbackHandler masterSceneManagerCBHandler;
 
@@ -1268,6 +1352,8 @@ int main()
     LampManager lampManager(client, lampManagerCBHandler);
     LampGroupManager lampGroupManager(client, lampGroupManagerCBHandler);
     PresetManager presetManager(client, presetManagerCBHandler);
+    TransitionEffectManager transitionEffectManager(client, transitionEffectManagerCBHandler);
+    SceneElementManager sceneElementManager(client, sceneElementManagerCBHandler);
     SceneManager sceneManager(client, sceneManagerCBHandler);
     MasterSceneManager masterSceneManager(client, masterSceneManagerCBHandler);
 
@@ -2008,6 +2094,121 @@ int main()
                 printf("\nInvoking Start()");
                 status = client.Start();
                 printf("\nController Client Start() returned %s\n", ControllerClientStatusText(status));
+            } else if (cmd == "90") {
+                // printf("(90):  CreateTransitionEffect               name\n");
+                printf("\nInvoking CreateTransitionEffect(%s)", line.c_str());
+                uint32_t trackingID = 0;
+                LampState state(true, 2147483648, 2147483648, 2147483648, 2147483648);
+                uint32_t transitionPeriod = 5000;
+                String name = NextTok(line);
+
+                TransitionEffect transitionEffect(state, transitionPeriod);
+                status = transitionEffectManager.CreateTransitionEffect(trackingID, transitionEffect, name.c_str());
+                printf("\nCreateTransitionEffect() returned %s\n", ControllerClientStatusText(status));
+            } else if (cmd == "91") {
+                // printf("(91):  CreateSceneElement                   name effectID lampID\n");
+                printf("\nInvoking CreateSceneElement(%s)", line.c_str());
+                uint32_t trackingID = 0;
+                LSFStringList lamps;
+                LSFStringList lampGroups;
+                String name = NextTok(line);
+                String effectId = NextTok(line);
+                String lampId = NextTok(line);
+
+                lamps.clear();
+                lamps.push_back(lampId.c_str());
+
+                lampGroups.clear();
+
+                SceneElement sceneElement(lamps, lampGroups, effectId.c_str());
+                status = sceneElementManager.CreateSceneElement(trackingID, sceneElement, name.c_str());
+                printf("\nCreateSceneElement() returned %s\n", ControllerClientStatusText(status));
+            } else if (cmd == "92") {
+                // printf("(92):  GetAllSceneElementIDs\n");
+                printf("\nInvoking GetAllSceneElementIDs()\n");
+                status = sceneElementManager.GetAllSceneElementIDs();
+                printf("GetAllSceneElementIDs() returned %s\n", ControllerClientStatusText(status));
+                waitForReply = true;
+            } else if (cmd == "93") {
+                // printf("(93):  GetSceneElement                      sceneElementID\n");
+                String uniqueId = NextTok(line);
+                printf("\nInvoking GetSceneElement(%s)\n", uniqueId.c_str());
+                status = sceneElementManager.GetSceneElement(uniqueId.c_str());
+                printf("GetSceneElement() returned %s\n", ControllerClientStatusText(status));
+                waitForReply = true;
+            } else if (cmd == "94") {
+                // printf("(94):  ApplySceneElement                    sceneElementID\n");
+                String uniqueId = NextTok(line);
+                printf("\nInvoking ApplySceneElement(%s)\n", uniqueId.c_str());
+                status = sceneElementManager.ApplySceneElement(uniqueId.c_str());
+                printf("ApplySceneElement() returned %s\n", ControllerClientStatusText(status));
+                waitForReply = true;
+                waitForSignal = true;
+            } else if (cmd == "95") {
+                // printf("(95):  CreateSceneWithSceneElements         [name [sceneElementID ...]]\n");
+                String sceneElementName = NextTok(line);
+                String sceneElementID = NextTok(line);
+
+                if (sceneElementName.empty()) {
+                    sceneElementName = String("SampleSceneWithSceneElements");
+                }
+
+                LSFStringList sceneElementIDs;
+                while (!sceneElementID.empty()) {
+                    sceneElementIDs.push_back(sceneElementID.c_str());
+                    sceneElementID = NextTok(line);
+                }
+
+                if (sceneElementIDs.empty()) {
+                    sceneElementIDs = allSceneElementIDs;
+                }
+
+                if (sceneElementIDs.empty()) {
+                    printf("\nYou need to call GetAllSceneElementIDs before making this call,\n");
+                    printf("or specify at least one scene element ID in the command.\n");
+                    return 0;
+                }
+
+                uint32_t trackingID = -1;
+                SceneWithSceneElements sceneWithSceneElements(sceneElementIDs);
+                printf("\nInvoking CreateSceneWithSceneElements(%s %s)\n", sceneElementName.c_str(), sceneWithSceneElements.c_str());
+                status = sceneManager.CreateSceneWithSceneElements(trackingID, sceneWithSceneElements, LSFString(sceneElementName.c_str()));
+                printf("CreateSceneWithSceneElements() tracking ID = %d, status = %s\n", trackingID, ControllerClientStatusText(status));
+                waitForReply = true;
+                waitForSignal = true;
+            } else if (cmd == "96") {
+                // printf("(96):  UpdateSceneWithSceneElements         sceneID [sceneElementID ...]\n");
+                String sceneID = NextTok(line);
+                String sceneElementID = NextTok(line);
+
+                LSFStringList sceneElementIDs;
+                while (!sceneElementID.empty()) {
+                    sceneElementIDs.push_back(sceneElementID.c_str());
+                    sceneElementID = NextTok(line);
+                }
+
+                if (sceneElementIDs.empty()) {
+                    sceneElementIDs = allSceneElementIDs;
+                }
+
+                if (sceneElementIDs.empty()) {
+                    printf("\nYou need to call GetAllSceneElementIDs before making this call,\n");
+                    printf("or specify at least one scene element ID in the command.\n");
+                    return 0;
+                }
+
+                SceneWithSceneElements sceneWithSceneElements(sceneElementIDs);
+                printf("\nInvoking UpdateSceneWithSceneElements(%s %s)\n", sceneID.c_str(), sceneWithSceneElements.c_str());
+                status = sceneManager.UpdateSceneWithSceneElements(LSFString(sceneID.c_str()), sceneWithSceneElements);
+                printf("UpdateSceneWithSceneElements() status = %s\n", ControllerClientStatusText(status));
+                waitForReply = true;
+                waitForSignal = true;
+            } else if (cmd == "97") {
+                // printf("(97):  GetSceneWithSceneElements            sceneID\n");
+                String sceneID = NextTok(line);
+                printf("\nInvoking GetSceneWithSceneElements(%s)\n", sceneID.c_str());
+                status = sceneManager.GetSceneWithSceneElements(sceneID.c_str());
+                waitForReply = true;
             } else if (cmd == "help") {
                 PrintHelp();
             } else if (cmd == "exit") {

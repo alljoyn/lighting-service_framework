@@ -25,7 +25,7 @@
  ******************************************************************************/
 
 #include <qcc/String.h>
-#import "LSFNamespaceSpecifier.h"
+#include "LSFNamespaceSpecifier.h"
 
 namespace lsf {
 

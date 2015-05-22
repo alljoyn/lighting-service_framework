@@ -1828,12 +1828,14 @@ LSFResponseCode MasterScene::IsDependentOnScene(LSFString& sceneID)
 
 SceneWithSceneElements::SceneWithSceneElements()
 {
+    QCC_DbgPrintf(("%s", __func__));
     sceneElements.clear();
     //QCC_DbgPrintf(("%s: %s", __func__, this->c_str()));
 }
 
 SceneWithSceneElements::SceneWithSceneElements(const ajn::MsgArg& sceneElementList)
 {
+    QCC_DbgPrintf(("%s", __func__));
     Set(sceneElementList);
     //QCC_DbgPrintf(("%s: %s", __func__, this->c_str()));
 }
@@ -1841,11 +1843,13 @@ SceneWithSceneElements::SceneWithSceneElements(const ajn::MsgArg& sceneElementLi
 SceneWithSceneElements::SceneWithSceneElements(LSFStringList sceneElementList) :
     sceneElements(sceneElementList)
 {
+    QCC_DbgPrintf(("%s", __func__));
     //QCC_DbgPrintf(("%s: %s", __func__, this->c_str()));
 }
 
 SceneWithSceneElements::SceneWithSceneElements(const SceneWithSceneElements& other)
 {
+    QCC_DbgPrintf(("%s", __func__));
     sceneElements.clear();
     sceneElements = other.sceneElements;
     //QCC_DbgPrintf(("%s: %s", __func__, this->c_str()));
@@ -1865,6 +1869,7 @@ const char* SceneWithSceneElements::c_str(void) const
 
 SceneWithSceneElements& SceneWithSceneElements::operator=(const SceneWithSceneElements& other)
 {
+    QCC_DbgPrintf(("%s", __func__));
     sceneElements.clear();
     sceneElements = other.sceneElements;
     //QCC_DbgPrintf(("%s: %s", __func__, this->c_str()));
@@ -1873,6 +1878,7 @@ SceneWithSceneElements& SceneWithSceneElements::operator=(const SceneWithSceneEl
 
 void SceneWithSceneElements::Set(const ajn::MsgArg& sceneElementList)
 {
+    QCC_DbgPrintf(("%s", __func__));
     sceneElements.clear();
 
     MsgArg* gidsArray;
@@ -1914,7 +1920,44 @@ LSFResponseCode SceneWithSceneElements::IsDependentOnSceneElement(LSFString& sce
     return responseCode;
 }
 
-SceneElement::SceneElement(LSFStringList& lampList, LSFStringList& lampGroupList, LSFString& effectId) :
+LSFResponseCode SceneWithSceneElements::IsDependentOnPreset(LSFString& presetID)
+{
+    QCC_DbgPrintf(("%s", __func__));
+    LSFResponseCode responseCode = LSF_OK;
+
+    //TODO-IMPL SceneWithSceneElements::IsDependentOnPreset
+    return responseCode;
+}
+
+LSFResponseCode SceneWithSceneElements::IsDependentOnLampGroup(LSFString& lampGroupID)
+{
+    QCC_DbgPrintf(("%s", __func__));
+    LSFResponseCode responseCode = LSF_OK;
+
+    //TODO-IMPL SceneWithSceneElements::IsDependentOnLampGroup
+    return responseCode;
+}
+
+LSFResponseCode SceneWithSceneElements::IsDependentOnTransitionEffect(LSFString& transitionEffectID)
+{
+    QCC_DbgPrintf(("%s", __func__));
+    LSFResponseCode responseCode = LSF_OK;
+
+    //TODO-IMPL SceneWithSceneElements::IsDependentOnTransitionEffect
+    return responseCode;
+}
+
+LSFResponseCode SceneWithSceneElements::IsDependentOnPulseEffect(LSFString& pulseEffectID)
+{
+    QCC_DbgPrintf(("%s", __func__));
+    LSFResponseCode responseCode = LSF_OK;
+
+    //TODO-IMPL SceneWithSceneElements::IsDependentOnPulseEffect
+    return responseCode;
+}
+
+
+SceneElement::SceneElement(const LSFStringList& lampList, const LSFStringList& lampGroupList, const LSFString& effectId) :
     lamps(lampList), lampGroups(lampGroupList), effectID(effectId), invalidArgs(false)
 {
     QCC_DbgPrintf(("%s", __func__));
@@ -1929,27 +1972,118 @@ SceneElement::SceneElement(const ajn::MsgArg& lampList, const ajn::MsgArg& lampG
 const char* SceneElement::c_str(void) const
 {
     QCC_DbgPrintf(("%s", __func__));
-    return "";
+
+    static qcc::String ret;
+    ret.clear();
+    ret = qcc::String("LampGroup::Lamps:") + qcc::String("\n");
+    for (LSFStringList::const_iterator it = lamps.begin(); it != lamps.end(); it++) {
+        ret += qcc::String((*it).c_str()) + qcc::String("\n");
+    }
+    ret += qcc::String("LampGroup::Lamp Groups:") + qcc::String("\n");
+    for (LSFStringList::const_iterator it = lampGroups.begin(); it != lampGroups.end(); it++) {
+        ret += qcc::String((*it).c_str()) + qcc::String("\n");
+    }
+
+    ret += qcc::String("LampGroup::Effect ID:") + qcc::String(effectID.c_str()) + qcc::String("\n");
+
+    return ret.c_str();
 }
 
 SceneElement::SceneElement(const SceneElement& other)
 {
     QCC_DbgPrintf(("%s", __func__));
+
+    *this = other;
 }
 
 SceneElement& SceneElement::operator=(const SceneElement& other)
 {
+    QCC_DbgPrintf(("%s", __func__));
+
+    lamps.clear();
+    lampGroups.clear();
+    effectID.clear();
+
+    lamps = other.lamps;
+    lampGroups = other.lampGroups;
+    effectID = other.effectID;
+
+    invalidArgs = false;
+
     return *this;
 }
 
-void SceneElement::Set(const ajn::MsgArg& lampState, const ajn::MsgArg& presetId, const ajn::MsgArg& transPeriod)
+void SceneElement::Set(const ajn::MsgArg& lampList, const ajn::MsgArg& lampGroupList, const ajn::MsgArg& effectId)
 {
+    QCC_DbgPrintf(("%s", __func__));
 
+    lamps.clear();
+    lampGroups.clear();
+    effectID.clear();
+
+    MsgArg* idsArray;
+    size_t idsSize;
+    lampList.Get("as", &idsSize, &idsArray);
+    CreateUniqueList(lamps, idsArray, idsSize);
+
+    MsgArg* gidsArray;
+    size_t gidsSize;
+    lampGroupList.Get("as", &gidsSize, &gidsArray);
+    CreateUniqueList(lampGroups, gidsArray, gidsSize);
+
+    const char* uniqueId;
+    effectId.Get("s", &uniqueId);
+
+    effectID = uniqueId;
+    invalidArgs = false;
 }
 
-void SceneElement::Get(ajn::MsgArg* lampState, ajn::MsgArg* presetId, ajn::MsgArg* transPeriod) const
+void SceneElement::Get(ajn::MsgArg* lampList, ajn::MsgArg* lampGroupList, ajn::MsgArg* effectId) const
 {
+    QCC_DbgPrintf(("%s", __func__));
+    size_t idsVecSize = lamps.size();
 
+    if (idsVecSize) {
+        const char** idsVec = new const char*[idsVecSize];
+        size_t i = 0;
+        for (LSFStringList::const_iterator it = lamps.begin(); it != lamps.end(); it++) {
+            idsVec[i++] = it->c_str();
+        }
+        lampList->Set("as", idsVecSize, idsVec);
+        delete [] idsVec;
+        lampList->SetOwnershipFlags(MsgArg::OwnsArgs);
+    } else {
+        lampList->Set("as", 0, NULL);
+    }
+
+    size_t gidsVecSize = lampGroups.size();
+    if (gidsVecSize) {
+        const char** gidsVec = new const char*[gidsVecSize];
+        size_t i = 0;
+        for (LSFStringList::const_iterator it = lampGroups.begin(); it != lampGroups.end(); it++) {
+            gidsVec[i++] = it->c_str();
+        }
+        lampGroupList->Set("as", gidsVecSize, gidsVec);
+        delete [] gidsVec;
+        lampGroupList->SetOwnershipFlags(MsgArg::OwnsArgs);
+    } else {
+        lampGroupList->Set("as", 0, NULL);
+    }
+
+    effectId->Set("s", effectID.c_str());
+}
+
+LSFResponseCode SceneElement::IsDependentOnLampGroup(LSFString& lampGroupID)
+{
+    QCC_DbgPrintf(("%s", __func__));
+    LSFResponseCode responseCode = LSF_OK;
+
+	LSFStringList::iterator findIt = std::find(lampGroups.begin(), lampGroups.end(), lampGroupID);
+	if (findIt != lampGroups.end()) {
+		responseCode = LSF_ERR_DEPENDENCY;
+	}
+
+	return responseCode;
 }
 
 }

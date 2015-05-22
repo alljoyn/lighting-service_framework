@@ -16,6 +16,14 @@ env.Append(CPPPATH = '$DISTDIR/config/inc');
 env.Append(CPPPATH = '$DISTDIR/services_common/inc');
 env.Append(CPPPATH = '$DISTDIR/notification/inc');
 
+# ASABASE-452, ASACORE-1419
+# Even though we have deprecated the About Service code the config service is
+# designed so a developer can use the deprecated AboutService or the new
+# About Feature code. So the config service can continue to support the deprecated
+# methods we must turn off the deprecated-declarations warning.
+if env['OS_GROUP'] == 'posix':
+    env.Append(CXXFLAGS = ['-Wno-deprecated-declarations'])
+
 # Build all the services
 env.SConscript('../../base/config/cpp/SConscript', {'config_env': env})
 env.SConscript('../../base/notification/cpp/SConscript', {'nsenv': env})
@@ -31,8 +39,8 @@ lsf_env.Append(LIBPATH = '$DISTDIR/notification/lib')
 lsf_env.Append(LIBPATH = '$DISTDIR/config/lib') 
 
 if lsf_env['BR'] == 'on' and lsf_env['OS'] != 'openwrt' :
-    bdFile = lsf_env.subst('$DISTDIR') + '/cpp/lib/BundledRouter.o'
-    lsf_env.Prepend(LIBS = [File(bdFile), 'ajrouter'])
+    lsf_env.Prepend(LIBS = ['ajrouter'])
+    lsf_env.Append(CPPDEFINES = ['ROUTER']);
 
 if lsf_env['OS'] == 'openwrt':
     lsf_env.AppendUnique(LIBS = [ 'stdc++', 'pthread'])

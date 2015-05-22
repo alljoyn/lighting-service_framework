@@ -280,6 +280,7 @@ typedef enum _LSFBlobType {
     LSF_MASTER_SCENE,         /**< Master Scene type */
     LSF_TRANSITION_EFFECT,    /**< Transition Effect type */
     LSF_PULSE_EFFECT,         /**< Pulse Effect type */
+    LSF_SCENE_ELEMENT,        /**< Scene Element type */
     LSF_BLOB_TYPE_LAST_VALUE  /**< Last value */
 } LSFBlobType;
 
@@ -760,7 +761,7 @@ class SceneElement {
      * @param lampGroupList List of Lamp Group IDs
      * @param effectID      Effect ID
      */
-    SceneElement(LSFStringList& lampList, LSFStringList& lampGroupList, LSFString& effectId);
+    SceneElement(const LSFStringList& lampList, const LSFStringList& lampGroupList, const LSFString& effectId);
 
     /**
      * Parameterized Constructor
@@ -770,6 +771,15 @@ class SceneElement {
      * @param effectID      Effect ID
      */
     SceneElement(const ajn::MsgArg& lampList, const ajn::MsgArg& lampGroupList, const ajn::MsgArg& effectId);
+
+    /**
+     * Destructor
+     */
+    ~SceneElement() {
+        lamps.clear();
+        lampGroups.clear();
+        effectID.clear();
+    }
 
     /**
      * Return the details of the SceneElement as a string
@@ -809,6 +819,14 @@ class SceneElement {
      * @param effectID      Effect ID
      */
     void Get(ajn::MsgArg* lampList, ajn::MsgArg* lampGroupList, ajn::MsgArg* effectId) const;
+
+    /**
+     * Check if there a scene element that depends on specific lamp group
+     * @param lampGroupID - the lamp group id
+     * @return LSF_OK if there is not dependency \n
+     *         LSF_ERR_DEPENDENCY if there is dependency
+     */
+    LSFResponseCode IsDependentOnLampGroup(LSFString& lampGroupID);
 
     /**
      * List of Lamps
@@ -1603,7 +1621,8 @@ class MasterScene {
 typedef std::map<LSFString, std::pair<LSFString, MasterScene> > MasterSceneMap;
 
 /**
- * class that manages the master scene
+ * The second type of scene object that consists solely of scene elements
+ * (referenced by their IDs).
  */
 class SceneWithSceneElements {
   public:
@@ -1644,9 +1663,37 @@ class SceneWithSceneElements {
      */
     void Get(ajn::MsgArg* sceneElementsList) const;
     /**
-     * is master scene dependent of scene
+     * is scene element dependent of scene
      */
     LSFResponseCode IsDependentOnSceneElement(LSFString& sceneElementID);
+    /**
+     * Check if this scene depends on specific present
+     * @param presetID - the preset id
+     * @return LSF_OK if there is not dependency \n
+     *         LSF_ERR_DEPENDENCY if there is dependency
+     */
+    LSFResponseCode IsDependentOnPreset(LSFString& presetID);
+    /**
+     * Check if this scene depends on specific lamp group
+     * @param lampGroupID - the lamp group id
+     * @return LSF_OK if there is not dependency \n
+     *         LSF_ERR_DEPENDENCY if there is dependency
+     */
+    LSFResponseCode IsDependentOnLampGroup(LSFString& lampGroupID);
+    /**
+     * Check if this scene depends on specific transition effect
+     * @param transitionEffectID - the transition effect id
+     * @return LSF_OK if there is not dependency \n
+     *         LSF_ERR_DEPENDENCY if there is dependency
+     */
+    LSFResponseCode IsDependentOnTransitionEffect(LSFString& transitionEffectID);
+    /**
+     * Check if this scene depends on specific pulse effect
+     * @param pulseEffectID - the pulse effect id
+     * @return LSF_OK if there is not dependency \n
+     *         LSF_ERR_DEPENDENCY if there is dependency
+     */
+    LSFResponseCode IsDependentOnPulseEffect(LSFString& pulseEffectID);
 
     /**
      * list of scenes

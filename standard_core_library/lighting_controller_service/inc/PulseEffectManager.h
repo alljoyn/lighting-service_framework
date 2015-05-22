@@ -25,10 +25,8 @@
 
 #ifdef LSF_BINDINGS
 #include <lsf/controllerservice/Manager.h>
-#include <lsf/controllerservice/LampGroupManager.h>
 #else
 #include <Manager.h>
-#include <LampGroupManager.h>
 #endif
 
 #include <Mutex.h>
@@ -42,6 +40,7 @@ namespace lsf {
 
 OPTIONAL_NAMESPACE_CONTROLLER_SERVICE
 
+class LampGroupManager;
 class SceneManager;
 /**
  * class manages the pulse effect of the lamps. \n
@@ -126,6 +125,13 @@ class PulseEffectManager : public Manager {
      *      LSF_ERR_NOT_FOUND - pulse effect/lamp group with requested id is not found. \n
      */
     void ApplyPulseEffectOnLampGroups(ajn::Message& msg);
+    /**
+     * Apply the specified pulseEffect on the specified lamps and lamp groups. \n
+     * @param msg type Message that caused this call. \n
+     * response code LSF_OK on success. \n
+     *      LSF_ERR_NOT_FOUND - no target lamps were found. \n
+     */
+    LSFResponseCode ApplyPulseEffectInternal(Message& msg, PulseEffect& pulseEffect, LSFStringList& lamps, LSFStringList& lampGroups, bool sceneElementOperation = false);
     /**
      * Delete existing pulseEffect. \n
      * @param msg type Message with MsgArgs: pulse effect id. \n

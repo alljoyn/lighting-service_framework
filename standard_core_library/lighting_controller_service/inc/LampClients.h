@@ -43,7 +43,7 @@
 #include <string>
 #include <map>
 #include <vector>
-#import "LSFNamespaceSpecifier.h"
+#include "LSFNamespaceSpecifier.h"
 
 #define INITIAL_PASSCODE "000000"
 

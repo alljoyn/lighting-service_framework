@@ -193,7 +193,7 @@ class SceneManagerCallback {
      * @param sceneID The id of the scene
      * @param scene   Scene Data
      */
-    virtual void GetSceneWithSceneElementsReplyCB(const LSFResponseCode& responseCode, const LSFString& sceneID, const SceneWithSceneElements& scene) { }
+    virtual void GetSceneWithSceneElementsReplyCB(const LSFResponseCode& responseCode, const LSFString& sceneID, const SceneWithSceneElements& sceneWithSceneElements) { }
 
     /**
      * Response to SceneManager::ApplyScene.
@@ -320,7 +320,7 @@ class SceneManager : public Manager {
      * @param sceneID           The id of the scene to modify
      * @param scene             Scene Data
      */
-    ControllerClientStatus UpdateSceneWithSceneElements(const LSFString& sceneID, const SceneWithSceneElements& scene);
+    ControllerClientStatus UpdateSceneWithSceneElements(const LSFString& sceneID, const SceneWithSceneElements& sceneWithSceneElements);
 
     /**
      * Delete an existing scene. \n
@@ -357,18 +357,18 @@ class SceneManager : public Manager {
 
     /**
      * Get the Scene Info and Name. \n
-     * Combination of GetScene and GetScneneName. Responses are accordingly. \n
+     * Combination of GetScene and GetSceneName. Responses are accordingly. \n
      *
-     * @param sceneID    The ID of the master scene
+     * @param sceneID    The ID of the scene
      * @param language   The requested language
      */
     ControllerClientStatus GetSceneDataSet(const LSFString& sceneID, const LSFString& language = LSFString("en"));
 
     /**
      * Get the Scene Info and Name. \n
-     * Combination of GetScene and GetScneneName. Responses are accordingly. \n
+     * Combination of GetSceneWithSceneElements and GetSceneName. Responses are accordingly. \n
      *
-     * @param sceneID    The ID of the master scene
+     * @param sceneID    The ID of the scene
      * @param language   The requested language
      */
     ControllerClientStatus GetSceneWithSceneElementsDataSet(const LSFString& sceneID, const LSFString& language = LSFString("en"));

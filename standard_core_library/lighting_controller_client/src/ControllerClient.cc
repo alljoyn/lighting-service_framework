@@ -19,7 +19,7 @@
 #include <qcc/Debug.h>
 
 #include <ControllerClient.h>
-#include <AllJoynStd.h>
+#include <alljoyn/AllJoynStd.h>
 #include <alljoyn/AboutDataListener.h>
 
 using namespace qcc;
@@ -1382,7 +1382,9 @@ void ControllerClient::AddMethodHandlers()
         AddMethodReplyWithResponseCodeIDAndNameHandler("SetSceneName", sceneManagerPtr, &SceneManager::SetSceneNameReply);
         AddMethodReplyWithResponseCodeAndIDHandler("CreateScene", sceneManagerPtr, &SceneManager::CreateSceneReply);
         AddMethodReplyWithResponseCodeIDAndTrackingIDHandler("CreateScene", sceneManagerPtr, &SceneManager::CreateSceneWithTrackingReply);
+        AddMethodReplyWithResponseCodeIDAndTrackingIDHandler("CreateSceneWithSceneElements", sceneManagerPtr, &SceneManager::CreateSceneWithSceneElementsReply);
         AddMethodReplyWithResponseCodeAndIDHandler("UpdateScene", sceneManagerPtr, &SceneManager::UpdateSceneReply);
+        AddMethodReplyWithResponseCodeAndIDHandler("UpdateSceneWithSceneElements", sceneManagerPtr, &SceneManager::UpdateSceneWithSceneElementsReply);
         AddMethodReplyWithResponseCodeAndIDHandler("DeleteScene", sceneManagerPtr, &SceneManager::DeleteSceneReply);
         AddMethodReplyWithResponseCodeAndIDHandler("ApplyScene", sceneManagerPtr, &SceneManager::ApplySceneReply);
     }

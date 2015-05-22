@@ -34,7 +34,7 @@
 #endif
 
 #include <Rank.h>
-#import "LSFNamespaceSpecifier.h"
+#include "LSFNamespaceSpecifier.h"
 
 namespace lsf {
 

@@ -470,22 +470,7 @@ void PulseEffectManager::ApplyPulseEffectOnLamps(Message& msg)
         args[1].Get("as", &idsSize, &idsArray);
         CreateUniqueList(lamps, idsArray, idsSize);
 
-        TransitionLampsLampGroupsToStateList transitionToStateComponent;
-        TransitionLampsLampGroupsToPresetList transitionToPresetComponent;
-        PulseLampsLampGroupsWithStateList pulseWithStateComponent;
-        PulseLampsLampGroupsWithPresetList pulseWithPresetComponent;
-
-        if (pulseEffect.fromState.nullState) {
-            PulseLampsLampGroupsWithPreset component(lamps, lampGroups, pulseEffect.fromPreset, pulseEffect.toPreset, pulseEffect.pulsePeriod, pulseEffect.pulseDuration, pulseEffect.numPulses);
-            pulseWithPresetComponent.push_back(component);
-        } else {
-            PulseLampsLampGroupsWithState component(lamps, lampGroups, pulseEffect.fromState, pulseEffect.toState, pulseEffect.pulsePeriod, pulseEffect.pulseDuration, pulseEffect.numPulses);
-            pulseWithStateComponent.push_back(component);
-        }
-
-        responseCode = lampGroupManagerPtr->ChangeLampGroupStateAndField(msg, transitionToStateComponent, transitionToPresetComponent,
-                                                                         pulseWithStateComponent, pulseWithPresetComponent,
-                                                                         false, false, LSFString(), true);
+        responseCode = ApplyPulseEffectInternal(msg, pulseEffect, lamps, lampGroups);
     }
 
     if (LSF_ERR_NOT_FOUND == responseCode) {
@@ -526,27 +511,32 @@ void PulseEffectManager::ApplyPulseEffectOnLampGroups(Message& msg)
         args[1].Get("as", &idsSize, &idsArray);
         CreateUniqueList(lampGroups, idsArray, idsSize);
 
-        TransitionLampsLampGroupsToStateList transitionToStateComponent;
-        TransitionLampsLampGroupsToPresetList transitionToPresetComponent;
-        PulseLampsLampGroupsWithStateList pulseWithStateComponent;
-        PulseLampsLampGroupsWithPresetList pulseWithPresetComponent;
-
-        if (pulseEffect.fromState.nullState) {
-            PulseLampsLampGroupsWithPreset component(lamps, lampGroups, pulseEffect.fromPreset, pulseEffect.toPreset, pulseEffect.pulsePeriod, pulseEffect.pulseDuration, pulseEffect.numPulses);
-            pulseWithPresetComponent.push_back(component);
-        } else {
-            PulseLampsLampGroupsWithState component(lamps, lampGroups, pulseEffect.fromState, pulseEffect.toState, pulseEffect.pulsePeriod, pulseEffect.pulseDuration, pulseEffect.numPulses);
-            pulseWithStateComponent.push_back(component);
-        }
-
-        responseCode = lampGroupManagerPtr->ChangeLampGroupStateAndField(msg, transitionToStateComponent, transitionToPresetComponent,
-                                                                         pulseWithStateComponent, pulseWithPresetComponent,
-                                                                         false, false, LSFString(), true);
+        responseCode = ApplyPulseEffectInternal(msg, pulseEffect, lamps, lampGroups);
     }
 
     if (LSF_ERR_NOT_FOUND == responseCode) {
         controllerService.SendMethodReplyWithResponseCodeAndID(msg, responseCode, pulseEffectID);
     }
+}
+
+LSFResponseCode PulseEffectManager::ApplyPulseEffectInternal(Message& msg, PulseEffect& pulseEffect, LSFStringList& lamps, LSFStringList& lampGroups, bool sceneElementOperation)
+{
+    TransitionLampsLampGroupsToStateList transitionToStateComponent;
+    TransitionLampsLampGroupsToPresetList transitionToPresetComponent;
+    PulseLampsLampGroupsWithStateList pulseWithStateComponent;
+    PulseLampsLampGroupsWithPresetList pulseWithPresetComponent;
+
+    if (pulseEffect.fromState.nullState) {
+        PulseLampsLampGroupsWithPreset component(lamps, lampGroups, pulseEffect.fromPreset, pulseEffect.toPreset, pulseEffect.pulsePeriod, pulseEffect.pulseDuration, pulseEffect.numPulses);
+        pulseWithPresetComponent.push_back(component);
+    } else {
+        PulseLampsLampGroupsWithState component(lamps, lampGroups, pulseEffect.fromState, pulseEffect.toState, pulseEffect.pulsePeriod, pulseEffect.pulseDuration, pulseEffect.numPulses);
+        pulseWithStateComponent.push_back(component);
+    }
+
+    return lampGroupManagerPtr->ChangeLampGroupStateAndField(msg, transitionToStateComponent, transitionToPresetComponent,
+															 pulseWithStateComponent, pulseWithPresetComponent,
+															 sceneElementOperation, false, LSFString(), !sceneElementOperation);
 }
 
 void PulseEffectManager::DeletePulseEffect(Message& msg)

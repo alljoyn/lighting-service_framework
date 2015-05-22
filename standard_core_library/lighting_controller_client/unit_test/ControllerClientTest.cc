@@ -28,6 +28,7 @@
 #include <alljoyn/BusAttachment.h>
 #include <alljoyn/ProxyBusObject.h>
 #include <qcc/Debug.h>
+#include <AJInitializer.h>
 
 /* Header files included for Google Test Framework */
 #include <gtest/gtest.h>
@@ -1575,9 +1576,11 @@ class MasterSceneManagerCallbackHandler : public MasterSceneManagerCallback {
 
 class ControllerClientTest : public testing::Test {
   public:
+    AJInitWrapper ajInit;
     BusAttachment bus;
 
-    ControllerClientTest() : bus("LSFUnitTest", true),
+    ControllerClientTest() : ajInit(),
+        bus("LSFUnitTest", true),
         controllerClientCBHandler(),
         controllerServiceManagerCBHandler(),
         lampManagerCBHandler(),

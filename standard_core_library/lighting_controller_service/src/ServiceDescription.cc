@@ -656,6 +656,31 @@ const std::string ControllerServiceSceneDescription =
     "  </interface>"
     "</node>";
 
+const std::string ControllerServiceSceneWithSceneElementsDescription =
+    "<node>"
+    "  <interface name='org.allseen.LSF.ControllerService.SceneWithSceneElements'>"
+    "    <method name='CreateSceneWithSceneElements'>"
+    "      <arg name='sceneElementIDs' type='as' direction='in'/>"
+    "      <arg name='sceneName' type='s' direction='in'/>"
+    "      <arg name='language' type='s' direction='in'/>"
+    "      <arg name='responseCode' type='u' direction='out'/>"
+    "      <arg name='sceneID' type='s' direction='out'/>"
+    "    </method>"
+    "    <method name='UpdateSceneWithSceneElements'>"
+    "      <arg name='sceneID' type='s' direction='in'/>"
+    "      <arg name='sceneElementIDs' type='as' direction='in'/>"
+    "      <arg name='responseCode' type='u' direction='out'/>"
+    "      <arg name='sceneID' type='s' direction='out'/>"
+    "    </method>"
+    "    <method name='GetSceneWithSceneElements'>"
+    "      <arg name='sceneID' type='s' direction='in'/>"
+    "      <arg name='responseCode' type='u' direction='out'/>"
+    "      <arg name='sceneID' type='s' direction='out'/>"
+    "      <arg name='sceneElementIDs' type='as' direction='out'/>"
+    "    </method>"
+    "  </interface>"
+    "</node>";
+
 const std::string ControllerServiceSceneElementDescription =
     "<node>"
     "  <interface name='org.allseen.LSF.ControllerService.SceneElement'>"

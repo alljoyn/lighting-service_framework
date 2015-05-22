@@ -83,7 +83,7 @@ ControllerClientStatus SceneElementManager::CreateSceneElement(uint32_t& trackin
                ControllerServiceSceneElementInterfaceName,
                "CreateSceneElement",
                args,
-               8);
+               5);
 }
 
 ControllerClientStatus SceneElementManager::UpdateSceneElement(const LSFString& sceneElementID, const SceneElement& sceneElement)
@@ -97,7 +97,7 @@ ControllerClientStatus SceneElementManager::UpdateSceneElement(const LSFString& 
                ControllerServiceSceneElementInterfaceName,
                "UpdateSceneElement",
                args,
-               7);
+               4);
 }
 
 ControllerClientStatus SceneElementManager::GetSceneElement(const LSFString& sceneElementID)

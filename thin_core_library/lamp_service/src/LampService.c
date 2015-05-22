@@ -305,6 +305,8 @@ static void CheckForStateChanged(void)
 #define UNMARSHAL_TIMEOUT  (1000 * 2)
 #define DEFAULT_TIMEOUT    (1000 * 5)
 
+#define HEARTBEAT_IDLE_TIMEOUT_INTERVAL 10
+#define HEARTBEAT_PROBE_TIMEOUT         4
 
 void LAMP_RunService(void)
 {
@@ -424,6 +426,8 @@ void LAMP_RunServiceWithCallback(uint32_t timeout, LampServiceCallback callback)
             if (connected == FALSE) {
                 continue;
             }
+
+            AJ_SetIdleTimeouts(&Bus, HEARTBEAT_IDLE_TIMEOUT_INTERVAL, HEARTBEAT_PROBE_TIMEOUT);
 
             AJ_BusSetPasswordCallback(&Bus, LAMP_PasswordCallback);
 

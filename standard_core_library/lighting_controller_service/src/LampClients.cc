@@ -192,7 +192,7 @@ QStatus LampClients::Start(const char* keyStoreFileLocation)
     QCC_DbgTrace(("%s", __func__));
 
     QCC_DbgPrintf(("%s: KeyStore location = %s", __func__, keyStoreFileLocation));
-    QStatus status = controllerService.GetBusAttachment().EnablePeerSecurity("ALLJOYN_PIN_KEYX ALLJOYN_ECDHE_PSK", &keyListener, keyStoreFileLocation);
+    QStatus status = controllerService.GetBusAttachment().EnablePeerSecurity("ALLJOYN_ECDHE_PSK", &keyListener, keyStoreFileLocation);
     QCC_DbgPrintf(("EnablePeerSecurity(): %s\n", QCC_StatusText(status)));
 
     if (ER_OK == status) {
@@ -789,7 +789,7 @@ void LampClients::ChangeLampState(const ajn::Message& inMsg, bool groupOperation
                 queuedCall->responseCounter.standardReplyArgs.push_back(MsgArg("s", transitionStateFieldParam.lamps.front().c_str()));
             }
 
-            if (!sceneOperation & !effectOperation) {
+            if (!sceneOperation && !effectOperation) {
                 queuedCall->responseCounter.standardReplyArgs.push_back(MsgArg("s", transitionStateFieldParam.field));
             }
 

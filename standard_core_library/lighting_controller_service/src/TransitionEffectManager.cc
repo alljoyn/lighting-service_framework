@@ -20,6 +20,7 @@
 #include <lsf/controllerservice/SceneManager.h>
 #include <lsf/controllerservice/OEM_CS_Config.h>
 #include <lsf/controllerservice/FileParser.h>
+#include <lsf/controllerservice/LampGroupManager.h>
 #else
 #include <TransitionEffectManager.h>
 #include <ControllerService.h>
@@ -527,26 +528,32 @@ void TransitionEffectManager::ApplyTransitionEffectOnLampGroups(Message& msg)
         args[1].Get("as", &idsSize, &idsArray);
         CreateUniqueList(lampGroups, idsArray, idsSize);
 
-        TransitionLampsLampGroupsToStateList transitionToStateComponent;
-        TransitionLampsLampGroupsToPresetList transitionToPresetComponent;
-        PulseLampsLampGroupsWithStateList pulseWithStateComponent;
-        PulseLampsLampGroupsWithPresetList pulseWithPresetComponent;
-
-        if (transitionEffect.state.nullState) {
-            TransitionLampsLampGroupsToPreset component(lamps, lampGroups, transitionEffect.presetID, transitionEffect.transitionPeriod);
-            transitionToPresetComponent.push_back(component);
-        } else {
-            TransitionLampsLampGroupsToState component(lamps, lampGroups, transitionEffect.state, transitionEffect.transitionPeriod);
-            transitionToStateComponent.push_back(component);
-        }
-
-        responseCode = lampGroupManagerPtr->ChangeLampGroupStateAndField(msg, transitionToStateComponent, transitionToPresetComponent, pulseWithStateComponent, pulseWithPresetComponent,
-                                                                         false, false, LSFString(), true);
+        responseCode = ApplyTransitionEffectInternal(msg, transitionEffect, lamps, lampGroups);
     }
 
     if (LSF_ERR_NOT_FOUND == responseCode) {
         controllerService.SendMethodReplyWithResponseCodeAndID(msg, responseCode, transitionEffectID);
     }
+}
+
+LSFResponseCode TransitionEffectManager::ApplyTransitionEffectInternal(Message& msg, TransitionEffect& transitionEffect, LSFStringList& lamps, LSFStringList& lampGroups, bool sceneElementOperation)
+{
+    TransitionLampsLampGroupsToStateList transitionToStateComponent;
+    TransitionLampsLampGroupsToPresetList transitionToPresetComponent;
+    PulseLampsLampGroupsWithStateList pulseWithStateComponent;
+    PulseLampsLampGroupsWithPresetList pulseWithPresetComponent;
+
+    if (transitionEffect.state.nullState) {
+        TransitionLampsLampGroupsToPreset component(lamps, lampGroups, transitionEffect.presetID, transitionEffect.transitionPeriod);
+        transitionToPresetComponent.push_back(component);
+    } else {
+        TransitionLampsLampGroupsToState component(lamps, lampGroups, transitionEffect.state, transitionEffect.transitionPeriod);
+        transitionToStateComponent.push_back(component);
+    }
+
+    return lampGroupManagerPtr->ChangeLampGroupStateAndField(msg, transitionToStateComponent, transitionToPresetComponent,
+                                                             pulseWithStateComponent, pulseWithPresetComponent,
+                                                             sceneElementOperation, false, LSFString(), !sceneElementOperation);
 }
 
 void TransitionEffectManager::DeleteTransitionEffect(Message& msg)

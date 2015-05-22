@@ -17,13 +17,18 @@
 #include <LSFAboutDataStore.h>
 #include <OEM_CS_Config.h>
 #include <qcc/Debug.h>
-#include <qcc/Util.h>
 #include <qcc/String.h>
 #include <alljoyn/services_common/GuidUtil.h>
 
 using namespace services;
 
+namespace qcc {
+	extern uint64_t Rand64();
+}
+
 namespace lsf {
+
+OPTIONAL_NAMESPACE_CONTROLLER_SERVICE
 
 #define QCC_MODULE "OEM_CS_CONFIG"
 
@@ -155,5 +160,7 @@ void OEM_CS_PopulateDefaultProperties(AboutData* aboutData)
 #endif
     aboutData->SetAppId(appId.c_str());
 }
+
+OPTIONAL_NAMESPACE_CLOSE
 
 }

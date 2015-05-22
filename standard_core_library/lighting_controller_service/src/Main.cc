@@ -24,6 +24,13 @@
 #include <fstream>
 #include <sstream>
 #include <OEM_CS_Config.h>
+#include <AJInitializer.h>
+
+#ifdef LSF_BINDINGS
+using namespace lsf::controllerservice;
+#else
+using namespace lsf;
+#endif
 
 #define QCC_MODULE "MAIN"
 
@@ -143,8 +150,11 @@ void lsf_Sleep(uint32_t msec)
 void RunService(bool listenToInterrupts)
 {
     QCC_DbgTrace(("%s", __func__));
+
     if (!storeLocation.empty()) {
-        chdir(storeLocation.c_str());
+        if (chdir(storeLocation.c_str())) {
+            QCC_LogError(ER_FAIL, ("%s: chdir() failed", __func__));
+        }
     }
 
     if (listenToInterrupts) {
@@ -153,8 +163,8 @@ void RunService(bool listenToInterrupts)
     }
 
 
-    lsf::ControllerServiceManager* controllerSvcManagerPtr =
-        new lsf::ControllerServiceManager(factoryConfigFilePath, configFilePath, lampGroupFilePath, presetFilePath, transitionEffectFilePath, pulseEffectFilePath, sceneElementFilePath, sceneFilePath, sceneWithSceneElementFilePath, masterSceneFilePath);
+    ControllerServiceManager* controllerSvcManagerPtr =
+        new ControllerServiceManager(factoryConfigFilePath, configFilePath, lampGroupFilePath, presetFilePath, transitionEffectFilePath, pulseEffectFilePath, sceneElementFilePath, sceneFilePath, sceneWithSceneElementFilePath, masterSceneFilePath);
 
     if (controllerSvcManagerPtr == NULL) {
         QCC_LogError(ER_OUT_OF_MEMORY, ("%s: Failed to start the Controller Service Manager", __func__));
@@ -221,6 +231,11 @@ void RunAndMonitor()
 
 int main(int argc, char** argv)
 {
+    AJInitializer ajInitializer;
+    if (ajInitializer.Initialize() != ER_OK) {
+        return -1;
+    }
+
     QCC_DbgTrace(("%s", __func__));
 
     parseCommandLine(argc, argv);

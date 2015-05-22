@@ -97,6 +97,7 @@ class ControllerService : public ajn::BusObject, public ajn::services::ConfigSer
      * @param configFile - path of config file
      * @param lampGroupFile - path of lamp group file
      * @param presetFile - path of preset file
+     * @param sceneElementsFile - path of scene elements file
      * @param sceneFile - path of scene file
      * @param masterSceneFile - path of master scene file
      */
@@ -140,6 +141,7 @@ class ControllerService : public ajn::BusObject, public ajn::services::ConfigSer
      * @param configFile - path of config file
      * @param lampGroupFile - path of lamp group file
      * @param presetFile - path of preset file
+     * @param sceneElementsFile - path of scene elements file
      * @param sceneFile - path of scene file
      * @param masterSceneFile - path of master scene file
      */
@@ -298,7 +300,7 @@ class ControllerService : public ajn::BusObject, public ajn::services::ConfigSer
      * @param msg      The method call message
      * @param value    The uint32_t value need to be sent
      */
-    void SendMethodReplyWithUint32Value(const ajn::Message& msg, uint32_t value);
+    void SendMethodReplyWithUint32Value(const ajn::Message& msg, const uint32_t value);
     /**
      * Send Method Reply With Response Code ID Language And Name \n
      * Reply for asynchronous method call that needs LSFResponseCode, ID, language and name \n

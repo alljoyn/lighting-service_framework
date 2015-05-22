@@ -44,8 +44,8 @@ using namespace controllerservice;
 #define QCC_MODULE "LAMP_GROUP_MANAGER"
 #endif
 
-LampGroupManager::LampGroupManager(ControllerService& controllerSvc, LampManager& lampMgr, SceneManager* sceneMgrPtr, const std::string& lampGroupFile) :
-    Manager(controllerSvc, lampGroupFile), lampManager(lampMgr), sceneManagerPtr(sceneMgrPtr), blobLength(0)
+LampGroupManager::LampGroupManager(ControllerService& controllerSvc, LampManager& lampMgr, SceneManager* sceneMgrPtr, SceneElementManager* sceneElementMgrPtr, const std::string& lampGroupFile) :
+    Manager(controllerSvc, lampGroupFile), lampManager(lampMgr), sceneManagerPtr(sceneMgrPtr), sceneElementManagerPtr(sceneElementMgrPtr), blobLength(0)
 {
     QCC_DbgTrace(("%s", __func__));
     lampGroups.clear();
@@ -144,6 +144,10 @@ LSFResponseCode LampGroupManager::IsDependentOnLampGroup(LSFString& lampGroupID)
 
     if (LSF_OK == responseCode) {
         responseCode = sceneManagerPtr->IsDependentOnLampGroup(lampGroupID);
+    }
+
+    if (LSF_OK == responseCode) {
+        responseCode = sceneElementManagerPtr->IsDependentOnLampGroup(lampGroupID);
     }
 
     return responseCode;
@@ -389,7 +393,7 @@ void LampGroupManager::UpdateLampGroup(Message& message)
     const MsgArg* args;
     message->GetArgs(numArgs, args);
 
-    if (controllerService.CheckNumArgsInMessage(numArgs, 3)  != LSF_OK) {
+    if (controllerService.CheckNumArgsInMessage(numArgs, 3) != LSF_OK) {
         return;
     }
 
