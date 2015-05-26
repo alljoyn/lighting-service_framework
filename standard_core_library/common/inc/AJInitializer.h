@@ -39,14 +39,14 @@ class AJInitializer {
 };
 
 /**
-* class AJInitWrapper
-* Utility class wrapping AJInitializer functionality into a no-arg constructor
-*/
+ * class AJInitWrapper
+ * Utility class wrapping AJInitializer functionality into a no-arg constructor
+ */
 class AJInitWrapper {
-    public:
-        AJInitializer ajInit;
+  public:
+    AJInitializer ajInit;
 
-        AJInitWrapper();
+    AJInitWrapper();
 };
 
 #endif /* AJINITIALIZER_H_ */

@@ -325,7 +325,7 @@ void SceneElementManager::CreateSceneElement(Message& message)
         responseCode = LSF_ERR_INVALID_ARGS;
     } else if (sceneElement.lamps.empty() && sceneElement.lampGroups.empty()) {
         QCC_LogError(ER_FAIL, ("%s: Empty Lamps and LampGroups list", __func__));
-           responseCode = LSF_ERR_INVALID_ARGS;
+        responseCode = LSF_ERR_INVALID_ARGS;
     } else if (sceneElement.effectID.empty()) {
         QCC_LogError(ER_FAIL, ("%s: effect ID is empty", __func__));
         responseCode = LSF_ERR_INVALID_ARGS;
@@ -340,7 +340,7 @@ void SceneElementManager::CreateSceneElement(Message& message)
                     sceneElements[sceneElementID].first = name;
                     sceneElements[sceneElementID].second = sceneElement;
                     created = true;
-                       ScheduleFileWrite();
+                    ScheduleFileWrite();
                 } else {
                     QCC_LogError(ER_FAIL, ("%s: blob too big: %d >= %d", __func__, newlen, MAX_FILE_LEN));
                     responseCode = LSF_ERR_RESOURCES;

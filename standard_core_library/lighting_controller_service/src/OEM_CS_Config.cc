@@ -23,7 +23,7 @@
 using namespace services;
 
 namespace qcc {
-	extern uint64_t Rand64();
+extern uint64_t Rand64();
 }
 
 namespace lsf {

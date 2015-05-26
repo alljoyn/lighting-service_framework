@@ -535,8 +535,8 @@ LSFResponseCode PulseEffectManager::ApplyPulseEffectInternal(Message& msg, Pulse
     }
 
     return lampGroupManagerPtr->ChangeLampGroupStateAndField(msg, transitionToStateComponent, transitionToPresetComponent,
-															 pulseWithStateComponent, pulseWithPresetComponent,
-															 sceneElementOperation, false, LSFString(), !sceneElementOperation);
+                                                             pulseWithStateComponent, pulseWithPresetComponent,
+                                                             sceneElementOperation, false, LSFString(), !sceneElementOperation);
 }
 
 void PulseEffectManager::DeletePulseEffect(Message& msg)

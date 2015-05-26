@@ -1683,7 +1683,7 @@ TEST_F(ControllerClientTest, Controller_Client_GetControllerServiceVersion) {
         sleep(2);
     }
 
-    uint32_t expectedVersion = 1;
+    uint32_t expectedVersion = 2;
     EXPECT_EQ(expectedVersion, controllerServiceManagerCBHandler.controllerServiceVersion);
 }
 

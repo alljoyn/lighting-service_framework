@@ -887,7 +887,7 @@ class PresetManagerCallbackHandler : public PresetManagerCallback {
 };
 
 class TransitionEffectManagerCallbackHandler : public TransitionEffectManagerCallback {
-	 //TODO-IMPL
+    //TODO-IMPL
 };
 
 class SceneElementManagerCallbackHandler : public SceneElementManagerCallback {
@@ -2098,7 +2098,7 @@ int main()
                 // printf("(90):  CreateTransitionEffect               name\n");
                 printf("\nInvoking CreateTransitionEffect(%s)", line.c_str());
                 uint32_t trackingID = 0;
-                LampState state(true, 2147483648, 2147483648, 2147483648, 2147483648);
+                LampState state(true, 2147483648u, 2147483648u, 2147483648u, 2147483648u);
                 uint32_t transitionPeriod = 5000;
                 String name = NextTok(line);
 

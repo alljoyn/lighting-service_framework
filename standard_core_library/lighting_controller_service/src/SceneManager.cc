@@ -928,11 +928,11 @@ LSFResponseCode SceneManager::ApplySceneNestedInternal(ajn::Message message, LSF
         while (scenesWithEmbeddedState.size()) {
             Scene scene = scenesWithEmbeddedState.front();
             for (TransitionLampsLampGroupsToStateList::iterator it = scene.transitionToStateComponent.begin(); it != scene.transitionToStateComponent.end();
-                    it++) {
+                 it++) {
                 transitionToStateComponent.push_back(*it);
             }
             for (TransitionLampsLampGroupsToPresetList::iterator it = scene.transitionToPresetComponent.begin(); it != scene.transitionToPresetComponent.end();
-                    it++) {
+                 it++) {
                 transitionToPresetComponent.push_back(*it);
             }
             for (PulseLampsLampGroupsWithStateList::iterator it = scene.pulseWithStateComponent.begin(); it != scene.pulseWithStateComponent.end(); it++) {

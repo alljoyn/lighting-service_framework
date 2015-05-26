@@ -39,20 +39,22 @@ static pid_t g_child_process = 0;
 static volatile sig_atomic_t g_running = true;
 static volatile sig_atomic_t isRunning = false;
 
-static void SigIntHandler(int sig)
+static void DoKill(int sig)
 {
     g_running = false;
     if (g_child_process) {
-        kill(g_child_process, SIGINT);
+        kill(g_child_process, sig);
     }
+}
+
+static void SigIntHandler(int sig)
+{
+    DoKill(SIGINT);
 }
 
 static void SigTermHandler(int sig)
 {
-    g_running = false;
-    if (g_child_process) {
-        kill(g_child_process, SIGTERM);
-    }
+    DoKill(SIGTERM);
 }
 
 static std::string factoryConfigFile = "OEMConfig.ini";
@@ -142,12 +144,12 @@ static void parseCommandLine(int argc, char** argv)
     }
 }
 
-void lsf_Sleep(uint32_t msec)
+static void lsf_Sleep(uint32_t msec)
 {
     usleep(1000 * msec);
 }
 
-void RunService(bool listenToInterrupts)
+static void RunService(bool listenToInterrupts)
 {
     QCC_DbgTrace(("%s", __func__));
 
@@ -195,7 +197,7 @@ void RunService(bool listenToInterrupts)
 }
 
 
-void RunAndMonitor()
+static void RunAndMonitor()
 {
     // we are a background process!
     if (disableBackgroundLogging) {
@@ -226,6 +228,15 @@ void RunAndMonitor()
             QCC_DbgPrintf(("%s: Exited child PID %d", __func__, pid));
             lsf_Sleep(1000);
         }
+    }
+}
+
+void ControllerServiceStop()
+{
+    DoKill(SIGINT);
+
+    while (isRunning) {
+        lsf_Sleep(1000);
     }
 }
 

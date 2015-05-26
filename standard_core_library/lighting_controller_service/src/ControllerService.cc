@@ -1077,9 +1077,18 @@ QStatus ControllerService::Restart()
     return ER_OK;
 }
 
-QStatus ControllerService::FactoryReset()
+QStatus ControllerService::FactoryReset(void)
 {
     QCC_DbgPrintf(("Factory Resetting\n"));
+
+    FactoryResetAPI();
+
+    return ER_OK;
+}
+
+LSFResponseCode ControllerService::FactoryResetAPI(void)
+{
+    QCC_DbgPrintf(("%s\n", __func__));
 
     // TODO: call FactoryReset on the OnboardingService
     obsObjectLock.Lock();
@@ -1099,7 +1108,8 @@ QStatus ControllerService::FactoryReset()
 
     // the main thread will shut us down soon
     isRunning = false;
-    return ER_OK;
+
+    return LSF_OK;
 }
 
 QStatus ControllerService::SetPassphrase(const char* daemonRealm, size_t passcodeSize, const char* passcode, ajn::SessionId sessionId)
@@ -1183,6 +1193,19 @@ void ControllerService::LightingResetControllerService(Message& msg)
 {
     QCC_DbgPrintf(("%s:%s", __func__, msg->ToString().c_str()));
 
+    LSFResponseCode responseCode = LightingResetAPI();
+
+    SendMethodReplyWithUint32Value(msg, (uint32_t)responseCode);
+
+    if (responseCode != LSF_ERR_FAILURE) {
+        SendSignalWithoutArg(ControllerServiceInterfaceName, "ControllerServiceLightingReset");
+    }
+}
+
+LSFResponseCode ControllerService::LightingResetAPI(void)
+{
+    QCC_DbgPrintf(("%s", __func__));
+
     LSFResponseCode responseCode = LSF_OK;
     uint8_t failure = 0;
     uint8_t numResets = 0;
@@ -1235,11 +1258,7 @@ void ControllerService::LightingResetControllerService(Message& msg)
         }
     }
 
-    SendMethodReplyWithUint32Value(msg, (uint32_t)responseCode);
-
-    if (responseCode != LSF_ERR_FAILURE) {
-        SendSignalWithoutArg(ControllerServiceInterfaceName, "ControllerServiceLightingReset");
-    }
+    return responseCode;
 }
 
 void ControllerService::GetControllerServiceVersion(Message& msg)

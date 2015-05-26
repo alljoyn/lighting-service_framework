@@ -2078,12 +2078,12 @@ LSFResponseCode SceneElement::IsDependentOnLampGroup(LSFString& lampGroupID)
     QCC_DbgPrintf(("%s", __func__));
     LSFResponseCode responseCode = LSF_OK;
 
-	LSFStringList::iterator findIt = std::find(lampGroups.begin(), lampGroups.end(), lampGroupID);
-	if (findIt != lampGroups.end()) {
-		responseCode = LSF_ERR_DEPENDENCY;
-	}
+    LSFStringList::iterator findIt = std::find(lampGroups.begin(), lampGroups.end(), lampGroupID);
+    if (findIt != lampGroups.end()) {
+        responseCode = LSF_ERR_DEPENDENCY;
+    }
 
-	return responseCode;
+    return responseCode;
 }
 
 }

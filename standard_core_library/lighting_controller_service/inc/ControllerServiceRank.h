@@ -78,7 +78,7 @@ OPTIONAL_NAMESPACE_CONTROLLER_SERVICE
 /**
  * Controller service version
  */
-        #define CONTROLLER_SERVICE_VERSION 1
+        #define CONTROLLER_SERVICE_VERSION 2
 
 class ControllerServiceRank : public Rank {
   public:

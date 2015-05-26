@@ -434,6 +434,57 @@ class ControllerService : public ajn::BusObject, public ajn::services::ConfigSer
      */
     LSFAboutDataStore& GetAboutDataStore(void) { return aboutDataStore; };
 
+    /**
+     * Developer API to Lighting Reset the Controller Service.
+     * This function will reset all the persistent store
+     * files - so all the lighting data will be lost once
+     * this API is invoked
+     *
+     * Please note that this is a blocking function call and
+     * the Controller Service will NOT guarantee any coherence
+     * when this API is used by apps that incorporate
+     * the Controller Service and these apps would need to manage
+     * the coherence of data.
+     *
+     * The operation of the LSF system with this API has not been
+     * tested and any undesirable effects that may arise due to the
+     * use of this API are unknown.
+     *
+     * @param  None
+     * @return LSFResponseCode indicating the status of the operation
+     *         LSF_OK - If reset was successful
+     *         LSF_ERR_FAILURE - If reset failed
+     *         LSF_ERR_PARTIAL - If the reset was partially successful
+     */
+    LSFResponseCode LightingResetAPI(void);
+
+    /**
+     * Developer API to Factory Reset the Controller Service.
+     * This function will factory reset the onboarding daemon
+     * and reset the Controller Service About Data to factory
+     * settings. It also stops the Controller Service. The
+     * Controller Service needs to be restarted after invoking
+     * this API to resume normal operation if the controller
+     * service has been started in the foreground. If it has
+     * been started in the default background mode, the monitor
+     * task will restart the Controller Service automatically.
+     *
+     * Please note that this is a blocking function call and
+     * the Controller Service will NOT guarantee any coherence
+     * when this API is used by apps that incorporate
+     * the Controller Service and these apps would need to manage
+     * the coherence of data.
+     *
+     * The operation of the LSF system with this API has not been
+     * tested and any undesirable effects that may arise due to the
+     * use of this API are unknown.
+     *
+     * @param  None
+     * @return LSFResponseCode indicating the status of the operation
+     *         LSF_OK - If reset was successful
+     *         LSF_ERR_FAILURE - If reset failed
+     */
+    LSFResponseCode FactoryResetAPI(void);
   private:
 
     void Initialize();
