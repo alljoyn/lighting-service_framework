@@ -274,14 +274,21 @@ uint32_t GetTimestampInSeconds(void);
  * Enum defining the LSF Blob Type
  */
 typedef enum _LSFBlobType {
-    LSF_PRESET,               /**< Preset type */
-    LSF_LAMP_GROUP,           /**< Lamp Group type */
-    LSF_SCENE,                /**< Scene type */
-    LSF_MASTER_SCENE,         /**< Master Scene type */
-    LSF_TRANSITION_EFFECT,    /**< Transition Effect type */
-    LSF_PULSE_EFFECT,         /**< Pulse Effect type */
-    LSF_SCENE_ELEMENT,        /**< Scene Element type */
-    LSF_BLOB_TYPE_LAST_VALUE  /**< Last value */
+    LSF_PRESET = 0,                        /**< Preset type */
+    LSF_LAMP_GROUP = 1,                    /**< Lamp Group type */
+    LSF_SCENE = 2,                         /**< Scene type */
+    LSF_MASTER_SCENE = 3,                  /**< Master Scene type */
+    LSF_TRANSITION_EFFECT = 4,             /**< Transition Effect type */
+    LSF_PULSE_EFFECT = 5,                  /**< Pulse Effect type */
+    LSF_PRESET_UPDATE = 6,                 /**< Preset Update type */
+    LSF_LAMP_GROUP_UPDATE = 7,             /**< Lamp Group Update type */
+    LSF_SCENE_UPDATE = 8,                  /**< Scene Update type */
+    LSF_MASTER_SCENE_UPDATE = 9,           /**< Master Scene Update type */
+    LSF_TRANSITION_EFFECT_UPDATE = 10,     /**< Transition Effect Update type */
+    LSF_PULSE_EFFECT_UPDATE = 11,          /**< Pulse Effect Update type */
+    LSF_SCENE_ELEMENT = 12,                /**< Scene Element type */
+    LSF_SCENE_2 = 13,                      /**< Scene type in and after 15.04 i.e. Version 2 of the Controller Service*/
+    LSF_BLOB_TYPE_LAST_VALUE = 0xFFFFFFFF  /**< Last value */
 } LSFBlobType;
 
 /**
@@ -827,6 +834,14 @@ class SceneElement {
      *         LSF_ERR_DEPENDENCY if there is dependency
      */
     LSFResponseCode IsDependentOnLampGroup(LSFString& lampGroupID);
+
+    /**
+     * Check if there a scene element that depends on specific effect
+     * @param effectId - the effect id
+     * @return LSF_OK if there is not dependency \n
+     *         LSF_ERR_DEPENDENCY if there is dependency
+     */
+    LSFResponseCode IsDependentOnEffect(LSFString& effectId);
 
     /**
      * List of Lamps
@@ -1666,34 +1681,6 @@ class SceneWithSceneElements {
      * is scene element dependent of scene
      */
     LSFResponseCode IsDependentOnSceneElement(LSFString& sceneElementID);
-    /**
-     * Check if this scene depends on specific present
-     * @param presetID - the preset id
-     * @return LSF_OK if there is not dependency \n
-     *         LSF_ERR_DEPENDENCY if there is dependency
-     */
-    LSFResponseCode IsDependentOnPreset(LSFString& presetID);
-    /**
-     * Check if this scene depends on specific lamp group
-     * @param lampGroupID - the lamp group id
-     * @return LSF_OK if there is not dependency \n
-     *         LSF_ERR_DEPENDENCY if there is dependency
-     */
-    LSFResponseCode IsDependentOnLampGroup(LSFString& lampGroupID);
-    /**
-     * Check if this scene depends on specific transition effect
-     * @param transitionEffectID - the transition effect id
-     * @return LSF_OK if there is not dependency \n
-     *         LSF_ERR_DEPENDENCY if there is dependency
-     */
-    LSFResponseCode IsDependentOnTransitionEffect(LSFString& transitionEffectID);
-    /**
-     * Check if this scene depends on specific pulse effect
-     * @param pulseEffectID - the pulse effect id
-     * @return LSF_OK if there is not dependency \n
-     *         LSF_ERR_DEPENDENCY if there is dependency
-     */
-    LSFResponseCode IsDependentOnPulseEffect(LSFString& pulseEffectID);
 
     /**
      * list of scenes

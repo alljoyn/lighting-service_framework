@@ -64,6 +64,10 @@ class Manager : public ajn::MessageReceiver {
      */
     void ScheduleFileRead(ajn::Message& message);
     /**
+     * Schedule Update File Read
+     */
+    void ScheduleUpdateFileRead(ajn::Message& message);
+    /**
      * Trigger update for persistent data
      */
     void TriggerUpdate(void);
@@ -85,7 +89,9 @@ class Manager : public ajn::MessageReceiver {
     Mutex readMutex;         /**< read mutex */
     bool read;         /**< true after ScheduleFileRead */
 
-    const std::string filePath;         /**< the file location */
+    const std::string filePath; /**< the file location */
+
+    std::string updateFilePath; /**< the update file location */
     /**
      * Reading from file
      */
@@ -93,15 +99,19 @@ class Manager : public ajn::MessageReceiver {
     /**
      * Reading from file
      */
+    bool ValidateUpdateFileAndRead(std::istringstream& filestream);
+    /**
+     * Reading from file
+     */
     bool ValidateFileAndReadInternal(uint32_t& checksum, uint64_t& timestamp, std::istringstream& filestream);
+    /**
+     * Reading from update file
+     */
+    bool ValidateUpdateFileAndReadInternal(uint32_t& checksum, uint64_t& timestamp, std::istringstream& filestream);
     /**
      * Get checksum of file
      */
     uint32_t GetChecksum(const std::string& str);
-    /**
-     * Get string from file
-     */
-    virtual bool GetString(std::string& output, uint32_t& checksum, uint64_t& timestamp) { return false; };
     /**
      * Get file information \n
      * Answer returns synchronously by the reference parameters
@@ -110,16 +120,27 @@ class Manager : public ajn::MessageReceiver {
      */
     void GetBlobInfoInternal(uint32_t& checksum, uint64_t& time);
     /**
+     * Get update file information \n
+     * Answer returns synchronously by the reference parameters
+     * @param checksum
+     * @param time
+     */
+    void GetUpdateBlobInfoInternal(uint32_t& checksum, uint64_t& time);
+    /**
      * Write File With Checksum And Timestamp
      */
     void WriteFileWithChecksumAndTimestamp(const std::string& str, uint32_t checksum, uint64_t timestamp);
+    void WriteUpdatesFileWithChecksumAndTimestamp(const std::string& str, uint32_t checksum, uint64_t timestamp);
 
-    uint32_t checkSum;         /**< checkSum of the file */
-    uint64_t timeStamp;         /**< timestamp of the file */
-    bool blobUpdateCycle;         /**< blob Update Cycle */
-    bool initialState;         /**< initial state */
+    uint32_t checkSum; /**< checkSum of the file */
+    uint32_t updatesCheckSum; /**< checkSum of the updates file */
+    uint64_t timeStamp; /**< timestamp of the file */
+    uint64_t updatesTimeStamp; /**< timestamp of the updates file */
+    bool blobUpdateCycle; /**< blob Update Cycle */
+    bool initialState; /**< initial state */
 
-    std::list<ajn::Message> readBlobMessages;         /**< Read blob messages */
+    std::list<ajn::Message> readBlobMessages; /**< Read blob messages */
+    std::list<ajn::Message> readUpdateBlobMessages; /**< Read update blob messages */
 
     volatile sig_atomic_t sendUpdate;         /**< send update */
 };

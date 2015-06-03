@@ -42,21 +42,23 @@ OPTIONAL_NAMESPACE_CONTROLLER_SERVICE
 
 class LampGroupManager;
 class SceneManager;
+class SceneElementManager;
 /**
  * class manages the pulse effect of the lamps. \n
  * pulse effect is the ability to save lamp states and to use them when required later on.
  */
 class PulseEffectManager : public Manager {
     friend class LampManager;
+    friend class SceneManager;
   public:
     /**
      * class constructor. \n
      * @param controllerSvc - reference to controller service instance
      * @param lampGroupMgrPtr - pointer to lamp group manager
-     * @param sceneMgrPtr - pointer to scene manager
+     * @param sceneElementMgrPtr - pointer to sceneElement manager
      * @param pulseEffectFile - The full path of pulse effect file to be the persistent data
      */
-    PulseEffectManager(ControllerService& controllerSvc, LampGroupManager* lampGroupMgrPtr, SceneManager* sceneMgrPtr, const std::string& pulseEffectFile);
+    PulseEffectManager(ControllerService& controllerSvc, LampGroupManager* lampGroupMgrPtr, SceneElementManager* sceneElementMgrPtr, const std::string& pulseEffectFile);
     /**
      * Clears the pulseEffects data. \n
      * Send signal to the controller clients 'org.allseen.LSF.ControllerService.PulseEffect' 'PulseEffectsDeleted'. \n
@@ -126,13 +128,6 @@ class PulseEffectManager : public Manager {
      */
     void ApplyPulseEffectOnLampGroups(ajn::Message& msg);
     /**
-     * Apply the specified pulseEffect on the specified lamps and lamp groups. \n
-     * @param msg type Message that caused this call. \n
-     * response code LSF_OK on success. \n
-     *      LSF_ERR_NOT_FOUND - no target lamps were found. \n
-     */
-    LSFResponseCode ApplyPulseEffectInternal(Message& msg, PulseEffect& pulseEffect, LSFStringList& lamps, LSFStringList& lampGroups, bool sceneElementOperation = false);
-    /**
      * Delete existing pulseEffect. \n
      * @param msg type Message with MsgArgs: pulse effect id. \n
      * Return asynchronously the pulse effect response code and unique id. \n
@@ -178,6 +173,10 @@ class PulseEffectManager : public Manager {
      */
     void HandleReceivedBlob(const std::string& blob, uint32_t checksum, uint64_t timestamp);
     /**
+     * Handle Received Update Blob
+     */
+    void HandleReceivedUpdateBlob(const std::string& blob, uint32_t checksum, uint64_t timestamp);
+    /**
      * Get Controller Service PulseEffect Interface Version. \n
      * @return 32 unsigned integer version. \n
      */
@@ -186,7 +185,7 @@ class PulseEffectManager : public Manager {
      * Get the pulseEffects information as a string. \n
      * @return true if data is written to file
      */
-    virtual bool GetString(std::string& output, uint32_t& checksum, uint64_t& timestamp);
+    bool GetString(std::string& output, std::string& updates, uint32_t& checksum, uint64_t& timestamp, uint32_t& updatesChksum, uint64_t& updatesTs);
     /**
      * Get blob information about checksum and time stamp.
      */
@@ -195,18 +194,36 @@ class PulseEffectManager : public Manager {
         GetBlobInfoInternal(checksum, timestamp);
         pulseEffectsLock.Unlock();
     }
+    /**
+     * Get blob information about checksum and time stamp.
+     */
+    void GetUpdateBlobInfo(uint32_t& checksum, uint64_t& timestamp) {
+        pulseEffectsLock.Lock();
+        GetUpdateBlobInfoInternal(checksum, timestamp);
+        pulseEffectsLock.Unlock();
+    }
 
   private:
 
     void ReplaceMap(std::istringstream& stream);
 
+    void ReplaceUpdatesList(std::istringstream& stream);
+
+    LSFResponseCode CreatePulseEffectInternal(PulseEffect& pulseEffect, LSFString& name, LSFString& language, LSFString& pulseEffectID);
+
+    LSFResponseCode DeletePulseEffectInternal(LSFString& pulseEffectID);
+
+    void SendPulseEffectsCreatedSignal(LSFStringList& pulseEffectIds);
+
     PulseEffectMap pulseEffects;
+    std::set<LSFString> pulseEffectUpdates;    /**< List of PulseEffectIDs that were updated */
     Mutex pulseEffectsLock;
     LampGroupManager* lampGroupManagerPtr;
-    SceneManager* sceneManagerPtr;
+    SceneElementManager* sceneElementManagerPtr;
     size_t blobLength;
 
     std::string GetString(const PulseEffectMap& items);
+    std::string GetUpdatesString(const std::set<LSFString>& updates);
     std::string GetString(const std::string& name, const std::string& id, const PulseEffect& pulseEffect);
 };
 

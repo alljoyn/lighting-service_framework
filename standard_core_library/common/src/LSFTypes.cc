@@ -927,8 +927,8 @@ void PulseEffect::Set(const ajn::MsgArg& toLampState, const ajn::MsgArg& period,
     duration.Get("u", &pulseDuration);
     numOfPulses.Get("u", &numPulses);
 
-    if (((!(fromState.nullState)) && (!(toState.nullState)) && (fromPreset.empty()) && (toPreset.empty())) ||
-        ((fromState.nullState) && (toState.nullState) && (!(fromPreset.empty())) && (!(toPreset.empty())))) {
+    if (((!(toState.nullState)) && (fromPreset.empty()) && (toPreset.empty())) ||
+        ((toState.nullState) && (!(fromPreset.empty())) && (!(toPreset.empty())))) {
         invalidArgs =  false;
     } else {
         QCC_LogError(ER_FAIL, ("%s: PulseEffect should include either valid LampStates or valid PresetIDs", __func__));
@@ -1920,43 +1920,6 @@ LSFResponseCode SceneWithSceneElements::IsDependentOnSceneElement(LSFString& sce
     return responseCode;
 }
 
-LSFResponseCode SceneWithSceneElements::IsDependentOnPreset(LSFString& presetID)
-{
-    QCC_DbgPrintf(("%s", __func__));
-    LSFResponseCode responseCode = LSF_OK;
-
-    //TODO-IMPL SceneWithSceneElements::IsDependentOnPreset
-    return responseCode;
-}
-
-LSFResponseCode SceneWithSceneElements::IsDependentOnLampGroup(LSFString& lampGroupID)
-{
-    QCC_DbgPrintf(("%s", __func__));
-    LSFResponseCode responseCode = LSF_OK;
-
-    //TODO-IMPL SceneWithSceneElements::IsDependentOnLampGroup
-    return responseCode;
-}
-
-LSFResponseCode SceneWithSceneElements::IsDependentOnTransitionEffect(LSFString& transitionEffectID)
-{
-    QCC_DbgPrintf(("%s", __func__));
-    LSFResponseCode responseCode = LSF_OK;
-
-    //TODO-IMPL SceneWithSceneElements::IsDependentOnTransitionEffect
-    return responseCode;
-}
-
-LSFResponseCode SceneWithSceneElements::IsDependentOnPulseEffect(LSFString& pulseEffectID)
-{
-    QCC_DbgPrintf(("%s", __func__));
-    LSFResponseCode responseCode = LSF_OK;
-
-    //TODO-IMPL SceneWithSceneElements::IsDependentOnPulseEffect
-    return responseCode;
-}
-
-
 SceneElement::SceneElement(const LSFStringList& lampList, const LSFStringList& lampGroupList, const LSFString& effectId) :
     lamps(lampList), lampGroups(lampGroupList), effectID(effectId), invalidArgs(false)
 {
@@ -2080,6 +2043,18 @@ LSFResponseCode SceneElement::IsDependentOnLampGroup(LSFString& lampGroupID)
 
     LSFStringList::iterator findIt = std::find(lampGroups.begin(), lampGroups.end(), lampGroupID);
     if (findIt != lampGroups.end()) {
+        responseCode = LSF_ERR_DEPENDENCY;
+    }
+
+    return responseCode;
+}
+
+LSFResponseCode SceneElement::IsDependentOnEffect(LSFString& effectId)
+{
+    QCC_DbgPrintf(("%s", __func__));
+    LSFResponseCode responseCode = LSF_OK;
+
+    if (effectID == effectId) {
         responseCode = LSF_ERR_DEPENDENCY;
     }
 

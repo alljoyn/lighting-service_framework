@@ -153,7 +153,7 @@ class MasterSceneManager : public Manager {
      * @param checksum - of the output
      * @param timestamp - current time
      */
-    virtual bool GetString(std::string& output, uint32_t& checksum, uint64_t& timestamp);
+    bool GetString(std::string& output, std::string& updates, uint32_t& checksum, uint64_t& timestamp, uint32_t& updatesChksum, uint64_t& updatesTs);
     /**
      * Get file information. \n
      * Derived from Manager class. \n
@@ -167,23 +167,43 @@ class MasterSceneManager : public Manager {
         masterScenesLock.Unlock();
     }
     /**
+     * Get file information. \n
+     * Derived from Manager class. \n
+     * Answer returns synchronously by the reference parameters.
+     * @param checksum
+     * @param timestamp
+     */
+    void GetUpdateBlobInfo(uint32_t& checksum, uint64_t& timestamp) {
+        masterScenesLock.Lock();
+        GetUpdateBlobInfoInternal(checksum, timestamp);
+        masterScenesLock.Unlock();
+    }
+    /**
      * Write the blob containing scene information to persistent data. \n
      * @param blob - string containing scenes information.
      * @param checksum
      * @param timestamp
      */
     void HandleReceivedBlob(const std::string& blob, uint32_t checksum, uint64_t timestamp);
+    /**
+     * Handle Received Update Blob
+     */
+    void HandleReceivedUpdateBlob(const std::string& blob, uint32_t checksum, uint64_t timestamp);
 
   private:
 
     void ReplaceMap(std::istringstream& stream);
 
+    void ReplaceUpdatesList(std::istringstream& stream);
+
     MasterSceneMap masterScenes;
+    std::set<LSFString> masterSceneUpdates;    /**< List of MasterSceneIDs that were updated */
     Mutex masterScenesLock;
     SceneManager& sceneManager;
     size_t blobLength;
 
     std::string GetString(const MasterSceneMap& items);
+    std::string GetUpdatesString(const std::set<LSFString>& updates);
     std::string GetString(const std::string& name, const std::string& id, const MasterScene& msc);
 };
 

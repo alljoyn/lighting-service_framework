@@ -25,12 +25,8 @@
 
 #ifdef LSF_BINDINGS
 #include <lsf/controllerservice/Manager.h>
-#include <lsf/controllerservice/TransitionEffectManager.h>
-#include <lsf/controllerservice/PulseEffectManager.h>
 #else
 #include <Manager.h>
-#include <TransitionEffectManager.h>
-#include <PulseEffectManager.h>
 #endif
 
 #include <Mutex.h>
@@ -45,6 +41,9 @@ namespace lsf {
 OPTIONAL_NAMESPACE_CONTROLLER_SERVICE
 
 class SceneManager;
+class LampGroupManager;
+class TransitionEffectManager;
+class PulseEffectManager;
 
 /**
  * sceneElement management class
@@ -57,7 +56,7 @@ class SceneElementManager : public Manager {
     /**
      * SceneElementManager CTOR
      */
-    SceneElementManager(ControllerService& controllerSvc, TransitionEffectManager* transistionEffectMgr, PulseEffectManager* pulseEffectMgr, const std::string& sceneElementFile);
+    SceneElementManager(ControllerService& controllerSvc, LampGroupManager* lampGroupManager, TransitionEffectManager* transistionEffectMgr, PulseEffectManager* pulseEffectMgr, SceneManager* sceneMgr, const std::string& sceneElementFile);
     /**
      * SceneElementManager DTOR
      */
@@ -74,6 +73,13 @@ class SceneElementManager : public Manager {
      * @return LSF_OK if not depend
      */
     LSFResponseCode IsDependentOnLampGroup(LSFString& lampGroupID);
+    /**
+     * Check if there is a scene element that depends on specific effect
+     * @param effectId - the effect id
+     * @return LSF_OK if there is not dependency \n
+     *         LSF_ERR_DEPENDENCY if there is dependency
+     */
+    LSFResponseCode IsDependentOnEffect(LSFString& effectId);
     /**
      * Get All SceneElement IDs. \n
      * Return asynchronous reply with response code: \n
@@ -158,7 +164,7 @@ class SceneElementManager : public Manager {
      * @return LSF_OK on success
      *  LSF_ERR_NOT_FOUND - sceneElement id not found in current list of sceneElements
      */
-    LSFResponseCode ApplySceneElementInternal(ajn::Message& message, LSFStringList& sceneElementIDs);
+    LSFResponseCode ApplySceneElementInternal(ajn::Message& message, LSFStringList& sceneElementIDs, LSFString sceneOrMasterSceneId);
     /**
      * Get All SceneElements. \n
      * Return asynchronous answer - the all sceneElements by its reference parameter \n
@@ -193,13 +199,28 @@ class SceneElementManager : public Manager {
      */
     uint32_t GetControllerServiceSceneElementInterfaceVersion(void);
 
+    /**
+     * Send SceneElementApplied signal
+     */
+    void SendSceneElementAppliedSignal(LSFString& sceneElementId);
+
   protected:
 
     SceneElementMap sceneElements;
     Mutex sceneElementsLock;
+    LampGroupManager* lampGroupManagerPtr;
     TransitionEffectManager* transitionEffectManagerPtr;
     PulseEffectManager* pulseEffectManagerPtr;
+    SceneManager* sceneManagerPtr;
     size_t blobLength;
+
+    LSFResponseCode CreateSceneElementInternal(SceneElement& sceneElement, LSFString& name, LSFString& language, LSFString& sceneElementID);
+
+    LSFResponseCode DeleteSceneElementInternal(LSFString& sceneElementID);
+
+    LSFResponseCode GetSceneElementInternal(LSFString& sceneElementID, SceneElement& sceneElement);
+
+    void SendSceneElementsCreatedSignal(LSFStringList& sceneElementIds);
 
     /**
      * Replace Map
@@ -209,7 +230,7 @@ class SceneElementManager : public Manager {
     /**
      * Get String
      */
-    virtual bool GetString(std::string& output, uint32_t& checksum, uint64_t& timestamp);
+    bool GetString(std::string& output, uint32_t& checksum, uint64_t& timestamp);
 
     /**
      * get scene element string

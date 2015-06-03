@@ -216,13 +216,13 @@ ControllerService::ControllerService(
     serviceSession(0),
     listener(new ControllerListener(this)),
     lampManager(*this, presetManager),
-    lampGroupManager(*this, lampManager, &sceneManager, &sceneElementManager, lampGroupFile),
-    presetManager(*this, &sceneManager, presetFile),
-    sceneManager(*this, lampGroupManager, &sceneElementManager, &masterSceneManager, sceneFile),
-    sceneElementManager(*this, &transitionEffectManager, &pulseEffectManager, ""),
+    lampGroupManager(*this, lampManager, &sceneElementManager, lampGroupFile),
+    presetManager(*this, &sceneElementManager, presetFile),
+    sceneManager(*this, &sceneElementManager, &masterSceneManager, sceneFile, ""),
+    sceneElementManager(*this, &lampGroupManager, &transitionEffectManager, &pulseEffectManager, &sceneManager, ""),
     masterSceneManager(*this, sceneManager, masterSceneFile),
-    transitionEffectManager(*this, &lampGroupManager, &sceneManager, ""),
-    pulseEffectManager(*this, &lampGroupManager, &sceneManager, ""),
+    transitionEffectManager(*this, &lampGroupManager, &sceneElementManager, ""),
+    pulseEffectManager(*this, &lampGroupManager, &sceneElementManager, ""),
     internalAboutDataStore(this, factoryConfigFile.c_str(), configFile.c_str()),
     aboutDataStore(internalAboutDataStore),
     aboutIcon(),
@@ -259,13 +259,13 @@ ControllerService::ControllerService(
     serviceSession(0),
     listener(new ControllerListener(this)),
     lampManager(*this, presetManager),
-    lampGroupManager(*this, lampManager, &sceneManager, &sceneElementManager, lampGroupFile),
-    presetManager(*this, &sceneManager, presetFile),
-    sceneManager(*this, lampGroupManager, &sceneElementManager, &masterSceneManager, sceneFile),
-    sceneElementManager(*this, &transitionEffectManager, &pulseEffectManager, sceneElementsFile),
+    lampGroupManager(*this, lampManager, &sceneElementManager, lampGroupFile),
+    presetManager(*this, &sceneElementManager, presetFile),
+    sceneManager(*this, &sceneElementManager, &masterSceneManager, sceneFile, sceneWithSceneElementsFile),
+    sceneElementManager(*this, &lampGroupManager, &transitionEffectManager, &pulseEffectManager, &sceneManager, sceneElementsFile),
     masterSceneManager(*this, sceneManager, masterSceneFile),
-    transitionEffectManager(*this, &lampGroupManager, &sceneManager, transitionEffectFile),
-    pulseEffectManager(*this, &lampGroupManager, &sceneManager, pulseEffectFile),
+    transitionEffectManager(*this, &lampGroupManager, &sceneElementManager, transitionEffectFile),
+    pulseEffectManager(*this, &lampGroupManager, &sceneElementManager, pulseEffectFile),
     internalAboutDataStore(this, factoryConfigFile.c_str(), configFile.c_str()),
     aboutDataStore(aboutData),
     aboutIcon(),
@@ -297,13 +297,13 @@ ControllerService::ControllerService(
     serviceSession(0),
     listener(new ControllerListener(this)),
     lampManager(*this, presetManager),
-    lampGroupManager(*this, lampManager, &sceneManager, &sceneElementManager, lampGroupFile),
-    presetManager(*this, &sceneManager, presetFile),
-    sceneManager(*this, lampGroupManager, &sceneElementManager, &masterSceneManager, sceneFile),
-    sceneElementManager(*this, &transitionEffectManager, &pulseEffectManager, ""),
+    lampGroupManager(*this, lampManager, &sceneElementManager, lampGroupFile),
+    presetManager(*this, &sceneElementManager, presetFile),
+    sceneManager(*this, &sceneElementManager, &masterSceneManager, sceneFile, ""),
+    sceneElementManager(*this, &lampGroupManager, &transitionEffectManager, &pulseEffectManager, &sceneManager, ""),
     masterSceneManager(*this, sceneManager, masterSceneFile),
-    transitionEffectManager(*this, &lampGroupManager, &sceneManager, ""),
-    pulseEffectManager(*this, &lampGroupManager, &sceneManager, ""),
+    transitionEffectManager(*this, &lampGroupManager, &sceneElementManager, ""),
+    pulseEffectManager(*this, &lampGroupManager, &sceneElementManager, ""),
     internalAboutDataStore(this, factoryConfigFile.c_str(), configFile.c_str()),
     aboutDataStore(internalAboutDataStore),
     aboutIcon(),
@@ -339,13 +339,13 @@ ControllerService::ControllerService(
     serviceSession(0),
     listener(new ControllerListener(this)),
     lampManager(*this, presetManager),
-    lampGroupManager(*this, lampManager, &sceneManager, &sceneElementManager, lampGroupFile),
-    presetManager(*this, &sceneManager, presetFile),
-    sceneManager(*this, lampGroupManager, &sceneElementManager, &masterSceneManager, sceneFile),
-    sceneElementManager(*this, &transitionEffectManager, &pulseEffectManager, sceneElementsFile),
+    lampGroupManager(*this, lampManager, &sceneElementManager, lampGroupFile),
+    presetManager(*this, &sceneElementManager, presetFile),
+    sceneManager(*this, &sceneElementManager, &masterSceneManager, sceneFile, sceneWithSceneElementsFile),
+    sceneElementManager(*this, &lampGroupManager, &transitionEffectManager, &pulseEffectManager, &sceneManager, sceneElementsFile),
     masterSceneManager(*this, sceneManager, masterSceneFile),
-    transitionEffectManager(*this, &lampGroupManager, &sceneManager, transitionEffectFile),
-    pulseEffectManager(*this, &lampGroupManager, &sceneManager, pulseEffectFile),
+    transitionEffectManager(*this, &lampGroupManager, &sceneElementManager, transitionEffectFile),
+    pulseEffectManager(*this, &lampGroupManager, &sceneElementManager, pulseEffectFile),
     internalAboutDataStore(this, factoryConfigFile.c_str(), configFile.c_str()),
     aboutDataStore(internalAboutDataStore),
     aboutIcon(),
@@ -390,10 +390,14 @@ void ControllerService::Initialize()
     lampGroupManager.ReadSavedData();
     presetManager.ReadSavedData();
     sceneElementManager.ReadSavedData();
-    sceneManager.ReadSavedData();
     masterSceneManager.ReadSavedData();
     transitionEffectManager.ReadSavedData();
     pulseEffectManager.ReadSavedData();
+    /*
+     * Scene Manager data should be read last because if checks if the
+     * entities it depends on are present
+     */
+    sceneManager.ReadSavedData();
 
     messageHandlersLock.Lock();
     AddMethodHandler("LightingResetControllerService", this, &ControllerService::LightingResetControllerService);

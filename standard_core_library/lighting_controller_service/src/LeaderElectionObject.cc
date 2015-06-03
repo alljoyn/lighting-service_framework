@@ -276,11 +276,41 @@ void LeaderElectionObject::OnGetBlobReply(ajn::Message& message, void* context)
                 controller.GetPulseEffectManager().HandleReceivedBlob(args[1].v_string.str, args[2].v_uint32, args[3].v_uint64);
                 break;
 
+            case LSF_PRESET_UPDATE:
+                controller.GetPresetManager().HandleReceivedUpdateBlob(args[1].v_string.str, args[2].v_uint32, args[3].v_uint64);
+                break;
+
+            case LSF_MASTER_SCENE_UPDATE:
+                controller.GetMasterSceneManager().HandleReceivedUpdateBlob(args[1].v_string.str, args[2].v_uint32, args[3].v_uint64);
+                break;
+
+            case LSF_LAMP_GROUP_UPDATE:
+                controller.GetLampGroupManager().HandleReceivedUpdateBlob(args[1].v_string.str, args[2].v_uint32, args[3].v_uint64);
+                break;
+
+            case LSF_SCENE_UPDATE:
+                controller.GetSceneManager().HandleReceivedUpdateBlob(args[1].v_string.str, args[2].v_uint32, args[3].v_uint64);
+                break;
+
+            case LSF_TRANSITION_EFFECT_UPDATE:
+                controller.GetTransitionEffectManager().HandleReceivedUpdateBlob(args[1].v_string.str, args[2].v_uint32, args[3].v_uint64);
+                break;
+
+            case LSF_PULSE_EFFECT_UPDATE:
+                controller.GetPulseEffectManager().HandleReceivedUpdateBlob(args[1].v_string.str, args[2].v_uint32, args[3].v_uint64);
+                break;
+
             case LSF_SCENE_ELEMENT:
                 controller.GetSceneElementManager().HandleReceivedBlob(args[1].v_string.str, args[2].v_uint32, args[3].v_uint64);
                 break;
 
+            case LSF_SCENE_2:
+                controller.GetSceneManager().HandleReceivedScene2Blob(args[1].v_string.str, args[2].v_uint32, args[3].v_uint64);
+                break;
+
             case LSF_BLOB_TYPE_LAST_VALUE:
+            default:
+                QCC_LogError(ER_FAIL, ("%s: Unknown blob type requested", __func__));
                 break;
             }
         }
@@ -311,6 +341,8 @@ void LeaderElectionObject::OnGetBlobReply(ajn::Message& message, void* context)
                 wakeSem.Post();
             }
         }
+
+        controller.GetSceneManager().RefreshSceneData(!outGoingLeaderCopy.busName.empty());
     }
 }
 
@@ -341,8 +373,8 @@ void LeaderElectionObject::OnGetChecksumAndModificationTimestampReply(ajn::Messa
             uint64_t timestamp;
             elems[i].Get("(uut)", &type, &checksum, &timestamp);
 
-            uint32_t myChecksum;
-            uint64_t myTimestamp;
+            uint32_t myChecksum = 0;
+            uint64_t myTimestamp = 0;
 
             switch (type) {
             case LSF_PRESET:
@@ -369,11 +401,41 @@ void LeaderElectionObject::OnGetChecksumAndModificationTimestampReply(ajn::Messa
                 controller.GetPulseEffectManager().GetBlobInfo(myChecksum, myTimestamp);
                 break;
 
+            case LSF_PRESET_UPDATE:
+                controller.GetPresetManager().GetUpdateBlobInfo(myChecksum, myTimestamp);
+                break;
+
+            case LSF_MASTER_SCENE_UPDATE:
+                controller.GetMasterSceneManager().GetUpdateBlobInfo(myChecksum, myTimestamp);
+                break;
+
+            case LSF_LAMP_GROUP_UPDATE:
+                controller.GetLampGroupManager().GetUpdateBlobInfo(myChecksum, myTimestamp);
+                break;
+
+            case LSF_SCENE_UPDATE:
+                controller.GetSceneManager().GetUpdateBlobInfo(myChecksum, myTimestamp);
+                break;
+
+            case LSF_TRANSITION_EFFECT_UPDATE:
+                controller.GetTransitionEffectManager().GetUpdateBlobInfo(myChecksum, myTimestamp);
+                break;
+
+            case LSF_PULSE_EFFECT_UPDATE:
+                controller.GetPulseEffectManager().GetUpdateBlobInfo(myChecksum, myTimestamp);
+                break;
+
             case LSF_SCENE_ELEMENT:
                 controller.GetSceneElementManager().GetBlobInfo(myChecksum, myTimestamp);
                 break;
 
+            case LSF_SCENE_2:
+                controller.GetSceneManager().GetScene2BlobInfo(myChecksum, myTimestamp);
+                break;
+
             case LSF_BLOB_TYPE_LAST_VALUE:
+            default:
+                QCC_LogError(ER_FAIL, ("%s: Unknown blob type requested", __func__));
                 break;
             }
 
@@ -417,6 +479,47 @@ void LeaderElectionObject::OnGetChecksumAndModificationTimestampReply(ajn::Messa
                     controller.GetMasterSceneManager().TriggerUpdate();
                     break;
 
+                case LSF_TRANSITION_EFFECT:
+                    controller.GetTransitionEffectManager().TriggerUpdate();
+                    break;
+
+                case LSF_PULSE_EFFECT:
+                    controller.GetPulseEffectManager().TriggerUpdate();
+                    break;
+
+                case LSF_PRESET_UPDATE:
+                    controller.GetPresetManager().TriggerUpdate();
+                    break;
+
+                case LSF_LAMP_GROUP_UPDATE:
+                    controller.GetLampGroupManager().TriggerUpdate();
+                    break;
+
+                case LSF_SCENE_UPDATE:
+                    controller.GetSceneManager().TriggerUpdate();
+                    break;
+
+                case LSF_MASTER_SCENE_UPDATE:
+                    controller.GetMasterSceneManager().TriggerUpdate();
+                    break;
+
+                case LSF_TRANSITION_EFFECT_UPDATE:
+                    controller.GetTransitionEffectManager().TriggerUpdate();
+                    break;
+
+                case LSF_PULSE_EFFECT_UPDATE:
+                    controller.GetPulseEffectManager().TriggerUpdate();
+                    break;
+
+                case LSF_SCENE_ELEMENT:
+                    controller.GetSceneElementManager().TriggerUpdate();
+                    break;
+
+                case LSF_SCENE_2:
+                    controller.GetSceneManager().TriggerUpdate();
+                    break;
+
+                case LSF_BLOB_TYPE_LAST_VALUE:
                 default:
                     QCC_LogError(ER_FAIL, ("%s: Unsupported blob type requested", __func__));
                     break;
@@ -1494,7 +1597,7 @@ void LeaderElectionObject::GetChecksumAndModificationTimestamp(const ajn::Interf
     }
 
     MsgArg outArg;
-    MsgArg* out = new MsgArg[4];
+    MsgArg* out = new MsgArg[14];
 
     uint32_t presetchecksum;
     uint64_t presettimestamp;
@@ -1511,6 +1614,46 @@ void LeaderElectionObject::GetChecksumAndModificationTimestamp(const ajn::Interf
     uint32_t masterscenechecksum;
     uint64_t masterscenetimestamp;
     controller.GetMasterSceneManager().GetBlobInfo(masterscenechecksum, masterscenetimestamp);
+
+    uint32_t transitioneffectchecksum;
+    uint64_t transitioneffecttimestamp;
+    controller.GetTransitionEffectManager().GetBlobInfo(transitioneffectchecksum, transitioneffecttimestamp);
+
+    uint32_t pulseeffectchecksum;
+    uint64_t pulseeffecttimestamp;
+    controller.GetPulseEffectManager().GetBlobInfo(pulseeffectchecksum, pulseeffecttimestamp);
+
+    uint32_t presetupdatechecksum;
+    uint64_t presetupdatetimestamp;
+    controller.GetPresetManager().GetUpdateBlobInfo(presetupdatechecksum, presetupdatetimestamp);
+
+    uint32_t groupupdatechecksum;
+    uint64_t groupupdatetimestamp;
+    controller.GetLampGroupManager().GetUpdateBlobInfo(groupupdatechecksum, groupupdatetimestamp);
+
+    uint32_t sceneupdatechecksum;
+    uint64_t sceneupdatetimestamp;
+    controller.GetSceneManager().GetUpdateBlobInfo(sceneupdatechecksum, sceneupdatetimestamp);
+
+    uint32_t mastersceneupdatechecksum;
+    uint64_t mastersceneupdatetimestamp;
+    controller.GetMasterSceneManager().GetUpdateBlobInfo(mastersceneupdatechecksum, mastersceneupdatetimestamp);
+
+    uint32_t transitioneffectupdatechecksum;
+    uint64_t transitioneffectupdatetimestamp;
+    controller.GetTransitionEffectManager().GetUpdateBlobInfo(transitioneffectupdatechecksum, transitioneffectupdatetimestamp);
+
+    uint32_t pulseeffectupdatechecksum;
+    uint64_t pulseeffectupdatetimestamp;
+    controller.GetPulseEffectManager().GetUpdateBlobInfo(pulseeffectupdatechecksum, pulseeffectupdatetimestamp);
+
+    uint32_t sceneElementchecksum;
+    uint64_t sceneElementtimestamp;
+    controller.GetSceneElementManager().GetBlobInfo(sceneElementchecksum, sceneElementtimestamp);
+
+    uint32_t scene2checksum;
+    uint64_t scene2timestamp;
+    controller.GetSceneElementManager().GetBlobInfo(scene2checksum, scene2timestamp);
 
     uint64_t currentTimestamp = GetTimestampInMs();
     uint64_t blobTimeStamp = 0;
@@ -1533,7 +1676,59 @@ void LeaderElectionObject::GetChecksumAndModificationTimestamp(const ajn::Interf
         blobTimeStamp = currentTimestamp - masterscenetimestamp;
     }
     out[3].Set("(uut)", static_cast<uint32_t>(LSF_MASTER_SCENE), masterscenechecksum, blobTimeStamp);
-    outArg.Set("a(uut)", 4, out);
+    blobTimeStamp = 0;
+    if (transitioneffecttimestamp != 0) {
+        blobTimeStamp = currentTimestamp - transitioneffecttimestamp;
+    }
+    out[4].Set("(uut)", static_cast<uint32_t>(LSF_TRANSITION_EFFECT), transitioneffectchecksum, blobTimeStamp);
+    blobTimeStamp = 0;
+    if (pulseeffecttimestamp != 0) {
+        blobTimeStamp = currentTimestamp - pulseeffecttimestamp;
+    }
+    out[5].Set("(uut)", static_cast<uint32_t>(LSF_PULSE_EFFECT), pulseeffectchecksum, blobTimeStamp);
+    blobTimeStamp = 0;
+    if (presetupdatetimestamp != 0) {
+        blobTimeStamp = currentTimestamp - presetupdatetimestamp;
+    }
+    out[6].Set("(uut)", static_cast<uint32_t>(LSF_PRESET_UPDATE), presetupdatechecksum, blobTimeStamp);
+    blobTimeStamp = 0;
+    if (groupupdatetimestamp != 0) {
+        blobTimeStamp = currentTimestamp - groupupdatetimestamp;
+    }
+    out[7].Set("(uut)", static_cast<uint32_t>(LSF_LAMP_GROUP_UPDATE), groupupdatechecksum, blobTimeStamp);
+    blobTimeStamp = 0;
+    if (sceneupdatetimestamp != 0) {
+        blobTimeStamp = currentTimestamp - sceneupdatetimestamp;
+    }
+    out[8].Set("(uut)", static_cast<uint32_t>(LSF_SCENE_UPDATE), sceneupdatechecksum, blobTimeStamp);
+    blobTimeStamp = 0;
+    if (mastersceneupdatetimestamp != 0) {
+        blobTimeStamp = currentTimestamp - mastersceneupdatetimestamp;
+    }
+    out[9].Set("(uut)", static_cast<uint32_t>(LSF_MASTER_SCENE_UPDATE), mastersceneupdatechecksum, blobTimeStamp);
+    blobTimeStamp = 0;
+    if (transitioneffectupdatetimestamp != 0) {
+        blobTimeStamp = currentTimestamp - transitioneffectupdatetimestamp;
+    }
+    out[10].Set("(uut)", static_cast<uint32_t>(LSF_TRANSITION_EFFECT_UPDATE), transitioneffectupdatechecksum, blobTimeStamp);
+    blobTimeStamp = 0;
+    if (pulseeffectupdatetimestamp != 0) {
+        blobTimeStamp = currentTimestamp - pulseeffectupdatetimestamp;
+    }
+    out[11].Set("(uut)", static_cast<uint32_t>(LSF_PULSE_EFFECT_UPDATE), pulseeffectupdatechecksum, blobTimeStamp);
+    blobTimeStamp = 0;
+    if (sceneElementtimestamp != 0) {
+        blobTimeStamp = currentTimestamp - sceneElementtimestamp;
+    }
+    out[12].Set("(uut)", static_cast<uint32_t>(LSF_SCENE_ELEMENT), sceneElementchecksum, blobTimeStamp);
+    blobTimeStamp = 0;
+    if (scene2timestamp != 0) {
+        blobTimeStamp = currentTimestamp - scene2timestamp;
+    }
+    out[13].Set("(uut)", static_cast<uint32_t>(LSF_SCENE_2), scene2checksum, blobTimeStamp);
+
+    outArg.Set("a(uut)", 14, out);
+
     outArg.SetOwnershipFlags(MsgArg::OwnsArgs | MsgArg::OwnsData, true);
 
     MethodReply(message, &outArg, 1);
@@ -1579,6 +1774,47 @@ void LeaderElectionObject::GetBlob(const ajn::InterfaceDescription::Member* memb
         controller.GetMasterSceneManager().ScheduleFileRead(message);
         break;
 
+    case LSF_TRANSITION_EFFECT:
+        controller.GetTransitionEffectManager().ScheduleFileRead(message);
+        break;
+
+    case LSF_PULSE_EFFECT:
+        controller.GetPulseEffectManager().ScheduleFileRead(message);
+        break;
+
+    case LSF_PRESET_UPDATE:
+        controller.GetPresetManager().ScheduleUpdateFileRead(message);
+        break;
+
+    case LSF_LAMP_GROUP_UPDATE:
+        controller.GetLampGroupManager().ScheduleUpdateFileRead(message);
+        break;
+
+    case LSF_SCENE_UPDATE:
+        controller.GetSceneManager().ScheduleUpdateFileRead(message);
+        break;
+
+    case LSF_MASTER_SCENE_UPDATE:
+        controller.GetMasterSceneManager().ScheduleUpdateFileRead(message);
+        break;
+
+    case LSF_TRANSITION_EFFECT_UPDATE:
+        controller.GetTransitionEffectManager().ScheduleUpdateFileRead(message);
+        break;
+
+    case LSF_PULSE_EFFECT_UPDATE:
+        controller.GetPulseEffectManager().ScheduleUpdateFileRead(message);
+        break;
+
+    case LSF_SCENE_ELEMENT:
+        controller.GetSceneElementManager().ScheduleFileRead(message);
+        break;
+
+    case LSF_SCENE_2:
+        controller.GetSceneManager().ScheduleScene2FileRead(message);
+        break;
+
+    case LSF_BLOB_TYPE_LAST_VALUE:
     default:
         QCC_LogError(ER_FAIL, ("%s: Unsupported blob type requested", __func__));
         break;
@@ -1619,10 +1855,53 @@ void LeaderElectionObject::OnBlobChanged(const InterfaceDescription::Member* mem
         controller.GetMasterSceneManager().HandleReceivedBlob(blob, checksum, timestamp);
         break;
 
+    case LSF_TRANSITION_EFFECT:
+        controller.GetTransitionEffectManager().HandleReceivedBlob(blob, checksum, timestamp);
+        break;
+
+    case LSF_PULSE_EFFECT:
+        controller.GetPulseEffectManager().HandleReceivedBlob(blob, checksum, timestamp);
+        break;
+
+    case LSF_PRESET_UPDATE:
+        controller.GetPresetManager().HandleReceivedUpdateBlob(blob, checksum, timestamp);
+        break;
+
+    case LSF_LAMP_GROUP_UPDATE:
+        controller.GetLampGroupManager().HandleReceivedUpdateBlob(blob, checksum, timestamp);
+        break;
+
+    case LSF_SCENE_UPDATE:
+        controller.GetSceneManager().HandleReceivedUpdateBlob(blob, checksum, timestamp);
+        break;
+
+    case LSF_MASTER_SCENE_UPDATE:
+        controller.GetMasterSceneManager().HandleReceivedUpdateBlob(blob, checksum, timestamp);
+        break;
+
+    case LSF_TRANSITION_EFFECT_UPDATE:
+        controller.GetTransitionEffectManager().HandleReceivedUpdateBlob(blob, checksum, timestamp);
+        break;
+
+    case LSF_PULSE_EFFECT_UPDATE:
+        controller.GetPulseEffectManager().HandleReceivedUpdateBlob(blob, checksum, timestamp);
+        break;
+
+    case LSF_SCENE_ELEMENT:
+        controller.GetSceneElementManager().HandleReceivedBlob(blob, checksum, timestamp);
+        break;
+
+    case LSF_SCENE_2:
+        controller.GetSceneManager().HandleReceivedScene2Blob(blob, checksum, timestamp);
+        break;
+
+    case LSF_BLOB_TYPE_LAST_VALUE:
     default:
         QCC_LogError(ER_FAIL, ("%s: Unsupported blob type requested", __func__));
         break;
     }
+
+    controller.GetSceneManager().RefreshSceneData();
 }
 
 uint32_t LeaderElectionObject::GetLeaderElectionAndStateSyncInterfaceVersion(void)

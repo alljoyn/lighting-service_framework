@@ -27,11 +27,9 @@
 #ifdef LSF_BINDINGS
 #include <lsf/controllerservice/Manager.h>
 #include <lsf/controllerservice/LampManager.h>
-#include <lsf/controllerservice/SceneElementManager.h>
 #else
 #include <Manager.h>
 #include <LampManager.h>
-#include <SceneElementManager.h>
 #endif
 
 #include <LSFTypes.h>
@@ -44,9 +42,9 @@ namespace lsf {
 
 OPTIONAL_NAMESPACE_CONTROLLER_SERVICE
 
-class SceneManager;
-class TransitionEffectManager;
+class SceneElementManager;
 class PulseEffectManager;
+class TransitionEffectManager;
 
 /**
  * LampGroupManager class. \n
@@ -54,15 +52,15 @@ class PulseEffectManager;
  */
 class LampGroupManager : public Manager {
 
-    friend class SceneManager;
-    friend class TransitionEffectManager;
+    friend class SceneElementManager;
     friend class PulseEffectManager;
+    friend class TransitionEffectManager;
 
   public:
     /**
      * LampGroupManager constructor
      */
-    LampGroupManager(ControllerService& controllerSvc, LampManager& lampMgr, SceneManager* sceneMgrPtr, SceneElementManager* sceneElementMgrPtr, const std::string& lampGroupFile);
+    LampGroupManager(ControllerService& controllerSvc, LampManager& lampMgr, SceneElementManager* sceneElementMgrPtr, const std::string& lampGroupFile);
     /**
      * Clear all lamp groups from LampGroupManager. \n
      * sends signal to the controller client 'org.allseen.LSF.ControllerService.LampGroup' 'LampGroupsDeleted' indicating all the deleted groups. \n
@@ -217,9 +215,22 @@ class LampGroupManager : public Manager {
         lampGroupsLock.Unlock();
     }
     /**
+     * Get Blob Info about checksum and timestamp
+     */
+    void GetUpdateBlobInfo(uint32_t& checksum, uint64_t& timestamp) {
+        lampGroupsLock.Lock();
+        GetUpdateBlobInfoInternal(checksum, timestamp);
+        lampGroupsLock.Unlock();
+    }
+    /**
      * Handle Received Blob
      */
     void HandleReceivedBlob(const std::string& blob, uint32_t checksum, uint64_t timestamp);
+
+    /**
+     * Handle Received Update Blob
+     */
+    void HandleReceivedUpdateBlob(const std::string& blob, uint32_t checksum, uint64_t timestamp);
 
   protected:
     /**
@@ -227,9 +238,13 @@ class LampGroupManager : public Manager {
      */
     void ReplaceMap(std::istringstream& stream);
     /**
+     * Replace Updates List
+     */
+    void ReplaceUpdatesList(std::istringstream& stream);
+    /**
      * Get String
      */
-    virtual bool GetString(std::string& output, uint32_t& checksum, uint64_t& timestamp);
+    bool GetString(std::string& output, std::string& updates, uint32_t& checksum, uint64_t& timestamp, uint32_t& updatesChksum, uint64_t& updatesTs);
     /**
      * Get all lamps in the mentioned groups
      * @param lampGroupList - groups ids of those who needed to be searched.
@@ -259,16 +274,20 @@ class LampGroupManager : public Manager {
                                                  PulseLampsLampGroupsWithPresetList& pulseWithPresetComponent,
                                                  bool groupOperation = true, bool sceneOperation = false, LSFString sceneOrMasterSceneID = LSFString(), bool effectOperation = false);
 
-    LampGroupMap lampGroups;                            /**< lamp groups */
-    Mutex lampGroupsLock;                               /**< lamp groups lock */
-    LampManager& lampManager;                           /**< lamp manager */
-    SceneManager* sceneManagerPtr;                      /**< scene manager pointer */
-    SceneElementManager* sceneElementManagerPtr;        /**< scene element manager pointer */
-    size_t blobLength;                                  /**< blob length */
+    LampGroupMap lampGroups;                     /**< lamp groups */
+    std::set<LSFString> lampGroupUpdates;        /**< List of LampGroupIDs that were updated */
+    Mutex lampGroupsLock;                        /**< lamp groups lock */
+    LampManager& lampManager;                    /**< lamp manager */
+    SceneElementManager* sceneElementManagerPtr; /**< scene element manager pointer */
+    size_t blobLength;                           /**< blob length */
     /**
      * get lamp group string
      */
     std::string GetString(const LampGroupMap& items);
+    /**
+     * get updates string
+     */
+    std::string GetUpdatesString(const std::set<LSFString>& updates);
     /**
      * get lamp group string
      */
