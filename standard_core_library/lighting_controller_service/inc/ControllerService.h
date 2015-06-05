@@ -225,6 +225,10 @@ class ControllerService : public ajn::BusObject, public ajn::services::ConfigSer
     PulseEffectManager& GetPulseEffectManager(void) { return pulseEffectManager; };
     /**
      * Get reference to Unknown Blob Manager object
+     * The Unknown Blob Manager handles the synchronization of any new blob types
+     * that are unknown to the 14.12 Controller Service. This has been introduced
+     * to ensure back compatibility between 14.12 Controller Service and all
+     * future releases of the Controller Service
      * @return UnknownBlobGroupManager
      */
     UnknownBlobGroupManager& GetUnknownBlobGroupManager(void) { return unknownBlobGroupManager; };
