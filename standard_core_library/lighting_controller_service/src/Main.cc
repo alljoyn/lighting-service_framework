@@ -25,6 +25,7 @@
 #include <sstream>
 #include <OEM_CS_Config.h>
 #include <AJInitializer.h>
+#include <ControllerServiceManagerInit.h>
 
 #ifdef LSF_BINDINGS
 using namespace lsf::controllerservice;
@@ -166,7 +167,7 @@ static void RunService(bool listenToInterrupts)
 
 
     ControllerServiceManager* controllerSvcManagerPtr =
-        new ControllerServiceManager(factoryConfigFilePath, configFilePath, lampGroupFilePath, presetFilePath, transitionEffectFilePath, pulseEffectFilePath, sceneElementFilePath, sceneFilePath, sceneWithSceneElementFilePath, masterSceneFilePath);
+        InitializeControllerServiceManager(factoryConfigFilePath, configFilePath, lampGroupFilePath, presetFilePath, transitionEffectFilePath, pulseEffectFilePath, sceneElementFilePath, sceneFilePath, sceneWithSceneElementFilePath, masterSceneFilePath);
 
     if (controllerSvcManagerPtr == NULL) {
         QCC_LogError(ER_OUT_OF_MEMORY, ("%s: Failed to start the Controller Service Manager", __func__));
