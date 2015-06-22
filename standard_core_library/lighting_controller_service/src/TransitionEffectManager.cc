@@ -17,14 +17,14 @@
 #ifdef LSF_BINDINGS
 #include <lsf/controllerservice/TransitionEffectManager.h>
 #include <lsf/controllerservice/ControllerService.h>
-#include <lsf/controllerservice/SceneManager.h>
+#include <lsf/controllerservice/SceneElementManager.h>
 #include <lsf/controllerservice/OEM_CS_Config.h>
 #include <lsf/controllerservice/FileParser.h>
 #include <lsf/controllerservice/LampGroupManager.h>
 #else
 #include <TransitionEffectManager.h>
 #include <ControllerService.h>
-#include <SceneManager.h>
+#include <SceneElementManager.h>
 #include <OEM_CS_Config.h>
 #include <FileParser.h>
 #include <LampGroupManager.h>
@@ -42,11 +42,12 @@ using namespace controllerservice;
 #define QCC_MODULE "TRANSITION_EFFECT_MANAGER"
 #endif
 
-TransitionEffectManager::TransitionEffectManager(ControllerService& controllerSvc, LampGroupManager* lampGroupMgrPtr, SceneManager* sceneMgrPtr, const std::string& transitionEffectFile) :
-    Manager(controllerSvc, transitionEffectFile), lampGroupManagerPtr(lampGroupMgrPtr), sceneManagerPtr(sceneMgrPtr), blobLength(0)
+TransitionEffectManager::TransitionEffectManager(ControllerService& controllerSvc, LampGroupManager* lampGroupMgrPtr, SceneElementManager* sceneElementMgrPtr, const std::string& transitionEffectFile) :
+    Manager(controllerSvc, transitionEffectFile), lampGroupManagerPtr(lampGroupMgrPtr), sceneElementManagerPtr(sceneElementMgrPtr), blobLength(0)
 {
     QCC_DbgTrace(("%s", __func__));
     transitionEffects.clear();
+    transitionEffectUpdates.clear();
 }
 
 LSFResponseCode TransitionEffectManager::GetAllTransitionEffects(TransitionEffectMap& transitionEffectMap)
@@ -92,6 +93,7 @@ LSFResponseCode TransitionEffectManager::Reset(void)
          * Clear the TransitionEffects
          */
         transitionEffects.clear();
+        transitionEffectUpdates.clear();
         blobLength = 0;
         ScheduleFileWrite();
         tempStatus = transitionEffectsLock.Unlock();
@@ -300,10 +302,6 @@ void TransitionEffectManager::CreateTransitionEffect(Message& msg)
         return;
     }
 
-    transitionEffectID = GenerateUniqueID("TRANSITION_EFFECT");
-
-    bool created = false;
-
     const ajn::MsgArg* inputArgs;
     size_t numInputArgs;
     msg->GetArgs(numInputArgs, inputArgs);
@@ -316,57 +314,14 @@ void TransitionEffectManager::CreateTransitionEffect(Message& msg)
     LSFString name = static_cast<LSFString>(inputArgs[3].v_string.str);
     LSFString language = static_cast<LSFString>(inputArgs[4].v_string.str);
 
-    if (0 != strcmp("en", language.c_str())) {
-        QCC_LogError(ER_FAIL, ("%s: Language %s not supported", __func__, language.c_str()));
-        responseCode = LSF_ERR_INVALID_ARGS;
-    } else if (name.empty()) {
-        QCC_LogError(ER_FAIL, ("%s: transition effect name is empty", __func__));
-        responseCode = LSF_ERR_EMPTY_NAME;
-    } else if (transitionEffect.invalidArgs) {
-        QCC_LogError(ER_FAIL, ("%s: Cannot save invalid TransitionEffect", __func__, language.c_str()));
-        responseCode = LSF_ERR_INVALID_ARGS;
-    } else if (name.length() > LSF_MAX_NAME_LENGTH) {
-        QCC_LogError(ER_FAIL, ("%s: name length exceeds %d", __func__, LSF_MAX_NAME_LENGTH));
-        responseCode = LSF_ERR_INVALID_ARGS;
-    } else {
-        QStatus status = transitionEffectsLock.Lock();
-        if (ER_OK == status) {
-            if (transitionEffects.size() < OEM_CS_MAX_SUPPORTED_NUM_LSF_ENTITY) {
-                std::string newTransitionEffectStr = GetString(name, transitionEffectID, transitionEffect);
-                size_t newlen = blobLength + newTransitionEffectStr.length();
-                if (newlen < MAX_FILE_LEN) {
-                    blobLength = newlen;
-                    transitionEffects[transitionEffectID].first = name;
-                    transitionEffects[transitionEffectID].second = transitionEffect;
-                    created = true;
-                    ScheduleFileWrite();
-                } else {
-                    responseCode = LSF_ERR_RESOURCES;
-                }
-            } else {
-                QCC_LogError(ER_FAIL, ("%s: No slot for new TransitionEffect", __func__));
-                responseCode = LSF_ERR_NO_SLOT;
-            }
-            status = transitionEffectsLock.Unlock();
-            if (ER_OK != status) {
-                QCC_LogError(status, ("%s: transitionEffectsLock.Unlock() failed", __func__));
-            }
-        } else {
-            responseCode = LSF_ERR_BUSY;
-            QCC_LogError(status, ("%s: transitionEffectsLock.Lock() failed", __func__));
-        }
-    }
-
-    if (!created) {
-        transitionEffectID.clear();
-    }
+    responseCode = CreateTransitionEffectInternal(transitionEffect, name, language, transitionEffectID);
 
     controllerService.SendMethodReplyWithResponseCodeAndID(msg, responseCode, transitionEffectID);
 
-    if (created) {
+    if (responseCode == LSF_OK) {
         LSFStringList idList;
         idList.push_back(transitionEffectID);
-        controllerService.SendSignal(ControllerServiceTransitionEffectInterfaceName, "TransitionEffectsCreated", idList);
+        SendTransitionEffectsCreatedSignal(idList);
     }
 }
 
@@ -414,6 +369,9 @@ void TransitionEffectManager::UpdateTransitionEffect(Message& msg)
                     blobLength = newlen;
                     transitionEffects[transitionEffectID].second = transitionEffect;
                     responseCode = LSF_OK;
+                    if (transitionEffectUpdates.find(transitionEffectID) == transitionEffectUpdates.end()) {
+                        transitionEffectUpdates.insert(transitionEffectID);
+                    }
                     updated = true;
                     ScheduleFileWrite();
                 } else {
@@ -436,6 +394,10 @@ void TransitionEffectManager::UpdateTransitionEffect(Message& msg)
         LSFStringList idList;
         idList.push_back(transitionEffectID);
         controllerService.SendSignal(ControllerServiceTransitionEffectInterfaceName, "TransitionEffectsUpdated", idList);
+        responseCode = sceneElementManagerPtr->IsDependentOnEffect(transitionEffectID);
+        if (LSF_ERR_DEPENDENCY == responseCode) {
+            controllerService.GetSceneManager().RefreshSceneData();
+        }
     }
 }
 
@@ -528,7 +490,20 @@ void TransitionEffectManager::ApplyTransitionEffectOnLampGroups(Message& msg)
         args[1].Get("as", &idsSize, &idsArray);
         CreateUniqueList(lampGroups, idsArray, idsSize);
 
-        responseCode = ApplyTransitionEffectInternal(msg, transitionEffect, lamps, lampGroups);
+        TransitionLampsLampGroupsToStateList transitionToStateComponent;
+        TransitionLampsLampGroupsToPresetList transitionToPresetComponent;
+        PulseLampsLampGroupsWithStateList pulseWithStateComponent;
+        PulseLampsLampGroupsWithPresetList pulseWithPresetComponent;
+
+        if (transitionEffect.state.nullState) {
+            TransitionLampsLampGroupsToPreset component(lamps, lampGroups, transitionEffect.presetID, transitionEffect.transitionPeriod);
+            transitionToPresetComponent.push_back(component);
+        } else {
+            TransitionLampsLampGroupsToState component(lamps, lampGroups, transitionEffect.state, transitionEffect.transitionPeriod);
+            transitionToStateComponent.push_back(component);
+        }
+        responseCode = lampGroupManagerPtr->ChangeLampGroupStateAndField(msg, transitionToStateComponent, transitionToPresetComponent, pulseWithStateComponent, pulseWithPresetComponent,
+                                                                         false, false, LSFString(), true);
     }
 
     if (LSF_ERR_NOT_FOUND == responseCode) {
@@ -536,32 +511,10 @@ void TransitionEffectManager::ApplyTransitionEffectOnLampGroups(Message& msg)
     }
 }
 
-LSFResponseCode TransitionEffectManager::ApplyTransitionEffectInternal(Message& msg, TransitionEffect& transitionEffect, LSFStringList& lamps, LSFStringList& lampGroups, bool sceneElementOperation)
-{
-    TransitionLampsLampGroupsToStateList transitionToStateComponent;
-    TransitionLampsLampGroupsToPresetList transitionToPresetComponent;
-    PulseLampsLampGroupsWithStateList pulseWithStateComponent;
-    PulseLampsLampGroupsWithPresetList pulseWithPresetComponent;
-
-    if (transitionEffect.state.nullState) {
-        TransitionLampsLampGroupsToPreset component(lamps, lampGroups, transitionEffect.presetID, transitionEffect.transitionPeriod);
-        transitionToPresetComponent.push_back(component);
-    } else {
-        TransitionLampsLampGroupsToState component(lamps, lampGroups, transitionEffect.state, transitionEffect.transitionPeriod);
-        transitionToStateComponent.push_back(component);
-    }
-
-    return lampGroupManagerPtr->ChangeLampGroupStateAndField(msg, transitionToStateComponent, transitionToPresetComponent,
-                                                             pulseWithStateComponent, pulseWithPresetComponent,
-                                                             sceneElementOperation, false, LSFString(), !sceneElementOperation);
-}
-
 void TransitionEffectManager::DeleteTransitionEffect(Message& msg)
 {
     QCC_DbgPrintf(("%s: %s", __func__, msg->ToString().c_str()));
     LSFResponseCode responseCode = LSF_OK;
-
-    bool deleted = false;
 
     size_t numArgs;
     const MsgArg* args;
@@ -581,33 +534,11 @@ void TransitionEffectManager::DeleteTransitionEffect(Message& msg)
         return;
     }
 
-    responseCode = sceneManagerPtr->IsDependentOnTransitionEffect(transitionEffectID);
-
-    if (LSF_OK == responseCode) {
-        QStatus status = transitionEffectsLock.Lock();
-        if (ER_OK == status) {
-            TransitionEffectMap::iterator it = transitionEffects.find(transitionEffectId);
-            if (it != transitionEffects.end()) {
-                blobLength -= GetString(it->second.first, transitionEffectId, it->second.second).length();
-                transitionEffects.erase(it);
-                deleted = true;
-                ScheduleFileWrite();
-            } else {
-                responseCode = LSF_ERR_NOT_FOUND;
-            }
-            status = transitionEffectsLock.Unlock();
-            if (ER_OK != status) {
-                QCC_LogError(status, ("%s: transitionEffectsLock.Unlock() failed", __func__));
-            }
-        } else {
-            responseCode = LSF_ERR_BUSY;
-            QCC_LogError(status, ("%s: transitionEffectsLock.Lock() failed", __func__));
-        }
-    }
+    responseCode = DeleteTransitionEffectInternal(transitionEffectID);
 
     controllerService.SendMethodReplyWithResponseCodeAndID(msg, responseCode, transitionEffectID);
 
-    if (deleted) {
+    if (responseCode == LSF_OK) {
         LSFStringList idList;
         idList.push_back(transitionEffectID);
         controllerService.SendSignal(ControllerServiceTransitionEffectInterfaceName, "TransitionEffectsDeleted", idList);
@@ -671,6 +602,11 @@ void TransitionEffectManager::ReadSavedData(void)
 
     blobLength = stream.str().size();
     ReplaceMap(stream);
+
+    std::istringstream updateStream;
+    if (ValidateUpdateFileAndRead(updateStream)) {
+        ReplaceUpdatesList(updateStream);
+    }
 }
 
 void TransitionEffectManager::HandleReceivedBlob(const std::string& blob, uint32_t checksum, uint64_t timestamp)
@@ -688,6 +624,21 @@ void TransitionEffectManager::HandleReceivedBlob(const std::string& blob, uint32
     transitionEffectsLock.Unlock();
 }
 
+void TransitionEffectManager::HandleReceivedUpdateBlob(const std::string& blob, uint32_t checksum, uint64_t timestamp)
+{
+    QCC_DbgPrintf(("%s", __func__));
+    uint64_t currentTimestamp = GetTimestampInMs();
+    transitionEffectsLock.Lock();
+    if (((updatesTimeStamp == 0) || ((currentTimestamp - updatesTimeStamp) > timestamp)) && (updatesCheckSum != checksum)) {
+        std::istringstream stream(blob.c_str());
+        ReplaceUpdatesList(stream);
+        updatesTimeStamp = currentTimestamp;
+        updatesCheckSum = checksum;
+        ScheduleFileWrite(true);
+    }
+    transitionEffectsLock.Unlock();
+}
+
 void TransitionEffectManager::ReplaceMap(std::istringstream& stream)
 {
     QCC_DbgTrace(("%s", __func__));
@@ -696,7 +647,10 @@ void TransitionEffectManager::ReplaceMap(std::istringstream& stream)
         std::string token = ParseString(stream);
 
         // keep searching for "TransitionEffect", which indicates the beginning of a saved TransitionEffect state
-        if (token == "TransitionEffect") {
+        if (token == resetID) {
+            QCC_DbgPrintf(("The file has a reset entry. Clearing the map"));
+            transitionEffects.clear();
+        } else if (token == "TransitionEffect") {
             std::string transitionEffectId = ParseString(stream);
             std::string transitionEffectName = ParseString(stream);
 
@@ -712,7 +666,7 @@ void TransitionEffectManager::ReplaceMap(std::istringstream& stream)
                     transitionEffects.clear();
                     firstIteration = false;
                 }
-
+                blobLength += transitionEffectId.length();
                 bool containsLampState = ParseValue<bool>(stream);
 
                 LampState state;
@@ -739,6 +693,146 @@ void TransitionEffectManager::ReplaceMap(std::istringstream& stream)
             }
         }
     }
+}
+
+void TransitionEffectManager::ReplaceUpdatesList(std::istringstream& stream)
+{
+    QCC_DbgTrace(("%s", __func__));
+    bool firstIteration = true;
+    while (!stream.eof()) {
+        std::string id = ParseString(stream);
+        if (0 == strcmp(id.c_str(), resetID.c_str())) {
+            QCC_DbgPrintf(("The file has a reset entry. Clearing the list"));
+            transitionEffectUpdates.clear();
+        } else if (0 == strcmp(id.c_str(), initialStateID.c_str())) {
+            QCC_DbgPrintf(("The file has a initialState entry. So we ignore it"));
+        } else {
+            if (firstIteration) {
+                transitionEffectUpdates.clear();
+                firstIteration = false;
+            }
+            if (!id.empty()) {
+                transitionEffectUpdates.insert(id);
+                QCC_DbgPrintf(("%s: Add %s to updates list", __func__, id.c_str()));
+            }
+        }
+    }
+}
+
+LSFResponseCode TransitionEffectManager::CreateTransitionEffectInternal(TransitionEffect& transitionEffect, LSFString& name, LSFString& language, LSFString& transitionEffectID)
+{
+    QCC_DbgTrace(("%s", __func__));
+    bool created = false;
+    LSFResponseCode responseCode = LSF_OK;
+    transitionEffectID = GenerateUniqueID("TRANSITION_EFFECT");
+
+    if (0 != strcmp("en", language.c_str())) {
+        QCC_LogError(ER_FAIL, ("%s: Language %s not supported", __func__, language.c_str()));
+        responseCode = LSF_ERR_INVALID_ARGS;
+    } else if (name.empty()) {
+        QCC_LogError(ER_FAIL, ("%s: transition effect name is empty", __func__));
+        responseCode = LSF_ERR_EMPTY_NAME;
+    } else if (transitionEffect.invalidArgs) {
+        QCC_LogError(ER_FAIL, ("%s: Cannot save invalid TransitionEffect", __func__, language.c_str()));
+        responseCode = LSF_ERR_INVALID_ARGS;
+    } else if (name.length() > LSF_MAX_NAME_LENGTH) {
+        QCC_LogError(ER_FAIL, ("%s: name length exceeds %d", __func__, LSF_MAX_NAME_LENGTH));
+        responseCode = LSF_ERR_INVALID_ARGS;
+    } else {
+        QStatus status = transitionEffectsLock.Lock();
+        if (ER_OK == status) {
+            if (transitionEffects.size() < OEM_CS_MAX_SUPPORTED_NUM_LSF_ENTITY) {
+                std::string newTransitionEffectStr = GetString(name, transitionEffectID, transitionEffect);
+                size_t newlen = blobLength + newTransitionEffectStr.length() + transitionEffectID.length();
+                if (newlen < MAX_FILE_LEN) {
+                    blobLength = newlen;
+                    transitionEffects[transitionEffectID].first = name;
+                    transitionEffects[transitionEffectID].second = transitionEffect;
+                    created = true;
+                    ScheduleFileWrite();
+                } else {
+                    responseCode = LSF_ERR_RESOURCES;
+                }
+            } else {
+                QCC_LogError(ER_FAIL, ("%s: No slot for new TransitionEffect", __func__));
+                responseCode = LSF_ERR_NO_SLOT;
+            }
+            status = transitionEffectsLock.Unlock();
+            if (ER_OK != status) {
+                QCC_LogError(status, ("%s: transitionEffectsLock.Unlock() failed", __func__));
+            }
+        } else {
+            responseCode = LSF_ERR_BUSY;
+            QCC_LogError(status, ("%s: transitionEffectsLock.Lock() failed", __func__));
+        }
+    }
+
+    if (!created) {
+        transitionEffectID.clear();
+    }
+
+    return responseCode;
+}
+
+void TransitionEffectManager::SendTransitionEffectsCreatedSignal(LSFStringList& transitionEffectIds)
+{
+    QCC_DbgTrace(("%s", __func__));
+    controllerService.SendSignal(ControllerServiceTransitionEffectInterfaceName, "TransitionEffectsCreated", transitionEffectIds);
+}
+
+LSFResponseCode TransitionEffectManager::DeleteTransitionEffectInternal(LSFString& transitionEffectID)
+{
+    QCC_DbgTrace(("%s", __func__));
+    LSFResponseCode responseCode = LSF_OK;
+
+    responseCode = sceneElementManagerPtr->IsDependentOnEffect(transitionEffectID);
+
+    if (LSF_OK == responseCode) {
+        QStatus status = transitionEffectsLock.Lock();
+        if (ER_OK == status) {
+            TransitionEffectMap::iterator it = transitionEffects.find(transitionEffectID);
+            if (it != transitionEffects.end()) {
+                blobLength -= ((GetString(it->second.first, transitionEffectID, it->second.second).length()) + transitionEffectID.length());
+                transitionEffects.erase(it);
+                if (transitionEffectUpdates.find(transitionEffectID) != transitionEffectUpdates.end()) {
+                    transitionEffectUpdates.erase(transitionEffectID);
+                }
+                ScheduleFileWrite();
+            } else {
+                responseCode = LSF_ERR_NOT_FOUND;
+            }
+            status = transitionEffectsLock.Unlock();
+            if (ER_OK != status) {
+                QCC_LogError(status, ("%s: transitionEffectsLock.Unlock() failed", __func__));
+            }
+        } else {
+            responseCode = LSF_ERR_BUSY;
+            QCC_LogError(status, ("%s: transitionEffectsLock.Lock() failed", __func__));
+        }
+    }
+
+    return responseCode;
+}
+
+std::string TransitionEffectManager::GetUpdatesString(const std::set<LSFString>& updates)
+{
+    QCC_DbgTrace(("%s", __func__));
+    std::ostringstream stream;
+    if (0 == updates.size()) {
+        if (initialState) {
+            QCC_DbgPrintf(("%s: This is the initial state entry", __func__));
+            stream << initialStateID << std::endl;
+        } else {
+            QCC_DbgPrintf(("%s: File is being reset", __func__));
+            stream << resetID << std::endl;
+        }
+    } else {
+        for (std::set<LSFString>::const_iterator it = updates.begin(); it != updates.end(); ++it) {
+            stream << *it << std::endl;
+        }
+    }
+
+    return stream.str();
 }
 
 std::string TransitionEffectManager::GetString(const std::string& name, const std::string& id, const TransitionEffect& transitionEffect)
@@ -791,17 +885,21 @@ std::string TransitionEffectManager::GetString(const TransitionEffectMap& items)
     return stream.str();
 }
 
-bool TransitionEffectManager::GetString(std::string& output, uint32_t& checksum, uint64_t& timestamp)
+bool TransitionEffectManager::GetString(std::string& output, std::string& updates, uint32_t& checksum, uint64_t& timestamp, uint32_t& updatesChksum, uint64_t& updatesTs)
 {
     TransitionEffectMap mapCopy;
     mapCopy.clear();
+    std::set<LSFString> updatesCopy;
+    updatesCopy.clear();
     bool ret = false;
     output.clear();
+    updates.clear();
 
     transitionEffectsLock.Lock();
     // we can't hold this lock for the entire time!
     if (updated) {
         mapCopy = transitionEffects;
+        updatesCopy = transitionEffectUpdates;
         updated = false;
         ret = true;
     }
@@ -809,20 +907,24 @@ bool TransitionEffectManager::GetString(std::string& output, uint32_t& checksum,
 
     if (ret) {
         output = GetString(mapCopy);
+        updates = GetUpdatesString(updatesCopy);
         transitionEffectsLock.Lock();
         if (blobUpdateCycle) {
-            checksum = checkSum;
             timestamp = timeStamp;
+            updatesTs = updatesTimeStamp;
             blobUpdateCycle = false;
         } else {
             if (initialState) {
                 timeStamp = timestamp = 0UL;
+                updatesTimeStamp = updatesTs = 0UL;
                 initialState = false;
             } else {
                 timeStamp = timestamp = GetTimestampInMs();
+                updatesTimeStamp = updatesTs = GetTimestampInMs();
             }
-            checkSum = checksum = GetChecksum(output);
         }
+        checkSum = checksum = GetChecksum(output);
+        updatesCheckSum = updatesChksum = GetChecksum(updates);
         transitionEffectsLock.Unlock();
     }
 
@@ -833,16 +935,19 @@ void TransitionEffectManager::ReadWriteFile()
 {
     QCC_DbgPrintf(("%s", __func__));
 
-    if (filePath.empty()) {
+    if (filePath.empty() || updateFilePath.empty()) {
         return;
     }
 
     std::string output;
     uint32_t checksum;
     uint64_t timestamp;
+    std::string updates;
+    uint32_t updateChecksum;
+    uint64_t updateTimestamp;
     bool status = false;
 
-    status = GetString(output, checksum, timestamp);
+    status = GetString(output, updates, checksum, timestamp, updateChecksum, updateTimestamp);
 
     if (status) {
         WriteFileWithChecksumAndTimestamp(output, checksum, timestamp);
@@ -850,33 +955,52 @@ void TransitionEffectManager::ReadWriteFile()
             uint64_t currentTime = GetTimestampInMs();
             controllerService.SendBlobUpdate(LSF_TRANSITION_EFFECT, output, checksum, (currentTime - timestamp));
         }
+
+        WriteUpdatesFileWithChecksumAndTimestamp(updates, updateChecksum, updateTimestamp);
+        if (updateTimestamp != 0UL) {
+            uint64_t currentTime = GetTimestampInMs();
+            controllerService.SendBlobUpdate(LSF_TRANSITION_EFFECT_UPDATE, updates, updateChecksum, (currentTime - updateTimestamp));
+        }
     }
 
     std::list<ajn::Message> tempMessageList;
+    std::list<ajn::Message> tempUpdateMessageList;
 
     readMutex.Lock();
     if (read) {
         tempMessageList = readBlobMessages;
         readBlobMessages.clear();
+        tempUpdateMessageList = readUpdateBlobMessages;
+        readUpdateBlobMessages.clear();
         read = false;
     }
     readMutex.Unlock();
 
-    if ((tempMessageList.size() || sendUpdate) && !status) {
+    if ((tempMessageList.size() || tempUpdateMessageList.size() || sendUpdate) && !status) {
         std::istringstream stream;
-        status = ValidateFileAndReadInternal(checksum, timestamp, stream);
-        if (status) {
+        bool fileStatus = ValidateFileAndReadInternal(checksum, timestamp, stream);
+        if (fileStatus) {
             output = stream.str();
+            while (!tempMessageList.empty()) {
+                uint64_t currentTime = GetTimestampInMs();
+                controllerService.SendGetBlobReply(tempMessageList.front(), LSF_TRANSITION_EFFECT, output, checksum, (currentTime - timestamp));
+                tempMessageList.pop_front();
+            }
         } else {
             QCC_LogError(ER_FAIL, ("%s: TransitionEffect persistent store corrupted", __func__));
         }
-    }
 
-    if (status) {
-        while (tempMessageList.size()) {
-            uint64_t currentTime = GetTimestampInMs();
-            controllerService.SendGetBlobReply(tempMessageList.front(), LSF_TRANSITION_EFFECT, output, checksum, (currentTime - timestamp));
-            tempMessageList.pop_front();
+        std::istringstream updateStream;
+        bool updateStatus = ValidateUpdateFileAndReadInternal(updateChecksum, updateTimestamp, updateStream);
+        if (updateStatus) {
+            updates = updateStream.str();
+            while (!tempUpdateMessageList.empty()) {
+                uint64_t currentTime = GetTimestampInMs();
+                controllerService.SendGetBlobReply(tempUpdateMessageList.front(), LSF_TRANSITION_EFFECT_UPDATE, updates, updateChecksum, (currentTime - updateTimestamp));
+                tempUpdateMessageList.pop_front();
+            }
+        } else {
+            QCC_LogError(ER_FAIL, ("%s: TransitionEffect Update persistent store corrupted", __func__));
         }
     }
 
@@ -884,6 +1008,7 @@ void TransitionEffectManager::ReadWriteFile()
         sendUpdate = false;
         uint64_t currentTime = GetTimestampInMs();
         controllerService.GetLeaderElectionObj().SendBlobUpdate(LSF_TRANSITION_EFFECT, output, checksum, (currentTime - timestamp));
+        controllerService.GetLeaderElectionObj().SendBlobUpdate(LSF_TRANSITION_EFFECT_UPDATE, updates, updateChecksum, (currentTime - updateTimestamp));
     }
 }
 

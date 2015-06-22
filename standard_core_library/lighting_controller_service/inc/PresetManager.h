@@ -41,20 +41,24 @@ namespace lsf {
 OPTIONAL_NAMESPACE_CONTROLLER_SERVICE
 
 class SceneManager;
+class SceneElementManager;
+
 /**
  * class manages the preset of the lamps. \n
  * preset is the ability to save lamp states and to use them when required later on.
  */
 class PresetManager : public Manager {
     friend class LampManager;
+    friend class SceneElementManager;
+    friend class SceneManager;
   public:
     /**
      * class constructor. \n
      * @param controllerSvc - reference to controller service instance
-     * @param sceneMgrPtr - pointer to scene manager
+     * @param sceneElementMgrPtr - pointer to scene element manager
      * @param presetFile - The full path of preset file to be the persistent data
      */
-    PresetManager(ControllerService& controllerSvc, SceneManager* sceneMgrPtr, const std::string& presetFile);
+    PresetManager(ControllerService& controllerSvc, SceneElementManager* sceneElementMgrPtr, const std::string& presetFile);
     /**
      * Clears the presets data. \n
      * Send signal to the controller clients 'org.allseen.LSF.ControllerService.Preset' 'PresetsDeleted'. \n
@@ -184,6 +188,10 @@ class PresetManager : public Manager {
      */
     void HandleReceivedBlob(const std::string& blob, uint32_t checksum, uint64_t timestamp);
     /**
+     * Handle Received Update Blob
+     */
+    void HandleReceivedUpdateBlob(const std::string& blob, uint32_t checksum, uint64_t timestamp);
+    /**
      * Get Controller Service Preset Interface Version. \n
      * @return 32 unsigned integer version. \n
      */
@@ -192,7 +200,7 @@ class PresetManager : public Manager {
      * Get the presets information as a string. \n
      * @return true if data is written to file
      */
-    virtual bool GetString(std::string& output, uint32_t& checksum, uint64_t& timestamp);
+    bool GetString(std::string& output, std::string& updates, uint32_t& checksum, uint64_t& timestamp, uint32_t& updatesChksum, uint64_t& updatesTs);
     /**
      * Get blob information about checksum and time stamp.
      */
@@ -201,19 +209,33 @@ class PresetManager : public Manager {
         GetBlobInfoInternal(checksum, timestamp);
         presetsLock.Unlock();
     }
+    /**
+     * Get blob information about checksum and time stamp.
+     */
+    void GetUpdateBlobInfo(uint32_t& checksum, uint64_t& timestamp) {
+        presetsLock.Lock();
+        GetUpdateBlobInfoInternal(checksum, timestamp);
+        presetsLock.Unlock();
+    }
 
   private:
 
     void ReplaceMap(std::istringstream& stream);
 
+    void ReplaceUpdatesList(std::istringstream& stream);
+
+    LSFResponseCode CreatePresetInternal(LampState& preset, LSFString& name, LSFString& language, LSFString& presetID);
+
     LSFResponseCode SetDefaultLampStateInternal(LampState& state);
 
     PresetMap presets;
+    std::set<LSFString> presetUpdates;    /**< List of PresetIDs that were updated */
     Mutex presetsLock;
-    SceneManager* sceneManagerPtr;
+    SceneElementManager* sceneElementManagerPtr;
     size_t blobLength;
 
     std::string GetString(const PresetMap& items);
+    std::string GetUpdatesString(const std::set<LSFString>& updates);
     std::string GetString(const std::string& name, const std::string& id, const LampState& preset);
 };
 

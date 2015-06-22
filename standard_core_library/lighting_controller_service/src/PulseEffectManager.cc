@@ -17,13 +17,13 @@
 #ifdef LSF_BINDINGS
 #include <lsf/controllerservice/PulseEffectManager.h>
 #include <lsf/controllerservice/ControllerService.h>
-#include <lsf/controllerservice/SceneManager.h>
+#include <lsf/controllerservice/SceneElementManager.h>
 #include <lsf/controllerservice/OEM_CS_Config.h>
 #include <lsf/controllerservice/FileParser.h>
 #else
 #include <PulseEffectManager.h>
 #include <ControllerService.h>
-#include <SceneManager.h>
+#include <SceneElementManager.h>
 #include <OEM_CS_Config.h>
 #include <FileParser.h>
 #endif
@@ -40,11 +40,12 @@ using namespace controllerservice;
 #define QCC_MODULE "PULSE_EFFECT_MANAGER"
 #endif
 
-PulseEffectManager::PulseEffectManager(ControllerService& controllerSvc, LampGroupManager* lampGroupMgrPtr, SceneManager* sceneMgrPtr, const std::string& pulseEffectFile) :
-    Manager(controllerSvc, pulseEffectFile), lampGroupManagerPtr(lampGroupMgrPtr), sceneManagerPtr(sceneMgrPtr), blobLength(0)
+PulseEffectManager::PulseEffectManager(ControllerService& controllerSvc, LampGroupManager* lampGroupMgrPtr, SceneElementManager* sceneElementMgrPtr, const std::string& pulseEffectFile) :
+    Manager(controllerSvc, pulseEffectFile), lampGroupManagerPtr(lampGroupMgrPtr), sceneElementManagerPtr(sceneElementMgrPtr), blobLength(0)
 {
     QCC_DbgTrace(("%s", __func__));
     pulseEffects.clear();
+    pulseEffectUpdates.clear();
 }
 
 LSFResponseCode PulseEffectManager::GetAllPulseEffects(PulseEffectMap& pulseEffectMap)
@@ -90,6 +91,7 @@ LSFResponseCode PulseEffectManager::Reset(void)
          * Clear the PulseEffects
          */
         pulseEffects.clear();
+        pulseEffectUpdates.clear();
         blobLength = 0;
         ScheduleFileWrite();
         tempStatus = pulseEffectsLock.Unlock();
@@ -298,10 +300,6 @@ void PulseEffectManager::CreatePulseEffect(Message& msg)
         return;
     }
 
-    pulseEffectID = GenerateUniqueID("PULSE_EFFECT");
-
-    bool created = false;
-
     const ajn::MsgArg* inputArgs;
     size_t numInputArgs;
     msg->GetArgs(numInputArgs, inputArgs);
@@ -314,57 +312,14 @@ void PulseEffectManager::CreatePulseEffect(Message& msg)
     LSFString name = static_cast<LSFString>(inputArgs[7].v_string.str);
     LSFString language = static_cast<LSFString>(inputArgs[8].v_string.str);
 
-    if (0 != strcmp("en", language.c_str())) {
-        QCC_LogError(ER_FAIL, ("%s: Language %s not supported", __func__, language.c_str()));
-        responseCode = LSF_ERR_INVALID_ARGS;
-    } else if (name.empty()) {
-        QCC_LogError(ER_FAIL, ("%s: pulse effect name is empty", __func__));
-        responseCode = LSF_ERR_EMPTY_NAME;
-    } else if (pulseEffect.invalidArgs) {
-        QCC_LogError(ER_FAIL, ("%s: Cannot save invalid PulseEffect", __func__, language.c_str()));
-        responseCode = LSF_ERR_INVALID_ARGS;
-    } else if (name.length() > LSF_MAX_NAME_LENGTH) {
-        QCC_LogError(ER_FAIL, ("%s: name length exceeds %d", __func__, LSF_MAX_NAME_LENGTH));
-        responseCode = LSF_ERR_INVALID_ARGS;
-    } else {
-        QStatus status = pulseEffectsLock.Lock();
-        if (ER_OK == status) {
-            if (pulseEffects.size() < OEM_CS_MAX_SUPPORTED_NUM_LSF_ENTITY) {
-                std::string newPulseEffectStr = GetString(name, pulseEffectID, pulseEffect);
-                size_t newlen = blobLength + newPulseEffectStr.length();
-                if (newlen < MAX_FILE_LEN) {
-                    blobLength = newlen;
-                    pulseEffects[pulseEffectID].first = name;
-                    pulseEffects[pulseEffectID].second = pulseEffect;
-                    created = true;
-                    ScheduleFileWrite();
-                } else {
-                    responseCode = LSF_ERR_RESOURCES;
-                }
-            } else {
-                QCC_LogError(ER_FAIL, ("%s: No slot for new PulseEffect", __func__));
-                responseCode = LSF_ERR_NO_SLOT;
-            }
-            status = pulseEffectsLock.Unlock();
-            if (ER_OK != status) {
-                QCC_LogError(status, ("%s: pulseEffectsLock.Unlock() failed", __func__));
-            }
-        } else {
-            responseCode = LSF_ERR_BUSY;
-            QCC_LogError(status, ("%s: pulseEffectsLock.Lock() failed", __func__));
-        }
-    }
-
-    if (!created) {
-        pulseEffectID.clear();
-    }
+    responseCode = CreatePulseEffectInternal(pulseEffect, name, language, pulseEffectID);
 
     controllerService.SendMethodReplyWithResponseCodeAndID(msg, responseCode, pulseEffectID);
 
-    if (created) {
+    if (responseCode == LSF_OK) {
         LSFStringList idList;
         idList.push_back(pulseEffectID);
-        controllerService.SendSignal(ControllerServicePulseEffectInterfaceName, "PulseEffectsCreated", idList);
+        SendPulseEffectsCreatedSignal(idList);
     }
 }
 
@@ -404,7 +359,7 @@ void PulseEffectManager::UpdatePulseEffect(Message& msg)
             PulseEffectMap::iterator it = pulseEffects.find(pulseEffectId);
             if (it != pulseEffects.end()) {
                 size_t newlen = blobLength;
-                // sub len of old group, add len of new group
+                // sub len of old pulse effect, add len of new pulse effect
                 newlen -= GetString(it->second.first, pulseEffectID, it->second.second).length();
                 newlen += GetString(it->second.first, pulseEffectID, pulseEffect).length();
 
@@ -412,6 +367,9 @@ void PulseEffectManager::UpdatePulseEffect(Message& msg)
                     blobLength = newlen;
                     pulseEffects[pulseEffectID].second = pulseEffect;
                     responseCode = LSF_OK;
+                    if (pulseEffectUpdates.find(pulseEffectID) == pulseEffectUpdates.end()) {
+                        pulseEffectUpdates.insert(pulseEffectID);
+                    }
                     updated = true;
                     ScheduleFileWrite();
                 } else {
@@ -434,6 +392,10 @@ void PulseEffectManager::UpdatePulseEffect(Message& msg)
         LSFStringList idList;
         idList.push_back(pulseEffectID);
         controllerService.SendSignal(ControllerServicePulseEffectInterfaceName, "PulseEffectsUpdated", idList);
+        responseCode = sceneElementManagerPtr->IsDependentOnEffect(pulseEffectID);
+        if (LSF_ERR_DEPENDENCY == responseCode) {
+            controllerService.GetSceneManager().RefreshSceneData();
+        }
     }
 }
 
@@ -470,7 +432,22 @@ void PulseEffectManager::ApplyPulseEffectOnLamps(Message& msg)
         args[1].Get("as", &idsSize, &idsArray);
         CreateUniqueList(lamps, idsArray, idsSize);
 
-        responseCode = ApplyPulseEffectInternal(msg, pulseEffect, lamps, lampGroups);
+        TransitionLampsLampGroupsToStateList transitionToStateComponent;
+        TransitionLampsLampGroupsToPresetList transitionToPresetComponent;
+        PulseLampsLampGroupsWithStateList pulseWithStateComponent;
+        PulseLampsLampGroupsWithPresetList pulseWithPresetComponent;
+
+        if (pulseEffect.toState.nullState) {
+            PulseLampsLampGroupsWithPreset component(lamps, lampGroups, pulseEffect.fromPreset, pulseEffect.toPreset, pulseEffect.pulsePeriod, pulseEffect.pulseDuration, pulseEffect.numPulses);
+            pulseWithPresetComponent.push_back(component);
+        } else {
+            PulseLampsLampGroupsWithState component(lamps, lampGroups, pulseEffect.fromState, pulseEffect.toState, pulseEffect.pulsePeriod, pulseEffect.pulseDuration, pulseEffect.numPulses);
+            pulseWithStateComponent.push_back(component);
+        }
+
+        responseCode = lampGroupManagerPtr->ChangeLampGroupStateAndField(msg, transitionToStateComponent, transitionToPresetComponent,
+                                                                         pulseWithStateComponent, pulseWithPresetComponent,
+                                                                         false, false, LSFString(), true);
     }
 
     if (LSF_ERR_NOT_FOUND == responseCode) {
@@ -511,7 +488,22 @@ void PulseEffectManager::ApplyPulseEffectOnLampGroups(Message& msg)
         args[1].Get("as", &idsSize, &idsArray);
         CreateUniqueList(lampGroups, idsArray, idsSize);
 
-        responseCode = ApplyPulseEffectInternal(msg, pulseEffect, lamps, lampGroups);
+        TransitionLampsLampGroupsToStateList transitionToStateComponent;
+        TransitionLampsLampGroupsToPresetList transitionToPresetComponent;
+        PulseLampsLampGroupsWithStateList pulseWithStateComponent;
+        PulseLampsLampGroupsWithPresetList pulseWithPresetComponent;
+
+        if (pulseEffect.toState.nullState) {
+            PulseLampsLampGroupsWithPreset component(lamps, lampGroups, pulseEffect.fromPreset, pulseEffect.toPreset, pulseEffect.pulsePeriod, pulseEffect.pulseDuration, pulseEffect.numPulses);
+            pulseWithPresetComponent.push_back(component);
+        } else {
+            PulseLampsLampGroupsWithState component(lamps, lampGroups, pulseEffect.fromState, pulseEffect.toState, pulseEffect.pulsePeriod, pulseEffect.pulseDuration, pulseEffect.numPulses);
+            pulseWithStateComponent.push_back(component);
+        }
+
+        responseCode = lampGroupManagerPtr->ChangeLampGroupStateAndField(msg, transitionToStateComponent, transitionToPresetComponent,
+                                                                         pulseWithStateComponent, pulseWithPresetComponent,
+                                                                         false, false, LSFString(), true);
     }
 
     if (LSF_ERR_NOT_FOUND == responseCode) {
@@ -519,32 +511,10 @@ void PulseEffectManager::ApplyPulseEffectOnLampGroups(Message& msg)
     }
 }
 
-LSFResponseCode PulseEffectManager::ApplyPulseEffectInternal(Message& msg, PulseEffect& pulseEffect, LSFStringList& lamps, LSFStringList& lampGroups, bool sceneElementOperation)
-{
-    TransitionLampsLampGroupsToStateList transitionToStateComponent;
-    TransitionLampsLampGroupsToPresetList transitionToPresetComponent;
-    PulseLampsLampGroupsWithStateList pulseWithStateComponent;
-    PulseLampsLampGroupsWithPresetList pulseWithPresetComponent;
-
-    if (pulseEffect.fromState.nullState) {
-        PulseLampsLampGroupsWithPreset component(lamps, lampGroups, pulseEffect.fromPreset, pulseEffect.toPreset, pulseEffect.pulsePeriod, pulseEffect.pulseDuration, pulseEffect.numPulses);
-        pulseWithPresetComponent.push_back(component);
-    } else {
-        PulseLampsLampGroupsWithState component(lamps, lampGroups, pulseEffect.fromState, pulseEffect.toState, pulseEffect.pulsePeriod, pulseEffect.pulseDuration, pulseEffect.numPulses);
-        pulseWithStateComponent.push_back(component);
-    }
-
-    return lampGroupManagerPtr->ChangeLampGroupStateAndField(msg, transitionToStateComponent, transitionToPresetComponent,
-                                                             pulseWithStateComponent, pulseWithPresetComponent,
-                                                             sceneElementOperation, false, LSFString(), !sceneElementOperation);
-}
-
 void PulseEffectManager::DeletePulseEffect(Message& msg)
 {
     QCC_DbgPrintf(("%s: %s", __func__, msg->ToString().c_str()));
     LSFResponseCode responseCode = LSF_OK;
-
-    bool deleted = false;
 
     size_t numArgs;
     const MsgArg* args;
@@ -564,33 +534,11 @@ void PulseEffectManager::DeletePulseEffect(Message& msg)
         return;
     }
 
-    responseCode = sceneManagerPtr->IsDependentOnPulseEffect(pulseEffectID);
-
-    if (LSF_OK == responseCode) {
-        QStatus status = pulseEffectsLock.Lock();
-        if (ER_OK == status) {
-            PulseEffectMap::iterator it = pulseEffects.find(pulseEffectId);
-            if (it != pulseEffects.end()) {
-                blobLength -= GetString(it->second.first, pulseEffectId, it->second.second).length();
-                pulseEffects.erase(it);
-                deleted = true;
-                ScheduleFileWrite();
-            } else {
-                responseCode = LSF_ERR_NOT_FOUND;
-            }
-            status = pulseEffectsLock.Unlock();
-            if (ER_OK != status) {
-                QCC_LogError(status, ("%s: pulseEffectsLock.Unlock() failed", __func__));
-            }
-        } else {
-            responseCode = LSF_ERR_BUSY;
-            QCC_LogError(status, ("%s: pulseEffectsLock.Lock() failed", __func__));
-        }
-    }
+    responseCode = DeletePulseEffectInternal(pulseEffectID);
 
     controllerService.SendMethodReplyWithResponseCodeAndID(msg, responseCode, pulseEffectID);
 
-    if (deleted) {
+    if (responseCode == LSF_OK) {
         LSFStringList idList;
         idList.push_back(pulseEffectID);
         controllerService.SendSignal(ControllerServicePulseEffectInterfaceName, "PulseEffectsDeleted", idList);
@@ -658,6 +606,11 @@ void PulseEffectManager::ReadSavedData(void)
 
     blobLength = stream.str().size();
     ReplaceMap(stream);
+
+    std::istringstream updateStream;
+    if (ValidateUpdateFileAndRead(updateStream)) {
+        ReplaceUpdatesList(updateStream);
+    }
 }
 
 void PulseEffectManager::HandleReceivedBlob(const std::string& blob, uint32_t checksum, uint64_t timestamp)
@@ -675,6 +628,21 @@ void PulseEffectManager::HandleReceivedBlob(const std::string& blob, uint32_t ch
     pulseEffectsLock.Unlock();
 }
 
+void PulseEffectManager::HandleReceivedUpdateBlob(const std::string& blob, uint32_t checksum, uint64_t timestamp)
+{
+    QCC_DbgPrintf(("%s", __func__));
+    uint64_t currentTimestamp = GetTimestampInMs();
+    pulseEffectsLock.Lock();
+    if (((updatesTimeStamp == 0) || ((currentTimestamp - updatesTimeStamp) > timestamp)) && (updatesCheckSum != checksum)) {
+        std::istringstream stream(blob.c_str());
+        ReplaceUpdatesList(stream);
+        updatesTimeStamp = currentTimestamp;
+        updatesCheckSum = checksum;
+        ScheduleFileWrite(true);
+    }
+    pulseEffectsLock.Unlock();
+}
+
 void PulseEffectManager::ReplaceMap(std::istringstream& stream)
 {
     QCC_DbgTrace(("%s", __func__));
@@ -683,7 +651,10 @@ void PulseEffectManager::ReplaceMap(std::istringstream& stream)
         std::string token = ParseString(stream);
 
         // keep searching for "PulseEffect", which indicates the beginning of a saved PulseEffect state
-        if (token == "PulseEffect") {
+        if (token == resetID) {
+            QCC_DbgPrintf(("The file has a reset entry. Clearing the map"));
+            pulseEffects.clear();
+        } else if (token == "PulseEffect") {
             std::string pulseEffectId = ParseString(stream);
             std::string pulseEffectName = ParseString(stream);
 
@@ -699,6 +670,7 @@ void PulseEffectManager::ReplaceMap(std::istringstream& stream)
                     pulseEffects.clear();
                     firstIteration = false;
                 }
+                blobLength += pulseEffectId.length();
 
                 bool containsLampState = ParseValue<bool>(stream);
 
@@ -732,10 +704,151 @@ void PulseEffectManager::ReplaceMap(std::istringstream& stream)
     }
 }
 
+void PulseEffectManager::ReplaceUpdatesList(std::istringstream& stream)
+{
+    QCC_DbgTrace(("%s", __func__));
+    bool firstIteration = true;
+    while (!stream.eof()) {
+        std::string id = ParseString(stream);
+        if (0 == strcmp(id.c_str(), resetID.c_str())) {
+            QCC_DbgPrintf(("The file has a reset entry. Clearing the list"));
+            pulseEffectUpdates.clear();
+        } else if (0 == strcmp(id.c_str(), initialStateID.c_str())) {
+            QCC_DbgPrintf(("The file has a initialState entry. So we ignore it"));
+        } else {
+            if (firstIteration) {
+                pulseEffectUpdates.clear();
+                firstIteration = false;
+            }
+            if (!id.empty()) {
+                pulseEffectUpdates.insert(id);
+                QCC_DbgPrintf(("%s: Add %s to updates list", __func__, id.c_str()));
+            }
+        }
+    }
+}
+
+LSFResponseCode PulseEffectManager::CreatePulseEffectInternal(PulseEffect& pulseEffect, LSFString& name, LSFString& language, LSFString& pulseEffectID)
+{
+    QCC_DbgTrace(("%s", __func__));
+
+    bool created = false;
+    LSFResponseCode responseCode = LSF_OK;
+
+    pulseEffectID = GenerateUniqueID("PULSE_EFFECT");
+    if (0 != strcmp("en", language.c_str())) {
+        QCC_LogError(ER_FAIL, ("%s: Language %s not supported", __func__, language.c_str()));
+        responseCode = LSF_ERR_INVALID_ARGS;
+    } else if (name.empty()) {
+        QCC_LogError(ER_FAIL, ("%s: pulse effect name is empty", __func__));
+        responseCode = LSF_ERR_EMPTY_NAME;
+    } else if (pulseEffect.invalidArgs) {
+        QCC_LogError(ER_FAIL, ("%s: Cannot save invalid PulseEffect", __func__, language.c_str()));
+        responseCode = LSF_ERR_INVALID_ARGS;
+    } else if (name.length() > LSF_MAX_NAME_LENGTH) {
+        QCC_LogError(ER_FAIL, ("%s: name length exceeds %d", __func__, LSF_MAX_NAME_LENGTH));
+        responseCode = LSF_ERR_INVALID_ARGS;
+    } else {
+        QStatus status = pulseEffectsLock.Lock();
+        if (ER_OK == status) {
+            if (pulseEffects.size() < OEM_CS_MAX_SUPPORTED_NUM_LSF_ENTITY) {
+                std::string newPulseEffectStr = GetString(name, pulseEffectID, pulseEffect);
+                size_t newlen = blobLength + newPulseEffectStr.length() + pulseEffectID.length();
+                if (newlen < MAX_FILE_LEN) {
+                    blobLength = newlen;
+                    pulseEffects[pulseEffectID].first = name;
+                    pulseEffects[pulseEffectID].second = pulseEffect;
+                    created = true;
+                    ScheduleFileWrite();
+                } else {
+                    responseCode = LSF_ERR_RESOURCES;
+                }
+            } else {
+                QCC_LogError(ER_FAIL, ("%s: No slot for new PulseEffect", __func__));
+                responseCode = LSF_ERR_NO_SLOT;
+            }
+            status = pulseEffectsLock.Unlock();
+            if (ER_OK != status) {
+                QCC_LogError(status, ("%s: pulseEffectsLock.Unlock() failed", __func__));
+            }
+        } else {
+            responseCode = LSF_ERR_BUSY;
+            QCC_LogError(status, ("%s: pulseEffectsLock.Lock() failed", __func__));
+        }
+    }
+
+    if (!created) {
+        pulseEffectID.clear();
+    }
+
+    return responseCode;
+}
+
+void PulseEffectManager::SendPulseEffectsCreatedSignal(LSFStringList& pulseEffectIds)
+{
+    QCC_DbgTrace(("%s", __func__));
+    controllerService.SendSignal(ControllerServicePulseEffectInterfaceName, "PulseEffectsCreated", pulseEffectIds);
+}
+
+LSFResponseCode PulseEffectManager::DeletePulseEffectInternal(LSFString& pulseEffectID)
+{
+    QCC_DbgTrace(("%s", __func__));
+    LSFResponseCode responseCode = LSF_OK;
+
+    responseCode = sceneElementManagerPtr->IsDependentOnEffect(pulseEffectID);
+
+    if (LSF_OK == responseCode) {
+        QStatus status = pulseEffectsLock.Lock();
+        if (ER_OK == status) {
+            PulseEffectMap::iterator it = pulseEffects.find(pulseEffectID);
+            if (it != pulseEffects.end()) {
+                blobLength -= ((GetString(it->second.first, pulseEffectID, it->second.second).length()) + pulseEffectID.length());
+                pulseEffects.erase(it);
+                if (pulseEffectUpdates.find(pulseEffectID) != pulseEffectUpdates.end()) {
+                    pulseEffectUpdates.erase(pulseEffectID);
+                }
+                ScheduleFileWrite();
+            } else {
+                responseCode = LSF_ERR_NOT_FOUND;
+            }
+            status = pulseEffectsLock.Unlock();
+            if (ER_OK != status) {
+                QCC_LogError(status, ("%s: pulseEffectsLock.Unlock() failed", __func__));
+            }
+        } else {
+            responseCode = LSF_ERR_BUSY;
+            QCC_LogError(status, ("%s: pulseEffectsLock.Lock() failed", __func__));
+        }
+    }
+
+    return responseCode;
+}
+
+std::string PulseEffectManager::GetUpdatesString(const std::set<LSFString>& updates)
+{
+    QCC_DbgTrace(("%s", __func__));
+    std::ostringstream stream;
+    if (0 == updates.size()) {
+        if (initialState) {
+            QCC_DbgPrintf(("%s: This is the initial state entry", __func__));
+            stream << initialStateID << std::endl;
+        } else {
+            QCC_DbgPrintf(("%s: File is being reset", __func__));
+            stream << resetID << std::endl;
+        }
+    } else {
+        for (std::set<LSFString>::const_iterator it = updates.begin(); it != updates.end(); ++it) {
+            stream << *it << std::endl;
+        }
+    }
+
+    return stream.str();
+}
+
 std::string PulseEffectManager::GetString(const std::string& name, const std::string& id, const PulseEffect& pulseEffect)
 {
     std::ostringstream stream;
-    if ((!(pulseEffect.fromState.nullState)) && (!(pulseEffect.toState.nullState))) {
+    if (!(pulseEffect.toState.nullState)) {
         stream << "PulseEffect " << id << " \"" << name << "\" "
                << 1 << ' '
                << (pulseEffect.fromState.nullState ? 1 : 0) << ' '
@@ -789,17 +902,21 @@ std::string PulseEffectManager::GetString(const PulseEffectMap& items)
     return stream.str();
 }
 
-bool PulseEffectManager::GetString(std::string& output, uint32_t& checksum, uint64_t& timestamp)
+bool PulseEffectManager::GetString(std::string& output, std::string& updates, uint32_t& checksum, uint64_t& timestamp, uint32_t& updatesChksum, uint64_t& updatesTs)
 {
     PulseEffectMap mapCopy;
     mapCopy.clear();
+    std::set<LSFString> updatesCopy;
+    updatesCopy.clear();
     bool ret = false;
     output.clear();
+    updates.clear();
 
     pulseEffectsLock.Lock();
     // we can't hold this lock for the entire time!
     if (updated) {
         mapCopy = pulseEffects;
+        updatesCopy = pulseEffectUpdates;
         updated = false;
         ret = true;
     }
@@ -807,20 +924,24 @@ bool PulseEffectManager::GetString(std::string& output, uint32_t& checksum, uint
 
     if (ret) {
         output = GetString(mapCopy);
+        updates = GetUpdatesString(updatesCopy);
         pulseEffectsLock.Lock();
         if (blobUpdateCycle) {
-            checksum = checkSum;
             timestamp = timeStamp;
+            updatesTs = updatesTimeStamp;
             blobUpdateCycle = false;
         } else {
             if (initialState) {
                 timeStamp = timestamp = 0UL;
+                updatesTimeStamp = updatesTs = 0UL;
                 initialState = false;
             } else {
                 timeStamp = timestamp = GetTimestampInMs();
+                updatesTimeStamp = updatesTs = GetTimestampInMs();
             }
-            checkSum = checksum = GetChecksum(output);
         }
+        checkSum = checksum = GetChecksum(output);
+        updatesCheckSum = updatesChksum = GetChecksum(updates);
         pulseEffectsLock.Unlock();
     }
 
@@ -831,16 +952,19 @@ void PulseEffectManager::ReadWriteFile()
 {
     QCC_DbgPrintf(("%s", __func__));
 
-    if (filePath.empty()) {
+    if (filePath.empty() || updateFilePath.empty()) {
         return;
     }
 
     std::string output;
     uint32_t checksum;
     uint64_t timestamp;
+    std::string updates;
+    uint32_t updateChecksum;
+    uint64_t updateTimestamp;
     bool status = false;
 
-    status = GetString(output, checksum, timestamp);
+    status = GetString(output, updates, checksum, timestamp, updateChecksum, updateTimestamp);
 
     if (status) {
         WriteFileWithChecksumAndTimestamp(output, checksum, timestamp);
@@ -848,33 +972,52 @@ void PulseEffectManager::ReadWriteFile()
             uint64_t currentTime = GetTimestampInMs();
             controllerService.SendBlobUpdate(LSF_PULSE_EFFECT, output, checksum, (currentTime - timestamp));
         }
+
+        WriteUpdatesFileWithChecksumAndTimestamp(updates, updateChecksum, updateTimestamp);
+        if (updateTimestamp != 0UL) {
+            uint64_t currentTime = GetTimestampInMs();
+            controllerService.SendBlobUpdate(LSF_PULSE_EFFECT_UPDATE, updates, updateChecksum, (currentTime - updateTimestamp));
+        }
     }
 
     std::list<ajn::Message> tempMessageList;
+    std::list<ajn::Message> tempUpdateMessageList;
 
     readMutex.Lock();
     if (read) {
         tempMessageList = readBlobMessages;
         readBlobMessages.clear();
+        tempUpdateMessageList = readUpdateBlobMessages;
+        readUpdateBlobMessages.clear();
         read = false;
     }
     readMutex.Unlock();
 
-    if ((tempMessageList.size() || sendUpdate) && !status) {
+    if ((tempMessageList.size() || tempUpdateMessageList.size() || sendUpdate) && !status) {
         std::istringstream stream;
-        status = ValidateFileAndReadInternal(checksum, timestamp, stream);
-        if (status) {
+        bool fileStatus = ValidateFileAndReadInternal(checksum, timestamp, stream);
+        if (fileStatus) {
             output = stream.str();
+            while (!tempMessageList.empty()) {
+                uint64_t currentTime = GetTimestampInMs();
+                controllerService.SendGetBlobReply(tempMessageList.front(), LSF_PULSE_EFFECT, output, checksum, (currentTime - timestamp));
+                tempMessageList.pop_front();
+            }
         } else {
             QCC_LogError(ER_FAIL, ("%s: PulseEffect persistent store corrupted", __func__));
         }
-    }
 
-    if (status) {
-        while (tempMessageList.size()) {
-            uint64_t currentTime = GetTimestampInMs();
-            controllerService.SendGetBlobReply(tempMessageList.front(), LSF_PULSE_EFFECT, output, checksum, (currentTime - timestamp));
-            tempMessageList.pop_front();
+        std::istringstream updateStream;
+        bool updateStatus = ValidateUpdateFileAndReadInternal(updateChecksum, updateTimestamp, updateStream);
+        if (updateStatus) {
+            updates = updateStream.str();
+            while (!tempUpdateMessageList.empty()) {
+                uint64_t currentTime = GetTimestampInMs();
+                controllerService.SendGetBlobReply(tempUpdateMessageList.front(), LSF_PULSE_EFFECT_UPDATE, updates, updateChecksum, (currentTime - updateTimestamp));
+                tempUpdateMessageList.pop_front();
+            }
+        } else {
+            QCC_LogError(ER_FAIL, ("%s: PulseEffect Update persistent store corrupted", __func__));
         }
     }
 
@@ -882,6 +1025,7 @@ void PulseEffectManager::ReadWriteFile()
         sendUpdate = false;
         uint64_t currentTime = GetTimestampInMs();
         controllerService.GetLeaderElectionObj().SendBlobUpdate(LSF_PULSE_EFFECT, output, checksum, (currentTime - timestamp));
+        controllerService.GetLeaderElectionObj().SendBlobUpdate(LSF_PULSE_EFFECT_UPDATE, updates, updateChecksum, (currentTime - updateTimestamp));
     }
 }
 

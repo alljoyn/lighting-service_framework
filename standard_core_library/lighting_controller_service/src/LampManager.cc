@@ -545,7 +545,7 @@ void LampManager::ChangeLampStateAndField(Message& message,
             TransitionStateParams params(transitionToPresetComp.lamps, timestamp, state, transitionToPresetComp.transitionPeriod);
             stateParamsList.push_back(params);
         } else {
-            if (groupOperation || effectOperation || (sceneOperation && ((0 == strcmp(ControllerServiceSceneInterfaceName, message->GetInterface())) || (0 == strcmp(ControllerServiceMasterSceneInterfaceName, message->GetInterface()))))) {
+            if (groupOperation || effectOperation || (sceneOperation && ((0 == strcmp(ControllerServiceSceneInterfaceName, message->GetInterface())) || (0 == strcmp(ControllerServiceMasterSceneInterfaceName, message->GetInterface())) || (0 == strcmp(ControllerServiceSceneElementInterfaceName, message->GetInterface()))))) {
                 size_t numArgs;
                 const MsgArg* args;
                 message->GetArgs(numArgs, args);
@@ -615,7 +615,7 @@ void LampManager::ChangeLampStateAndField(Message& message,
                 pulseParamsList.push_back(params);
             }
         } else {
-            if (groupOperation || effectOperation || (sceneOperation && ((0 == strcmp(ControllerServiceSceneInterfaceName, message->GetInterface())) || (0 == strcmp(ControllerServiceMasterSceneInterfaceName, message->GetInterface()))))) {
+            if (groupOperation || effectOperation || (sceneOperation && ((0 == strcmp(ControllerServiceSceneInterfaceName, message->GetInterface())) || (0 == strcmp(ControllerServiceMasterSceneInterfaceName, message->GetInterface())) || (0 == strcmp(ControllerServiceSceneElementInterfaceName, message->GetInterface()))))) {
                 size_t numArgs;
                 const MsgArg* args;
                 message->GetArgs(numArgs, args);

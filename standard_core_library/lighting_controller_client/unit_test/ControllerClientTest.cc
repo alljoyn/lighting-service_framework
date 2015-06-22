@@ -41,6 +41,7 @@ using namespace lsf;
 static bool replyReceivedFlag = false;
 static bool signalReceivedFlag = false;
 static bool sceneSignalReceivedFlag = false;
+static bool sceneElementSignalReceivedFlag = false;
 
 static bool getLampDataSetName = false;
 static bool getLampDataSetDetails = false;
@@ -55,6 +56,12 @@ static bool getPresetDataSetName = false;
 static bool getSceneDataSetScene = false;
 static bool getSceneDataSetName = false;
 
+static bool getSceneWithSceneElementsDataSetSceneWithSceneElements = false;
+static bool getSceneWithSceneElementsDataSetName = false;
+
+static bool getSceneElementDataSetSceneElement = false;
+static bool getSceneElementDataSetName = false;
+
 static bool getMasterSceneDataSetMasterScene = false;
 static bool getMasterSceneDataSetName = false;
 
@@ -64,12 +71,17 @@ static bool getTransitionEffectDataSetName = false;
 static bool getPulseEffectDataSetPulseEffect = false;
 static bool getPulseEffectDataSetName = false;
 
+static bool gotSceneElementsCreated = false;
+
 LSFString nestedLampGroupIDForDependencyCheck;
 LSFString lampGroupIDForDependencyCheck;
 LSFString presetIDForDependencyCheck;
 LSFString transitionEffectIDForDependencyCheck;
 LSFString pulseEffectIDForDependencyCheck;
 LSFString sceneIDForDependencyCheck;
+LSFString sceneElementIDPresetForDependencyCheck;
+LSFString sceneElementIDTransitionForDependencyCheck;
+LSFString sceneElementIDPulseForDependencyCheck;
 LSFString masterSceneIDForDependencyCheck;
 
 class ControllerClientCallbackHandler : public ControllerClientCallback {
@@ -1294,8 +1306,12 @@ class SceneManagerCallbackHandler : public SceneManagerCallback {
     SceneManagerCallbackHandler() :
         createSceneReplyCBStatus(LSF_ERR_UNEXPECTED),
         createSceneReplyCBID(),
+        createSceneWithSceneElementsReplyCBStatus(LSF_ERR_UNEXPECTED),
+        createSceneWithSceneElementsReplyCBID(),
         updateSceneReplyCBStatus(LSF_ERR_UNEXPECTED),
         updateSceneReplyCBID(),
+        updateSceneWithSceneElementsReplyCBStatus(LSF_ERR_UNEXPECTED),
+        updateSceneWithSceneElementsReplyCBID(),
         deleteSceneReplyCBStatus(LSF_ERR_UNEXPECTED),
         deleteSceneReplyCBID(),
         getAllSceneIDsReplyCBStatus(LSF_ERR_UNEXPECTED),
@@ -1309,6 +1325,9 @@ class SceneManagerCallbackHandler : public SceneManagerCallback {
         getSceneReplyCBStatus(LSF_ERR_UNEXPECTED),
         getSceneReplyCBSceneID(),
         getSceneReplyCBScene(),
+        getSceneWithSceneElementsReplyCBStatus(LSF_ERR_UNEXPECTED),
+        getSceneWithSceneElementsReplyCBSceneID(),
+        getSceneWithSceneElementsReplyCBScene(),
         applySceneReplyCBStatus(LSF_ERR_UNEXPECTED),
         applySceneReplyCBSceneID(),
         sceneList(),
@@ -1326,6 +1345,14 @@ class SceneManagerCallbackHandler : public SceneManagerCallback {
         getSceneDataSetScene = true;
     }
 
+    void GetSceneWithSceneElementsReplyCB(const LSFResponseCode& responseCode, const LSFString& sceneID, const SceneWithSceneElements& sceneWithSceneElements) {
+        getSceneWithSceneElementsReplyCBStatus = responseCode;
+        getSceneWithSceneElementsReplyCBSceneID = sceneID;
+        getSceneWithSceneElementsReplyCBScene = sceneWithSceneElements;
+        replyReceivedFlag = true;
+        getSceneWithSceneElementsDataSetSceneWithSceneElements = true;
+    }
+
     void GetAllSceneIDsReplyCB(const LSFResponseCode& responseCode, const LSFStringList& sceneIDs) {
         getAllSceneIDsReplyCBStatus = responseCode;
         sceneList = sceneIDs;
@@ -1339,6 +1366,7 @@ class SceneManagerCallbackHandler : public SceneManagerCallback {
         getSceneNameReplyCBSceneName = sceneName;
         replyReceivedFlag = true;
         getSceneDataSetName = true;
+        getSceneWithSceneElementsDataSetName = true;
     }
 
     void SetSceneNameReplyCB(const LSFResponseCode& responseCode, const LSFString& sceneID, const LSFString& language) {
@@ -1351,6 +1379,13 @@ class SceneManagerCallbackHandler : public SceneManagerCallback {
     void ScenesNameChangedCB(const LSFStringList& sceneIDs) {
         sceneNameChangedList = sceneIDs;
         signalReceivedFlag = true;
+    }
+
+    void CreateSceneWithSceneElementsReplyCB(const LSFResponseCode& responseCode, const LSFString& sceneID, const uint32_t& trackingId) {
+        createSceneWithSceneElementsReplyCBStatus = responseCode;
+        createSceneWithSceneElementsReplyCBID = sceneID;
+        trackingID = trackingId;
+        replyReceivedFlag = true;
     }
 
     void CreateSceneReplyCB(const LSFResponseCode& responseCode, const LSFString& sceneID) {
@@ -1369,6 +1404,12 @@ class SceneManagerCallbackHandler : public SceneManagerCallback {
     void ScenesCreatedCB(const LSFStringList& sceneIDs) {
         sceneList = sceneIDs;
         signalReceivedFlag = true;
+    }
+
+    void UpdateSceneWithSceneElementsReplyCB(const LSFResponseCode& responseCode, const LSFString& sceneID) {
+        updateSceneWithSceneElementsReplyCBStatus = responseCode;
+        updateSceneWithSceneElementsReplyCBID = sceneID;
+        replyReceivedFlag = true;
     }
 
     void UpdateSceneReplyCB(const LSFResponseCode& responseCode, const LSFString& sceneID) {
@@ -1406,8 +1447,12 @@ class SceneManagerCallbackHandler : public SceneManagerCallback {
 
     LSFResponseCode createSceneReplyCBStatus;
     LSFString createSceneReplyCBID;
+    LSFResponseCode createSceneWithSceneElementsReplyCBStatus;
+    LSFString createSceneWithSceneElementsReplyCBID;
     LSFResponseCode updateSceneReplyCBStatus;
     LSFString updateSceneReplyCBID;
+    LSFResponseCode updateSceneWithSceneElementsReplyCBStatus;
+    LSFString updateSceneWithSceneElementsReplyCBID;
     LSFResponseCode deleteSceneReplyCBStatus;
     LSFString deleteSceneReplyCBID;
     LSFResponseCode getAllSceneIDsReplyCBStatus;
@@ -1421,6 +1466,9 @@ class SceneManagerCallbackHandler : public SceneManagerCallback {
     LSFResponseCode getSceneReplyCBStatus;
     LSFString getSceneReplyCBSceneID;
     Scene getSceneReplyCBScene;
+    LSFResponseCode getSceneWithSceneElementsReplyCBStatus;
+    LSFString getSceneWithSceneElementsReplyCBSceneID;
+    SceneWithSceneElements getSceneWithSceneElementsReplyCBScene;
     LSFResponseCode applySceneReplyCBStatus;
     LSFString applySceneReplyCBSceneID;
     LSFStringList sceneList;
@@ -1428,6 +1476,144 @@ class SceneManagerCallbackHandler : public SceneManagerCallback {
     LSFStringList sceneUpdatedList;
     LSFStringList sceneDeletedList;
     LSFStringList sceneAppliedList;
+    uint32_t trackingID;
+};
+
+class SceneElementManagerCallbackHandler : public SceneElementManagerCallback {
+  public:
+
+    SceneElementManagerCallbackHandler() :
+        createSceneElementReplyCBStatus(LSF_ERR_UNEXPECTED),
+        createSceneElementReplyCBID(),
+        updateSceneElementReplyCBStatus(LSF_ERR_UNEXPECTED),
+        updateSceneElementReplyCBID(),
+        deleteSceneElementReplyCBStatus(LSF_ERR_UNEXPECTED),
+        deleteSceneElementReplyCBID(),
+        getAllSceneElementIDsReplyCBStatus(LSF_ERR_UNEXPECTED),
+        getSceneElementNameReplyCBStatus(LSF_ERR_UNEXPECTED),
+        getSceneElementNameReplyCBSceneElementID(),
+        getSceneElementNameReplyCBLanguage(),
+        getSceneElementNameReplyCBSceneElementName(),
+        setSceneElementNameReplyCBStatus(LSF_ERR_UNEXPECTED),
+        setSceneElementNameReplyCBSceneElementID(),
+        setSceneElementNameReplyCBLanguage(),
+        getSceneElementReplyCBStatus(LSF_ERR_UNEXPECTED),
+        getSceneElementReplyCBSceneElementID(),
+        getSceneElementReplyCBSceneElement(),
+        applySceneElementReplyCBStatus(LSF_ERR_UNEXPECTED),
+        applySceneElementReplyCBSceneElementID(),
+        sceneElementList(),
+        sceneElementNameChangedList(),
+        sceneElementUpdatedList(),
+        sceneElementDeletedList(),
+        sceneElementAppliedList(),
+        trackingID(0) { }
+
+    void GetSceneElementReplyCB(const LSFResponseCode& responseCode, const LSFString& sceneElementID, const SceneElement& sceneElement) {
+        getSceneElementReplyCBStatus = responseCode;
+        getSceneElementReplyCBSceneElementID = sceneElementID;
+        getSceneElementReplyCBSceneElement = sceneElement;
+        replyReceivedFlag = true;
+        getSceneElementDataSetSceneElement = true;
+    }
+
+    void GetAllSceneElementIDsReplyCB(const LSFResponseCode& responseCode, const LSFStringList& sceneElementIDs) {
+        getAllSceneElementIDsReplyCBStatus = responseCode;
+        sceneElementList = sceneElementIDs;
+        replyReceivedFlag = true;
+    }
+
+    void GetSceneElementNameReplyCB(const LSFResponseCode& responseCode, const LSFString& sceneElementID, const LSFString& language, const LSFString& sceneElementName) {
+        getSceneElementNameReplyCBStatus = responseCode;
+        getSceneElementNameReplyCBSceneElementID = sceneElementID;
+        getSceneElementNameReplyCBLanguage = language;
+        getSceneElementNameReplyCBSceneElementName = sceneElementName;
+        replyReceivedFlag = true;
+        getSceneElementDataSetName = true;
+    }
+
+    void SetSceneElementNameReplyCB(const LSFResponseCode& responseCode, const LSFString& sceneElementID, const LSFString& language) {
+        setSceneElementNameReplyCBStatus = responseCode;
+        setSceneElementNameReplyCBSceneElementID = sceneElementID;
+        setSceneElementNameReplyCBLanguage = language;
+        replyReceivedFlag = true;
+    }
+
+    void SceneElementsNameChangedCB(const LSFStringList& sceneElementIDs) {
+        sceneElementNameChangedList = sceneElementIDs;
+        signalReceivedFlag = true;
+    }
+
+    void CreateSceneElementReplyCB(const LSFResponseCode& responseCode, const LSFString& sceneElementID, const uint32_t& trackingId) {
+        createSceneElementReplyCBStatus = responseCode;
+        createSceneElementReplyCBID = sceneElementID;
+        trackingID = trackingId;
+        replyReceivedFlag = true;
+    }
+
+    void SceneElementsCreatedCB(const LSFStringList& sceneElementIDs) {
+        sceneElementList = sceneElementIDs;
+        signalReceivedFlag = true;
+        gotSceneElementsCreated = true;
+    }
+
+    void UpdateSceneElementReplyCB(const LSFResponseCode& responseCode, const LSFString& sceneElementID) {
+        updateSceneElementReplyCBStatus = responseCode;
+        updateSceneElementReplyCBID = sceneElementID;
+        replyReceivedFlag = true;
+    }
+
+    void SceneElementsUpdatedCB(const LSFStringList& sceneElementIDs) {
+        sceneElementUpdatedList = sceneElementIDs;
+        signalReceivedFlag = true;
+    }
+
+    void DeleteSceneElementReplyCB(const LSFResponseCode& responseCode, const LSFString& sceneElementID) {
+        deleteSceneElementReplyCBStatus = responseCode;
+        deleteSceneElementReplyCBID = sceneElementID;
+        replyReceivedFlag = true;
+    }
+
+    void SceneElementsDeletedCB(const LSFStringList& sceneElementIDs) {
+        sceneElementDeletedList = sceneElementIDs;
+        signalReceivedFlag = true;
+    }
+
+    void ApplySceneElementReplyCB(const LSFResponseCode& responseCode, const LSFString& sceneElementID) {
+        applySceneElementReplyCBStatus = responseCode;
+        applySceneElementReplyCBSceneElementID = sceneElementID;
+        replyReceivedFlag = true;
+    }
+
+    void SceneElementsAppliedCB(const LSFStringList& sceneElementIDs) {
+        sceneElementAppliedList = sceneElementIDs;
+        sceneElementSignalReceivedFlag = true;
+    }
+
+    LSFResponseCode createSceneElementReplyCBStatus;
+    LSFString createSceneElementReplyCBID;
+    LSFResponseCode updateSceneElementReplyCBStatus;
+    LSFString updateSceneElementReplyCBID;
+    LSFResponseCode deleteSceneElementReplyCBStatus;
+    LSFString deleteSceneElementReplyCBID;
+    LSFResponseCode getAllSceneElementIDsReplyCBStatus;
+    LSFResponseCode getSceneElementNameReplyCBStatus;
+    LSFString getSceneElementNameReplyCBSceneElementID;
+    LSFString getSceneElementNameReplyCBLanguage;
+    LSFString getSceneElementNameReplyCBSceneElementName;
+    LSFResponseCode setSceneElementNameReplyCBStatus;
+    LSFString setSceneElementNameReplyCBSceneElementID;
+    LSFString setSceneElementNameReplyCBLanguage;
+    LSFResponseCode getSceneElementReplyCBStatus;
+    LSFString getSceneElementReplyCBSceneElementID;
+    SceneElement getSceneElementReplyCBSceneElement;
+    LSFResponseCode applySceneElementReplyCBStatus;
+    LSFString applySceneElementReplyCBSceneElementID;
+    LSFStringList sceneElementList;
+    LSFStringList sceneElementNameChangedList;
+    LSFStringList sceneElementUpdatedList;
+    LSFStringList sceneElementDeletedList;
+    LSFStringList sceneElementAppliedList;
     uint32_t trackingID;
 };
 
@@ -1594,6 +1780,7 @@ class ControllerClientTest : public testing::Test {
         lampGroupManager(client, lampGroupManagerCBHandler),
         presetManager(client, presetManagerCBHandler),
         sceneManager(client, sceneManagerCBHandler),
+        sceneElementManager(client, sceneElementManagerCBHandler),
         masterSceneManager(client, masterSceneManagerCBHandler),
         transitionEffectManager(client, transitionEffectManagerCBHandler),
         pulseEffectManager(client, pulseEffectManagerCBHandler) { }
@@ -1619,6 +1806,7 @@ class ControllerClientTest : public testing::Test {
     LampGroupManagerCallbackHandler lampGroupManagerCBHandler;
     PresetManagerCallbackHandler presetManagerCBHandler;
     SceneManagerCallbackHandler sceneManagerCBHandler;
+    SceneElementManagerCallbackHandler sceneElementManagerCBHandler;
     MasterSceneManagerCallbackHandler masterSceneManagerCBHandler;
     TransitionEffectManagerCallbackHandler transitionEffectManagerCBHandler;
     PulseEffectManagerCallbackHandler pulseEffectManagerCBHandler;
@@ -1629,6 +1817,7 @@ class ControllerClientTest : public testing::Test {
     LampGroupManager lampGroupManager;
     PresetManager presetManager;
     SceneManager sceneManager;
+    SceneElementManager sceneElementManager;
     MasterSceneManager masterSceneManager;
     TransitionEffectManager transitionEffectManager;
     PulseEffectManager pulseEffectManager;
@@ -5315,7 +5504,7 @@ TEST_F(ControllerClientTest, Controller_Client_UpdateTransitionEffect) {
     EXPECT_EQ(LSF_OK, transitionEffectManagerCBHandler.getAllTransitionEffectIDsReplyCBStatus);
 
     size_t listSize = 1;
-    EXPECT_LT(listSize, transitionEffectManagerCBHandler.transitionEffectList.size());
+    EXPECT_LE(listSize, transitionEffectManagerCBHandler.transitionEffectList.size());
 
     replyReceivedFlag = false;
 
@@ -8442,6 +8631,7 @@ TEST_F(ControllerClientTest, Controller_Client_DeleteLampGroup) {
 
 TEST_F(ControllerClientTest, Controller_Client_CreateScene) {
     replyReceivedFlag = false;
+    gotSceneElementsCreated = false;
 
     ControllerClientStatus localStatus = CONTROLLER_CLIENT_OK;
     localStatus = client.Start();
@@ -8518,10 +8708,22 @@ TEST_F(ControllerClientTest, Controller_Client_CreateScene) {
     }
 
     EXPECT_EQ(sceneManagerCBHandler.createSceneReplyCBID, sceneManagerCBHandler.sceneList.front());
+
+    //wait to receive signal
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (gotSceneElementsCreated) {
+            break;
+        }
+        sleep(2);
+    }
+
+    listSize = 1;
+    EXPECT_LE(listSize, sceneElementManagerCBHandler.sceneElementList.size());
 }
 
 TEST_F(ControllerClientTest, Controller_Client_CreateSceneWithTracking) {
     replyReceivedFlag = false;
+    gotSceneElementsCreated = false;
 
     ControllerClientStatus localStatus = CONTROLLER_CLIENT_OK;
     localStatus = client.Start();
@@ -8602,6 +8804,17 @@ TEST_F(ControllerClientTest, Controller_Client_CreateSceneWithTracking) {
     }
 
     EXPECT_EQ(sceneManagerCBHandler.createSceneReplyCBID, sceneManagerCBHandler.sceneList.front());
+
+    //wait to receive signal
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (gotSceneElementsCreated) {
+            break;
+        }
+        sleep(2);
+    }
+
+    listSize = 1;
+    EXPECT_LE(listSize, sceneElementManagerCBHandler.sceneElementList.size());
 }
 
 TEST_F(ControllerClientTest, Controller_Client_GetSceneDataSet) {
@@ -9080,6 +9293,7 @@ TEST_F(ControllerClientTest, Controller_Client_ApplyScene_WithOnlyTransitionLamp
 
 TEST_F(ControllerClientTest, Controller_Client_UpdateScene) {
     replyReceivedFlag = false;
+    gotSceneElementsCreated = false;
 
     ControllerClientStatus localStatus = CONTROLLER_CLIENT_OK;
     localStatus = client.Start();
@@ -9207,6 +9421,17 @@ TEST_F(ControllerClientTest, Controller_Client_UpdateScene) {
     }
 
     EXPECT_EQ(sceneManagerCBHandler.updateSceneReplyCBID, sceneManagerCBHandler.sceneUpdatedList.front());
+
+    //wait to receive signal
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (gotSceneElementsCreated) {
+            break;
+        }
+        sleep(2);
+    }
+
+    listSize = 1;
+    EXPECT_LE(listSize, sceneElementManagerCBHandler.sceneElementList.size());
 }
 
 TEST_F(ControllerClientTest, Controller_Client_ApplyScene_WithOnlyTransitionLampsLampGroupsToState_LampGroups) {
@@ -10634,6 +10859,1455 @@ TEST_F(ControllerClientTest, Controller_Client_DeleteScene) {
     EXPECT_EQ(sceneManagerCBHandler.deleteSceneReplyCBID, sceneManagerCBHandler.sceneDeletedList.front());
 }
 
+LSFString sceneElementIDRef;
+LSFString transitionEffectRef;
+
+TEST_F(ControllerClientTest, Controller_Client_CreateSceneElement) {
+    replyReceivedFlag = false;
+
+    ControllerClientStatus localStatus = CONTROLLER_CLIENT_OK;
+    localStatus = client.Start();
+    ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
+
+    //wait to receive a callback from the controller client
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (replyReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(LSF_OK, controllerClientCBHandler.connectedToControllerServiceCBStatus);
+
+    replyReceivedFlag = false;
+
+    localStatus = CONTROLLER_CLIENT_OK;
+    localStatus = lampManager.GetAllLampIDs();
+    ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
+
+    //wait to receive reply
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (replyReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(LSF_OK, lampManagerCBHandler.getAllLampIDsReplyCBStatus);
+
+    size_t listSize = 1;
+    EXPECT_EQ(listSize, lampManagerCBHandler.lampList.size());
+
+    replyReceivedFlag = false;
+
+    localStatus = CONTROLLER_CLIENT_OK;
+    localStatus = lampGroupManager.GetAllLampGroupIDs();
+    ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
+
+    //wait to receive reply
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (replyReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(LSF_OK, lampGroupManagerCBHandler.getAllLampGroupIDsReplyCBStatus);
+
+    listSize = 1;
+    EXPECT_LE(listSize, lampGroupManagerCBHandler.lampGroupList.size());
+
+    replyReceivedFlag = false;
+
+    localStatus = CONTROLLER_CLIENT_OK;
+    localStatus = transitionEffectManager.GetAllTransitionEffectIDs();
+    ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
+
+    //wait to receive reply
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (replyReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(LSF_OK, transitionEffectManagerCBHandler.getAllTransitionEffectIDsReplyCBStatus);
+
+    listSize = 1;
+    EXPECT_LE(listSize, transitionEffectManagerCBHandler.transitionEffectList.size());
+
+    replyReceivedFlag = false;
+    signalReceivedFlag = false;
+
+    localStatus = CONTROLLER_CLIENT_OK;
+    LSFStringList lamps, lampGroups;
+    lamps.push_back(lampManagerCBHandler.lampList.front());
+    lampGroups.push_back(lampGroupManagerCBHandler.lampGroupList.front());
+
+    SceneElement sceneElement(lamps, lampGroups, transitionEffectManagerCBHandler.transitionEffectList.front());
+    LSFString name = LSFString("SampleSceneElement");
+
+    transitionEffectRef = transitionEffectManagerCBHandler.transitionEffectList.front();
+
+    uint32_t trackingId;
+    localStatus = sceneElementManager.CreateSceneElement(trackingId, sceneElement, name);
+    ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
+
+    //wait to receive reply
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (replyReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(LSF_OK, sceneElementManagerCBHandler.createSceneElementReplyCBStatus);
+
+    //wait to receive signal
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (signalReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(sceneElementManagerCBHandler.createSceneElementReplyCBID, sceneElementManagerCBHandler.sceneElementList.front());
+
+    sceneElementIDRef = sceneElementManagerCBHandler.createSceneElementReplyCBID;
+}
+
+TEST_F(ControllerClientTest, Controller_Client_GetSceneElementDataSet) {
+    replyReceivedFlag = false;
+
+    ControllerClientStatus localStatus = CONTROLLER_CLIENT_OK;
+    localStatus = client.Start();
+    ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
+
+    //wait to receive a callback from the controller client
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (replyReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(LSF_OK, controllerClientCBHandler.connectedToControllerServiceCBStatus);
+
+    replyReceivedFlag = false;
+
+    localStatus = CONTROLLER_CLIENT_OK;
+    localStatus = lampManager.GetAllLampIDs();
+    ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
+
+    //wait to receive reply
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (replyReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(LSF_OK, lampManagerCBHandler.getAllLampIDsReplyCBStatus);
+
+    size_t listSize = 1;
+    EXPECT_EQ(listSize, lampManagerCBHandler.lampList.size());
+    LSFString lampID = lampManagerCBHandler.lampList.front();
+
+    replyReceivedFlag = false;
+
+    localStatus = CONTROLLER_CLIENT_OK;
+    localStatus = lampGroupManager.GetAllLampGroupIDs();
+    ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
+
+    //wait to receive reply
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (replyReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(LSF_OK, lampGroupManagerCBHandler.getAllLampGroupIDsReplyCBStatus);
+
+    listSize = 1;
+    EXPECT_LE(listSize, lampGroupManagerCBHandler.lampGroupList.size());
+
+    getSceneElementDataSetSceneElement = false;
+    getSceneElementDataSetName = false;
+
+    localStatus = CONTROLLER_CLIENT_OK;
+    LSFString sceneElementID = sceneElementIDRef;
+    localStatus = sceneElementManager.GetSceneElementDataSet(sceneElementID);
+    ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
+
+    //wait to receive reply
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (getSceneElementDataSetSceneElement) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(LSF_OK, sceneElementManagerCBHandler.getSceneElementReplyCBStatus);
+    EXPECT_EQ(sceneElementID, sceneElementManagerCBHandler.getSceneElementReplyCBSceneElementID);
+
+    EXPECT_EQ(lampID, sceneElementManagerCBHandler.getSceneElementReplyCBSceneElement.lamps.front());
+
+    EXPECT_EQ(lampGroupManagerCBHandler.lampGroupList.front(), sceneElementManagerCBHandler.getSceneElementReplyCBSceneElement.lampGroups.front());
+
+    EXPECT_EQ(transitionEffectRef, sceneElementManagerCBHandler.getSceneElementReplyCBSceneElement.effectID);
+
+    //wait to receive reply
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (getSceneElementDataSetName) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(LSF_OK, sceneElementManagerCBHandler.getSceneElementNameReplyCBStatus);
+    EXPECT_EQ(sceneElementID, sceneElementManagerCBHandler.getSceneElementNameReplyCBSceneElementID);
+
+    LSFString language("en");
+    EXPECT_EQ(language, sceneElementManagerCBHandler.getSceneElementNameReplyCBLanguage);
+
+    LSFString name("SampleSceneElement");
+    EXPECT_EQ(name, sceneElementManagerCBHandler.getSceneElementNameReplyCBSceneElementName);
+}
+
+TEST_F(ControllerClientTest, Controller_Client_GetSceneElement) {
+    replyReceivedFlag = false;
+
+    ControllerClientStatus localStatus = CONTROLLER_CLIENT_OK;
+    localStatus = client.Start();
+    ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
+
+    //wait to receive a callback from the controller client
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (replyReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(LSF_OK, controllerClientCBHandler.connectedToControllerServiceCBStatus);
+
+    replyReceivedFlag = false;
+
+    localStatus = CONTROLLER_CLIENT_OK;
+    localStatus = lampManager.GetAllLampIDs();
+    ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
+
+    //wait to receive reply
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (replyReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(LSF_OK, lampManagerCBHandler.getAllLampIDsReplyCBStatus);
+
+    size_t listSize = 1;
+    EXPECT_EQ(listSize, lampManagerCBHandler.lampList.size());
+    LSFString lampID = lampManagerCBHandler.lampList.front();
+
+    replyReceivedFlag = false;
+
+    localStatus = CONTROLLER_CLIENT_OK;
+    localStatus = lampGroupManager.GetAllLampGroupIDs();
+    ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
+
+    //wait to receive reply
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (replyReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(LSF_OK, lampGroupManagerCBHandler.getAllLampGroupIDsReplyCBStatus);
+
+    listSize = 1;
+    EXPECT_LE(listSize, lampGroupManagerCBHandler.lampGroupList.size());
+
+    replyReceivedFlag = false;
+
+    localStatus = CONTROLLER_CLIENT_OK;
+    LSFString sceneElementID = sceneElementIDRef;
+    localStatus = sceneElementManager.GetSceneElement(sceneElementID);
+    ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
+
+    //wait to receive reply
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (replyReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(LSF_OK, sceneElementManagerCBHandler.getSceneElementReplyCBStatus);
+    EXPECT_EQ(sceneElementID, sceneElementManagerCBHandler.getSceneElementReplyCBSceneElementID);
+
+    EXPECT_EQ(lampID, sceneElementManagerCBHandler.getSceneElementReplyCBSceneElement.lamps.front());
+
+    EXPECT_EQ(lampGroupManagerCBHandler.lampGroupList.front(), sceneElementManagerCBHandler.getSceneElementReplyCBSceneElement.lampGroups.front());
+
+    EXPECT_EQ(transitionEffectRef, sceneElementManagerCBHandler.getSceneElementReplyCBSceneElement.effectID);
+
+}
+
+TEST_F(ControllerClientTest, Controller_Client_GetAllSceneElementIDs) {
+    replyReceivedFlag = false;
+
+    ControllerClientStatus localStatus = CONTROLLER_CLIENT_OK;
+    localStatus = client.Start();
+    ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
+
+    //wait to receive a callback from the controller client
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (replyReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(LSF_OK, controllerClientCBHandler.connectedToControllerServiceCBStatus);
+
+    replyReceivedFlag = false;
+
+    localStatus = CONTROLLER_CLIENT_OK;
+    localStatus = sceneElementManager.GetAllSceneElementIDs();
+    ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
+
+    //wait to receive reply
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (replyReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(LSF_OK, sceneElementManagerCBHandler.getAllSceneElementIDsReplyCBStatus);
+
+    size_t listSize = 1;
+    EXPECT_LE(listSize, sceneElementManagerCBHandler.sceneElementList.size());
+}
+
+TEST_F(ControllerClientTest, Controller_Client_GetSceneElementName) {
+    replyReceivedFlag = false;
+
+    ControllerClientStatus localStatus = CONTROLLER_CLIENT_OK;
+    localStatus = client.Start();
+    ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
+
+    //wait to receive a callback from the controller client
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (replyReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(LSF_OK, controllerClientCBHandler.connectedToControllerServiceCBStatus);
+
+    replyReceivedFlag = false;
+
+    localStatus = CONTROLLER_CLIENT_OK;
+    LSFString sceneElementID = sceneElementIDRef;
+    localStatus = sceneElementManager.GetSceneElementName(sceneElementID);
+    ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
+
+    //wait to receive reply
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (replyReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(LSF_OK, sceneElementManagerCBHandler.getSceneElementNameReplyCBStatus);
+    EXPECT_EQ(sceneElementID, sceneElementManagerCBHandler.getSceneElementNameReplyCBSceneElementID);
+
+    LSFString language("en");
+    EXPECT_EQ(language, sceneElementManagerCBHandler.getSceneElementNameReplyCBLanguage);
+
+    LSFString name("SampleSceneElement");
+    EXPECT_EQ(name, sceneElementManagerCBHandler.getSceneElementNameReplyCBSceneElementName);
+}
+
+TEST_F(ControllerClientTest, Controller_Client_SetSceneElementName) {
+    replyReceivedFlag = false;
+
+    ControllerClientStatus localStatus = CONTROLLER_CLIENT_OK;
+    localStatus = client.Start();
+    ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
+
+    //wait to receive a callback from the controller client
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (replyReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(LSF_OK, controllerClientCBHandler.connectedToControllerServiceCBStatus);
+
+    replyReceivedFlag = false;
+    signalReceivedFlag = false;
+
+    localStatus = CONTROLLER_CLIENT_OK;
+    LSFString sceneElementID = sceneElementIDRef;
+    LSFString newName("New Name");
+    localStatus = sceneElementManager.SetSceneElementName(sceneElementID, newName);
+    ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
+
+    //wait to receive reply
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (replyReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(LSF_OK, sceneElementManagerCBHandler.setSceneElementNameReplyCBStatus);
+    EXPECT_EQ(sceneElementID, sceneElementManagerCBHandler.setSceneElementNameReplyCBSceneElementID);
+
+    LSFString language("en");
+    EXPECT_EQ(language, sceneElementManagerCBHandler.setSceneElementNameReplyCBLanguage);
+
+    //wait to receive signal
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (signalReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(sceneElementID, sceneElementManagerCBHandler.sceneElementNameChangedList.front());
+}
+
+TEST_F(ControllerClientTest, Controller_Client_ApplySceneElement_WithPreset) {
+    replyReceivedFlag = false;
+
+    ControllerClientStatus localStatus = CONTROLLER_CLIENT_OK;
+    localStatus = client.Start();
+    ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
+
+    //wait to receive a callback from the controller client
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (replyReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(LSF_OK, controllerClientCBHandler.connectedToControllerServiceCBStatus);
+
+    replyReceivedFlag = false;
+
+    localStatus = CONTROLLER_CLIENT_OK;
+    localStatus = lampManager.GetAllLampIDs();
+    ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
+
+    //wait to receive reply
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (replyReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(LSF_OK, lampManagerCBHandler.getAllLampIDsReplyCBStatus);
+
+    size_t listSize = 1;
+    EXPECT_EQ(listSize, lampManagerCBHandler.lampList.size());
+    LSFString lampID = lampManagerCBHandler.lampList.front();
+
+    replyReceivedFlag = false;
+
+    localStatus = CONTROLLER_CLIENT_OK;
+    localStatus = lampGroupManager.GetAllLampGroupIDs();
+    ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
+
+    //wait to receive reply
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (replyReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(LSF_OK, lampGroupManagerCBHandler.getAllLampGroupIDsReplyCBStatus);
+
+    listSize = 1;
+    EXPECT_LE(listSize, lampGroupManagerCBHandler.lampGroupList.size());
+
+    replyReceivedFlag = false;
+
+    localStatus = CONTROLLER_CLIENT_OK;
+    localStatus = presetManager.GetAllPresetIDs();
+    ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
+
+    //wait to receive reply
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (replyReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(LSF_OK, presetManagerCBHandler.getAllPresetIDsReplyCBStatus);
+
+    listSize = 1;
+    EXPECT_LE(listSize, presetManagerCBHandler.presetList.size());
+
+    replyReceivedFlag = false;
+    signalReceivedFlag = false;
+
+    localStatus = CONTROLLER_CLIENT_OK;
+    LSFStringList lamps, lampGroups;
+    lamps.push_back(lampManagerCBHandler.lampList.front());
+    lampGroups.push_back(lampGroupManagerCBHandler.lampGroupList.front());
+
+    SceneElement sceneElement(lamps, lampGroups, presetManagerCBHandler.presetList.front());
+    LSFString name = LSFString("SampleSceneElement");
+
+    uint32_t trackingId;
+    localStatus = sceneElementManager.CreateSceneElement(trackingId, sceneElement, name);
+    ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
+
+    //wait to receive reply
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (replyReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(LSF_OK, sceneElementManagerCBHandler.createSceneElementReplyCBStatus);
+
+    //wait to receive signal
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (signalReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(sceneElementManagerCBHandler.createSceneElementReplyCBID, sceneElementManagerCBHandler.sceneElementList.front());
+
+    replyReceivedFlag = false;
+
+    localStatus = CONTROLLER_CLIENT_OK;
+    LSFString presetID = presetManagerCBHandler.presetList.front();
+    localStatus = presetManager.GetPreset(presetID);
+    ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
+
+    //wait to receive reply
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (replyReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(LSF_OK, presetManagerCBHandler.getPresetReplyCBStatus);
+    EXPECT_EQ(presetID, presetManagerCBHandler.getPresetReplyCBPresetID);
+
+    replyReceivedFlag = false;
+    signalReceivedFlag = false;
+    sceneElementSignalReceivedFlag = false;
+
+    localStatus = CONTROLLER_CLIENT_OK;
+    LSFString sceneElementID = sceneElementManagerCBHandler.createSceneElementReplyCBID;
+    localStatus = sceneElementManager.ApplySceneElement(sceneElementID);
+    ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
+
+    //wait to receive reply
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (replyReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(LSF_OK, sceneElementManagerCBHandler.applySceneElementReplyCBStatus);
+    EXPECT_EQ(sceneElementID, sceneElementManagerCBHandler.applySceneElementReplyCBSceneElementID);
+
+    //wait to receive signal
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (sceneElementSignalReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(sceneElementID, sceneElementManagerCBHandler.sceneElementAppliedList.front());
+
+    //wait to receive signal
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (signalReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(lampID, lampManagerCBHandler.lampStateChangedCBLampID);
+
+    EXPECT_EQ(presetManagerCBHandler.getPresetReplyCBPreset.onOff, lampManagerCBHandler.lampStateChangedCBLampState.onOff);
+    EXPECT_EQ(presetManagerCBHandler.getPresetReplyCBPreset.hue, lampManagerCBHandler.lampStateChangedCBLampState.hue);
+    EXPECT_EQ(presetManagerCBHandler.getPresetReplyCBPreset.saturation, lampManagerCBHandler.lampStateChangedCBLampState.saturation);
+    EXPECT_EQ(presetManagerCBHandler.getPresetReplyCBPreset.colorTemp, lampManagerCBHandler.lampStateChangedCBLampState.colorTemp);
+    EXPECT_EQ(presetManagerCBHandler.getPresetReplyCBPreset.brightness, lampManagerCBHandler.lampStateChangedCBLampState.brightness);
+}
+
+TEST_F(ControllerClientTest, Controller_Client_ApplySceneElement_WithTransitionEffect) {
+    replyReceivedFlag = false;
+
+    ControllerClientStatus localStatus = CONTROLLER_CLIENT_OK;
+    localStatus = client.Start();
+    ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
+
+    //wait to receive a callback from the controller client
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (replyReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(LSF_OK, controllerClientCBHandler.connectedToControllerServiceCBStatus);
+
+    replyReceivedFlag = false;
+    signalReceivedFlag = false;
+
+    localStatus = CONTROLLER_CLIENT_OK;
+    LampState lampState(true, 10, 10, 10, 10);
+    uint32_t transitionPeriod = 50;
+    TransitionEffect transitionEffect(lampState, transitionPeriod);
+    LSFString name = LSFString("SampleTransitionEffect");
+    uint32_t trackingID = 0;
+    localStatus = transitionEffectManager.CreateTransitionEffect(trackingID, transitionEffect, name);
+    ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
+
+    printf("\ntrackingID = 0x%x\n", trackingID);
+
+    //wait to receive reply
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (replyReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(LSF_OK, transitionEffectManagerCBHandler.createTransitionEffectReplyCBStatus);
+    EXPECT_EQ(trackingID, transitionEffectManagerCBHandler.trackingID);
+
+    //wait to receive signal
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (signalReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(transitionEffectManagerCBHandler.createTransitionEffectReplyCBID, transitionEffectManagerCBHandler.transitionEffectList.front());
+
+    replyReceivedFlag = false;
+
+    localStatus = CONTROLLER_CLIENT_OK;
+    localStatus = lampManager.GetAllLampIDs();
+    ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
+
+    //wait to receive reply
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (replyReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(LSF_OK, lampManagerCBHandler.getAllLampIDsReplyCBStatus);
+
+    size_t listSize = 1;
+    EXPECT_EQ(listSize, lampManagerCBHandler.lampList.size());
+
+    replyReceivedFlag = false;
+
+    localStatus = CONTROLLER_CLIENT_OK;
+    localStatus = lampGroupManager.GetAllLampGroupIDs();
+    ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
+
+    //wait to receive reply
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (replyReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(LSF_OK, lampGroupManagerCBHandler.getAllLampGroupIDsReplyCBStatus);
+
+    listSize = 1;
+    EXPECT_LE(listSize, lampGroupManagerCBHandler.lampGroupList.size());
+
+    replyReceivedFlag = false;
+    signalReceivedFlag = false;
+
+    localStatus = CONTROLLER_CLIENT_OK;
+    LSFStringList lamps, lampGroups;
+    lamps.push_back(lampManagerCBHandler.lampList.front());
+    lampGroups.push_back(lampGroupManagerCBHandler.lampGroupList.front());
+
+    SceneElement sceneElement(lamps, lampGroups, transitionEffectManagerCBHandler.createTransitionEffectReplyCBID);
+    name = LSFString("SampleSceneElement");
+
+    uint32_t trackingId;
+    localStatus = sceneElementManager.CreateSceneElement(trackingId, sceneElement, name);
+    ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
+
+    //wait to receive reply
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (replyReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(LSF_OK, sceneElementManagerCBHandler.createSceneElementReplyCBStatus);
+
+    //wait to receive signal
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (signalReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(sceneElementManagerCBHandler.createSceneElementReplyCBID, sceneElementManagerCBHandler.sceneElementList.front());
+
+    replyReceivedFlag = false;
+    signalReceivedFlag = false;
+    sceneElementSignalReceivedFlag = false;
+
+    localStatus = CONTROLLER_CLIENT_OK;
+    LSFString sceneElementID = sceneElementManagerCBHandler.createSceneElementReplyCBID;
+    localStatus = sceneElementManager.ApplySceneElement(sceneElementID);
+    ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
+
+    //wait to receive reply
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (replyReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(LSF_OK, sceneElementManagerCBHandler.applySceneElementReplyCBStatus);
+    EXPECT_EQ(sceneElementID, sceneElementManagerCBHandler.applySceneElementReplyCBSceneElementID);
+
+    //wait to receive signal
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (sceneElementSignalReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(sceneElementID, sceneElementManagerCBHandler.sceneElementAppliedList.front());
+
+    //wait to receive signal
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (signalReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(lampManagerCBHandler.lampList.front(), lampManagerCBHandler.lampStateChangedCBLampID);
+
+    EXPECT_EQ(lampState.onOff, lampManagerCBHandler.lampStateChangedCBLampState.onOff);
+    EXPECT_EQ(lampState.hue, lampManagerCBHandler.lampStateChangedCBLampState.hue);
+    EXPECT_EQ(lampState.saturation, lampManagerCBHandler.lampStateChangedCBLampState.saturation);
+    EXPECT_EQ(lampState.colorTemp, lampManagerCBHandler.lampStateChangedCBLampState.colorTemp);
+    EXPECT_EQ(lampState.brightness, lampManagerCBHandler.lampStateChangedCBLampState.brightness);
+}
+
+TEST_F(ControllerClientTest, Controller_Client_ApplySceneElement_WithPulseEffect) {
+    replyReceivedFlag = false;
+
+    ControllerClientStatus localStatus = CONTROLLER_CLIENT_OK;
+    localStatus = client.Start();
+    ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
+
+    //wait to receive a callback from the controller client
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (replyReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(LSF_OK, controllerClientCBHandler.connectedToControllerServiceCBStatus);
+
+    replyReceivedFlag = false;
+    signalReceivedFlag = false;
+
+    localStatus = CONTROLLER_CLIENT_OK;
+    LampState fromLampState(true, 10, 10, 10, 10);
+    LampState toLampState(false, 5, 5, 5, 5);
+    uint32_t pulsePeriod = 50;
+    uint32_t pulseDuration = 25;
+    uint32_t numPulses = 5;
+    PulseEffect pulseEffect(toLampState, pulsePeriod, pulseDuration, numPulses, fromLampState);
+    LSFString name = LSFString("SamplePulseEffect");
+    uint32_t trackingID = 0;
+    localStatus = pulseEffectManager.CreatePulseEffect(trackingID, pulseEffect, name);
+    ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
+
+    printf("\ntrackingID = 0x%x\n", trackingID);
+
+    //wait to receive reply
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (replyReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(LSF_OK, pulseEffectManagerCBHandler.createPulseEffectReplyCBStatus);
+    EXPECT_EQ(trackingID, pulseEffectManagerCBHandler.trackingID);
+
+    //wait to receive signal
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (signalReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(pulseEffectManagerCBHandler.createPulseEffectReplyCBID, pulseEffectManagerCBHandler.pulseEffectList.front());
+
+    replyReceivedFlag = false;
+
+    localStatus = CONTROLLER_CLIENT_OK;
+    localStatus = lampManager.GetAllLampIDs();
+    ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
+
+    //wait to receive reply
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (replyReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(LSF_OK, lampManagerCBHandler.getAllLampIDsReplyCBStatus);
+
+    size_t listSize = 1;
+    EXPECT_EQ(listSize, lampManagerCBHandler.lampList.size());
+
+    replyReceivedFlag = false;
+
+    localStatus = CONTROLLER_CLIENT_OK;
+    localStatus = lampGroupManager.GetAllLampGroupIDs();
+    ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
+
+    //wait to receive reply
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (replyReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(LSF_OK, lampGroupManagerCBHandler.getAllLampGroupIDsReplyCBStatus);
+
+    listSize = 1;
+    EXPECT_LE(listSize, lampGroupManagerCBHandler.lampGroupList.size());
+
+    replyReceivedFlag = false;
+    signalReceivedFlag = false;
+
+    localStatus = CONTROLLER_CLIENT_OK;
+    LSFStringList lamps, lampGroups;
+    lamps.push_back(lampManagerCBHandler.lampList.front());
+    lampGroups.push_back(lampGroupManagerCBHandler.lampGroupList.front());
+
+    SceneElement sceneElement(lamps, lampGroups, pulseEffectManagerCBHandler.createPulseEffectReplyCBID);
+    name = LSFString("SampleSceneElement");
+
+    uint32_t trackingId;
+    localStatus = sceneElementManager.CreateSceneElement(trackingId, sceneElement, name);
+    ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
+
+    //wait to receive reply
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (replyReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(LSF_OK, sceneElementManagerCBHandler.createSceneElementReplyCBStatus);
+
+    //wait to receive signal
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (signalReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(sceneElementManagerCBHandler.createSceneElementReplyCBID, sceneElementManagerCBHandler.sceneElementList.front());
+
+    replyReceivedFlag = false;
+    signalReceivedFlag = false;
+    sceneElementSignalReceivedFlag = false;
+
+    localStatus = CONTROLLER_CLIENT_OK;
+    LSFString sceneElementID = sceneElementManagerCBHandler.createSceneElementReplyCBID;
+    localStatus = sceneElementManager.ApplySceneElement(sceneElementID);
+    ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
+
+    //wait to receive reply
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (replyReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(LSF_OK, sceneElementManagerCBHandler.applySceneElementReplyCBStatus);
+    EXPECT_EQ(sceneElementID, sceneElementManagerCBHandler.applySceneElementReplyCBSceneElementID);
+
+    //wait to receive signal
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (sceneElementSignalReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(sceneElementID, sceneElementManagerCBHandler.sceneElementAppliedList.front());
+}
+
+TEST_F(ControllerClientTest, Controller_Client_UpdateSceneElement) {
+    replyReceivedFlag = false;
+
+    ControllerClientStatus localStatus = CONTROLLER_CLIENT_OK;
+    localStatus = client.Start();
+    ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
+
+    //wait to receive a callback from the controller client
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (replyReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(LSF_OK, controllerClientCBHandler.connectedToControllerServiceCBStatus);
+
+    replyReceivedFlag = false;
+
+    localStatus = CONTROLLER_CLIENT_OK;
+    localStatus = lampManager.GetAllLampIDs();
+    ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
+
+    //wait to receive reply
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (replyReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(LSF_OK, lampManagerCBHandler.getAllLampIDsReplyCBStatus);
+
+    size_t listSize = 1;
+    EXPECT_EQ(listSize, lampManagerCBHandler.lampList.size());
+    LSFString lampID = lampManagerCBHandler.lampList.front();
+
+    replyReceivedFlag = false;
+    signalReceivedFlag = false;
+
+    localStatus = CONTROLLER_CLIENT_OK;
+    LSFStringList lampList, lampGroupList;
+    lampList.push_back(lampID);
+    LampGroup lampGroup(lampList, lampGroupList);
+    LSFString name = LSFString("SampleLampGroup");
+    localStatus = lampGroupManager.CreateLampGroup(lampGroup, name);
+    ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
+
+    //wait to receive reply
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (replyReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(LSF_OK, lampGroupManagerCBHandler.createLampGroupReplyCBStatus);
+
+    //wait to receive signal
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (signalReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(lampGroupManagerCBHandler.createLampGroupReplyCBID, lampGroupManagerCBHandler.lampGroupList.front());
+
+    replyReceivedFlag = false;
+    signalReceivedFlag = false;
+
+    localStatus = CONTROLLER_CLIENT_OK;
+    LampState fromLampState(true, 10, 10, 10, 10);
+    LampState toLampState(false, 5, 5, 5, 5);
+    uint32_t pulsePeriod = 50;
+    uint32_t pulseDuration = 25;
+    uint32_t numPulses = 5;
+    PulseEffect pulseEffect(toLampState, pulsePeriod, pulseDuration, numPulses, fromLampState);
+    name = LSFString("SamplePulseEffect");
+    uint32_t trackingID = 0;
+    localStatus = pulseEffectManager.CreatePulseEffect(trackingID, pulseEffect, name);
+    ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
+
+    printf("\ntrackingID = 0x%x\n", trackingID);
+
+    //wait to receive reply
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (replyReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(LSF_OK, pulseEffectManagerCBHandler.createPulseEffectReplyCBStatus);
+    EXPECT_EQ(trackingID, pulseEffectManagerCBHandler.trackingID);
+
+    //wait to receive signal
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (signalReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(pulseEffectManagerCBHandler.createPulseEffectReplyCBID, pulseEffectManagerCBHandler.pulseEffectList.front());
+
+    replyReceivedFlag = false;
+    signalReceivedFlag = false;
+
+    localStatus = CONTROLLER_CLIENT_OK;
+    LSFStringList lamps, lampGroups;
+    lamps.push_back(lampManagerCBHandler.lampList.front());
+    lampGroups.push_back(lampGroupManagerCBHandler.lampGroupList.front());
+
+    SceneElement sceneElement(lamps, lampGroups, pulseEffectManagerCBHandler.createPulseEffectReplyCBID);
+    name = LSFString("SampleSceneElement");
+    localStatus = sceneElementManager.UpdateSceneElement(sceneElementIDRef, sceneElement);
+    ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
+
+    //wait to receive reply
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (replyReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(LSF_OK, sceneElementManagerCBHandler.updateSceneElementReplyCBStatus);
+    EXPECT_EQ(sceneElementIDRef, sceneElementManagerCBHandler.updateSceneElementReplyCBID);
+
+    //wait to receive signal
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (signalReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(sceneElementManagerCBHandler.updateSceneElementReplyCBID, sceneElementManagerCBHandler.sceneElementUpdatedList.front());
+}
+
+TEST_F(ControllerClientTest, Controller_Client_DeleteSceneElement) {
+    replyReceivedFlag = false;
+
+    ControllerClientStatus localStatus = CONTROLLER_CLIENT_OK;
+    localStatus = client.Start();
+    ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
+
+    //wait to receive a callback from the controller client
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (replyReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(LSF_OK, controllerClientCBHandler.connectedToControllerServiceCBStatus);
+
+    replyReceivedFlag = false;
+    signalReceivedFlag = false;
+
+    localStatus = CONTROLLER_CLIENT_OK;
+    LSFString sceneElementID = sceneElementIDRef;
+    localStatus = sceneElementManager.DeleteSceneElement(sceneElementID);
+    ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
+
+    //wait to receive reply
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (replyReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(LSF_OK, sceneElementManagerCBHandler.deleteSceneElementReplyCBStatus);
+    EXPECT_EQ(sceneElementID, sceneElementManagerCBHandler.deleteSceneElementReplyCBID);
+
+    //wait to receive signal
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (signalReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(sceneElementManagerCBHandler.deleteSceneElementReplyCBID, sceneElementManagerCBHandler.sceneElementDeletedList.front());
+}
+
+TEST_F(ControllerClientTest, Controller_Client_CreateSceneWithSceneElements) {
+    replyReceivedFlag = false;
+
+    ControllerClientStatus localStatus = CONTROLLER_CLIENT_OK;
+    localStatus = client.Start();
+    ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
+
+    //wait to receive a callback from the controller client
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (replyReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(LSF_OK, controllerClientCBHandler.connectedToControllerServiceCBStatus);
+
+    replyReceivedFlag = false;
+
+    localStatus = CONTROLLER_CLIENT_OK;
+    localStatus = sceneElementManager.GetAllSceneElementIDs();
+    ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
+
+    //wait to receive reply
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (replyReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(LSF_OK, sceneElementManagerCBHandler.getAllSceneElementIDsReplyCBStatus);
+
+    size_t listSize = 1;
+    EXPECT_LE(listSize, sceneElementManagerCBHandler.sceneElementList.size());
+
+    replyReceivedFlag = false;
+
+    SceneWithSceneElements sceneWithSceneElement(sceneElementManagerCBHandler.sceneElementList);
+    LSFString name = LSFString("SampleSceneWithSceneElement");
+
+    uint32_t trackingID = 0;
+    localStatus = sceneManager.CreateSceneWithSceneElements(trackingID, sceneWithSceneElement, name);
+    ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
+
+    printf("\ntrackingID = 0x%x\n", trackingID);
+
+    //wait to receive reply
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (replyReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(LSF_OK, sceneManagerCBHandler.createSceneWithSceneElementsReplyCBStatus);
+    EXPECT_EQ(trackingID, sceneManagerCBHandler.trackingID);
+
+    //wait to receive signal
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (signalReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(sceneManagerCBHandler.createSceneWithSceneElementsReplyCBID, sceneManagerCBHandler.sceneList.front());
+}
+
+TEST_F(ControllerClientTest, Controller_Client_UpdateSceneWithSceneElements) {
+    replyReceivedFlag = false;
+
+    ControllerClientStatus localStatus = CONTROLLER_CLIENT_OK;
+    localStatus = client.Start();
+    ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
+
+    //wait to receive a callback from the controller client
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (replyReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(LSF_OK, controllerClientCBHandler.connectedToControllerServiceCBStatus);
+
+    replyReceivedFlag = false;
+
+    localStatus = CONTROLLER_CLIENT_OK;
+    localStatus = sceneElementManager.GetAllSceneElementIDs();
+    ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
+
+    //wait to receive reply
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (replyReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(LSF_OK, sceneElementManagerCBHandler.getAllSceneElementIDsReplyCBStatus);
+
+    size_t listSize = 1;
+    EXPECT_LE(listSize, sceneElementManagerCBHandler.sceneElementList.size());
+
+    replyReceivedFlag = false;
+
+    localStatus = CONTROLLER_CLIENT_OK;
+    localStatus = sceneManager.GetAllSceneIDs();
+    ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
+
+    //wait to receive reply
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (replyReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(LSF_OK, sceneManagerCBHandler.getAllSceneIDsReplyCBStatus);
+
+    listSize = 1;
+    EXPECT_LE(listSize, sceneManagerCBHandler.sceneList.size());
+
+    replyReceivedFlag = false;
+
+    SceneWithSceneElements sceneWithSceneElement(sceneElementManagerCBHandler.sceneElementList);
+    LSFString name = LSFString("SampleSceneWithSceneElement");
+    LSFString sceneId = sceneManagerCBHandler.sceneList.front();
+    localStatus = sceneManager.UpdateSceneWithSceneElements(sceneId, sceneWithSceneElement);
+    ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
+
+    //wait to receive reply
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (replyReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(LSF_OK, sceneManagerCBHandler.updateSceneWithSceneElementsReplyCBStatus);
+    EXPECT_EQ(sceneId, sceneManagerCBHandler.sceneList.front());
+
+    //wait to receive signal
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (signalReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(sceneManagerCBHandler.updateSceneWithSceneElementsReplyCBID, sceneManagerCBHandler.sceneList.front());
+}
+
+TEST_F(ControllerClientTest, Controller_Client_GetSceneWithSceneElementsDataSet) {
+    replyReceivedFlag = false;
+
+    ControllerClientStatus localStatus = CONTROLLER_CLIENT_OK;
+    localStatus = client.Start();
+    ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
+
+    //wait to receive a callback from the controller client
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (replyReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(LSF_OK, controllerClientCBHandler.connectedToControllerServiceCBStatus);
+
+    replyReceivedFlag = false;
+
+    localStatus = CONTROLLER_CLIENT_OK;
+    localStatus = lampManager.GetAllLampIDs();
+    ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
+
+    //wait to receive reply
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (replyReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(LSF_OK, lampManagerCBHandler.getAllLampIDsReplyCBStatus);
+
+    size_t listSize = 1;
+    EXPECT_EQ(listSize, lampManagerCBHandler.lampList.size());
+    LSFString lampID = lampManagerCBHandler.lampList.front();
+
+
+    replyReceivedFlag = false;
+
+    localStatus = CONTROLLER_CLIENT_OK;
+    localStatus = sceneManager.GetAllSceneIDs();
+    ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
+
+    //wait to receive reply
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (replyReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(LSF_OK, sceneManagerCBHandler.getAllSceneIDsReplyCBStatus);
+
+    listSize = 1;
+    EXPECT_LE(listSize, sceneManagerCBHandler.sceneList.size());
+
+    getSceneWithSceneElementsDataSetSceneWithSceneElements = false;
+    getSceneWithSceneElementsDataSetName = false;
+
+    localStatus = CONTROLLER_CLIENT_OK;
+    LSFString sceneWithSceneElementsID = sceneManagerCBHandler.sceneList.front();
+    localStatus = sceneManager.GetSceneWithSceneElementsDataSet(sceneWithSceneElementsID);
+    ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
+
+    //wait to receive reply
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (getSceneWithSceneElementsDataSetSceneWithSceneElements) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(LSF_OK, sceneManagerCBHandler.getSceneWithSceneElementsReplyCBStatus);
+    EXPECT_EQ(sceneWithSceneElementsID, sceneManagerCBHandler.getSceneWithSceneElementsReplyCBSceneID);
+
+    uint32_t size = 1;
+    EXPECT_LE(size, sceneManagerCBHandler.getSceneWithSceneElementsReplyCBScene.sceneElements.size());
+
+    //wait to receive reply
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (getSceneWithSceneElementsDataSetName) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(LSF_OK, sceneManagerCBHandler.getSceneNameReplyCBStatus);
+    EXPECT_EQ(sceneWithSceneElementsID, sceneManagerCBHandler.getSceneNameReplyCBSceneID);
+
+    LSFString language("en");
+    EXPECT_EQ(language, sceneManagerCBHandler.getSceneNameReplyCBLanguage);
+}
+
+TEST_F(ControllerClientTest, Controller_Client_GetSceneWithSceneElements) {
+    replyReceivedFlag = false;
+
+    ControllerClientStatus localStatus = CONTROLLER_CLIENT_OK;
+    localStatus = client.Start();
+    ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
+
+    //wait to receive a callback from the controller client
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (replyReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(LSF_OK, controllerClientCBHandler.connectedToControllerServiceCBStatus);
+
+    replyReceivedFlag = false;
+
+    localStatus = CONTROLLER_CLIENT_OK;
+    localStatus = lampManager.GetAllLampIDs();
+    ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
+
+    //wait to receive reply
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (replyReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(LSF_OK, lampManagerCBHandler.getAllLampIDsReplyCBStatus);
+
+    size_t listSize = 1;
+    EXPECT_EQ(listSize, lampManagerCBHandler.lampList.size());
+    LSFString lampID = lampManagerCBHandler.lampList.front();
+
+
+    replyReceivedFlag = false;
+
+    localStatus = CONTROLLER_CLIENT_OK;
+    localStatus = sceneManager.GetAllSceneIDs();
+    ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
+
+    //wait to receive reply
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (replyReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(LSF_OK, sceneManagerCBHandler.getAllSceneIDsReplyCBStatus);
+
+    listSize = 1;
+    EXPECT_LE(listSize, sceneManagerCBHandler.sceneList.size());
+
+    replyReceivedFlag = false;
+
+    localStatus = CONTROLLER_CLIENT_OK;
+    LSFString sceneWithSceneElementsID = sceneManagerCBHandler.sceneList.front();
+    localStatus = sceneManager.GetSceneWithSceneElements(sceneWithSceneElementsID);
+    ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
+
+    //wait to receive reply
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (replyReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(LSF_OK, sceneManagerCBHandler.getSceneWithSceneElementsReplyCBStatus);
+    EXPECT_EQ(sceneWithSceneElementsID, sceneManagerCBHandler.getSceneWithSceneElementsReplyCBSceneID);
+
+    size_t size = 1;
+    EXPECT_LE(size, sceneManagerCBHandler.getSceneWithSceneElementsReplyCBScene.sceneElements.size());
+}
+
 TEST_F(ControllerClientTest, Controller_Client_CreateMasterScene) {
     replyReceivedFlag = false;
 
@@ -10770,18 +12444,12 @@ TEST_F(ControllerClientTest, Controller_Client_CreateMasterScene) {
     localStatus = CONTROLLER_CLIENT_OK;
     LSFStringList lamps, lampGroups;
     lampGroups.push_back(lampGroupIDForDependencyCheck);
-    uint32_t transPeriod = 50;
-    TransitionLampsLampGroupsToPreset transitionToPresetComponent(lamps, lampGroups, presetIDForDependencyCheck, transPeriod);
 
-    TransitionLampsLampGroupsToStateList transitionToStateList;
-    TransitionLampsLampGroupsToPresetList transitionToPresetList;
-    transitionToPresetList.push_back(transitionToPresetComponent);
-    PulseLampsLampGroupsWithStateList pulseWithStateList;
-    PulseLampsLampGroupsWithPresetList pulseWithPresetList;
+    SceneElement sceneElement(lamps, lampGroups, presetIDForDependencyCheck);
+    name = LSFString("SampleSceneElement");
 
-    Scene scene(transitionToStateList, transitionToPresetList, pulseWithStateList, pulseWithPresetList);
-    LSFString sceneName("SampleScene");
-    localStatus = sceneManager.CreateScene(scene, sceneName);
+    uint32_t trackingId;
+    localStatus = sceneElementManager.CreateSceneElement(trackingId, sceneElement, name);
     ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
 
     //wait to receive reply
@@ -10792,7 +12460,7 @@ TEST_F(ControllerClientTest, Controller_Client_CreateMasterScene) {
         sleep(2);
     }
 
-    EXPECT_EQ(LSF_OK, sceneManagerCBHandler.createSceneReplyCBStatus);
+    EXPECT_EQ(LSF_OK, sceneElementManagerCBHandler.createSceneElementReplyCBStatus);
 
     //wait to receive signal
     for (size_t msecs = 0; msecs < 2100; msecs += 5) {
@@ -10802,8 +12470,184 @@ TEST_F(ControllerClientTest, Controller_Client_CreateMasterScene) {
         sleep(2);
     }
 
-    EXPECT_EQ(sceneManagerCBHandler.createSceneReplyCBID, sceneManagerCBHandler.sceneList.front());
-    sceneIDForDependencyCheck = sceneManagerCBHandler.createSceneReplyCBID;
+    EXPECT_EQ(sceneElementManagerCBHandler.createSceneElementReplyCBID, sceneElementManagerCBHandler.sceneElementList.front());
+    sceneElementIDPresetForDependencyCheck = sceneElementManagerCBHandler.createSceneElementReplyCBID;
+
+    replyReceivedFlag = false;
+    signalReceivedFlag = false;
+
+    localStatus = CONTROLLER_CLIENT_OK;
+    LampState lampState(true, 10, 10, 10, 10);
+    uint32_t transitionPeriod = 50;
+    TransitionEffect transitionEffect(lampState, transitionPeriod);
+    name = LSFString("SampleTransitionEffect");
+    uint32_t trackingID = 0;
+    localStatus = transitionEffectManager.CreateTransitionEffect(trackingID, transitionEffect, name);
+    ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
+
+    printf("\ntrackingID = 0x%x\n", trackingID);
+
+    //wait to receive reply
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (replyReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(LSF_OK, transitionEffectManagerCBHandler.createTransitionEffectReplyCBStatus);
+    EXPECT_EQ(trackingID, transitionEffectManagerCBHandler.trackingID);
+
+    //wait to receive signal
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (signalReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(transitionEffectManagerCBHandler.createTransitionEffectReplyCBID, transitionEffectManagerCBHandler.transitionEffectList.front());
+    transitionEffectIDForDependencyCheck = transitionEffectManagerCBHandler.createTransitionEffectReplyCBID;
+
+    replyReceivedFlag = false;
+    signalReceivedFlag = false;
+
+    localStatus = CONTROLLER_CLIENT_OK;
+
+    SceneElement sceneElement1(lamps, lampGroups, transitionEffectIDForDependencyCheck);
+    name = LSFString("SampleSceneElement");
+
+    localStatus = sceneElementManager.CreateSceneElement(trackingId, sceneElement1, name);
+    ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
+
+    //wait to receive reply
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (replyReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(LSF_OK, sceneElementManagerCBHandler.createSceneElementReplyCBStatus);
+
+    //wait to receive signal
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (signalReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(sceneElementManagerCBHandler.createSceneElementReplyCBID, sceneElementManagerCBHandler.sceneElementList.front());
+    sceneElementIDTransitionForDependencyCheck = sceneElementManagerCBHandler.createSceneElementReplyCBID;
+
+    replyReceivedFlag = false;
+    signalReceivedFlag = false;
+
+    localStatus = CONTROLLER_CLIENT_OK;
+    LampState fromLampState(true, 10, 10, 10, 10);
+    LampState toLampState(false, 5, 5, 5, 5);
+    uint32_t pulsePeriod = 50;
+    uint32_t pulseDuration = 25;
+    uint32_t numPulses = 5;
+    PulseEffect pulseEffect(toLampState, pulsePeriod, pulseDuration, numPulses, fromLampState);
+    name = LSFString("SamplePulseEffect");
+    trackingID = 0;
+    localStatus = pulseEffectManager.CreatePulseEffect(trackingID, pulseEffect, name);
+    ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
+
+    printf("\ntrackingID = 0x%x\n", trackingID);
+
+    //wait to receive reply
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (replyReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(LSF_OK, pulseEffectManagerCBHandler.createPulseEffectReplyCBStatus);
+    EXPECT_EQ(trackingID, pulseEffectManagerCBHandler.trackingID);
+
+    //wait to receive signal
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (signalReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(pulseEffectManagerCBHandler.createPulseEffectReplyCBID, pulseEffectManagerCBHandler.pulseEffectList.front());
+    pulseEffectIDForDependencyCheck = pulseEffectManagerCBHandler.createPulseEffectReplyCBID;
+
+    replyReceivedFlag = false;
+    signalReceivedFlag = false;
+
+    localStatus = CONTROLLER_CLIENT_OK;
+
+    SceneElement sceneElement2(lamps, lampGroups, pulseEffectIDForDependencyCheck);
+    name = LSFString("SampleSceneElement");
+
+    localStatus = sceneElementManager.CreateSceneElement(trackingId, sceneElement2, name);
+    ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
+
+    //wait to receive reply
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (replyReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(LSF_OK, sceneElementManagerCBHandler.createSceneElementReplyCBStatus);
+
+    //wait to receive signal
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (signalReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(sceneElementManagerCBHandler.createSceneElementReplyCBID, sceneElementManagerCBHandler.sceneElementList.front());
+    sceneElementIDPulseForDependencyCheck = sceneElementManagerCBHandler.createSceneElementReplyCBID;
+
+    replyReceivedFlag = false;
+
+    SceneWithSceneElements sceneWithSceneElement;
+    sceneWithSceneElement.sceneElements.push_back(sceneElementIDPulseForDependencyCheck);
+    sceneWithSceneElement.sceneElements.push_back(sceneElementIDTransitionForDependencyCheck);
+    sceneWithSceneElement.sceneElements.push_back(sceneElementIDPresetForDependencyCheck);
+    name = LSFString("SampleSceneWithSceneElement");
+
+    trackingID = 0;
+    localStatus = sceneManager.CreateSceneWithSceneElements(trackingID, sceneWithSceneElement, name);
+    ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
+
+    printf("\ntrackingID = 0x%x\n", trackingID);
+
+    //wait to receive reply
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (replyReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(LSF_OK, sceneManagerCBHandler.createSceneWithSceneElementsReplyCBStatus);
+    EXPECT_EQ(trackingID, sceneManagerCBHandler.trackingID);
+
+    //wait to receive signal
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (signalReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(sceneManagerCBHandler.createSceneWithSceneElementsReplyCBID, sceneManagerCBHandler.sceneList.front());
+
+    sceneIDForDependencyCheck = sceneManagerCBHandler.createSceneWithSceneElementsReplyCBID;
 
     replyReceivedFlag = false;
     signalReceivedFlag = false;
@@ -11399,6 +13243,91 @@ TEST_F(ControllerClientTest, Controller_Client_DependencyCheckError) {
 
     EXPECT_EQ(LSF_ERR_DEPENDENCY, presetManagerCBHandler.deletePresetReplyCBStatus);
     EXPECT_EQ(presetIDForDependencyCheck, presetManagerCBHandler.deletePresetReplyCBID);
+
+    replyReceivedFlag = false;
+
+    localStatus = CONTROLLER_CLIENT_OK;
+    localStatus = transitionEffectManager.DeleteTransitionEffect(transitionEffectIDForDependencyCheck);
+    ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
+
+    //wait to receive reply
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (replyReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(LSF_ERR_DEPENDENCY, transitionEffectManagerCBHandler.deleteTransitionEffectReplyCBStatus);
+    EXPECT_EQ(transitionEffectIDForDependencyCheck, transitionEffectManagerCBHandler.deleteTransitionEffectReplyCBID);
+
+    replyReceivedFlag = false;
+
+    localStatus = CONTROLLER_CLIENT_OK;
+    localStatus = pulseEffectManager.DeletePulseEffect(pulseEffectIDForDependencyCheck);
+    ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
+
+    //wait to receive reply
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (replyReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(LSF_ERR_DEPENDENCY, pulseEffectManagerCBHandler.deletePulseEffectReplyCBStatus);
+    EXPECT_EQ(pulseEffectIDForDependencyCheck, pulseEffectManagerCBHandler.deletePulseEffectReplyCBID);
+
+    replyReceivedFlag = false;
+
+    localStatus = CONTROLLER_CLIENT_OK;
+    localStatus = sceneElementManager.DeleteSceneElement(sceneElementIDPresetForDependencyCheck);
+    ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
+
+    //wait to receive reply
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (replyReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(LSF_ERR_DEPENDENCY, sceneElementManagerCBHandler.deleteSceneElementReplyCBStatus);
+    EXPECT_EQ(sceneElementIDPresetForDependencyCheck, sceneElementManagerCBHandler.deleteSceneElementReplyCBID);
+
+    replyReceivedFlag = false;
+
+    localStatus = CONTROLLER_CLIENT_OK;
+    localStatus = sceneElementManager.DeleteSceneElement(sceneElementIDTransitionForDependencyCheck);
+    ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
+
+    //wait to receive reply
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (replyReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(LSF_ERR_DEPENDENCY, sceneElementManagerCBHandler.deleteSceneElementReplyCBStatus);
+    EXPECT_EQ(sceneElementIDTransitionForDependencyCheck, sceneElementManagerCBHandler.deleteSceneElementReplyCBID);
+
+    replyReceivedFlag = false;
+
+    localStatus = CONTROLLER_CLIENT_OK;
+    localStatus = sceneElementManager.DeleteSceneElement(sceneElementIDPulseForDependencyCheck);
+    ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
+
+    //wait to receive reply
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (replyReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(LSF_ERR_DEPENDENCY, sceneElementManagerCBHandler.deleteSceneElementReplyCBStatus);
+    EXPECT_EQ(sceneElementIDPulseForDependencyCheck, sceneElementManagerCBHandler.deleteSceneElementReplyCBID);
 }
 
 TEST_F(ControllerClientTest, Controller_Client_UpdateMasterScene) {
@@ -11701,6 +13630,57 @@ TEST_F(ControllerClientTest, Controller_Client_DependencyCheckSuccess) {
 
     EXPECT_EQ(LSF_OK, sceneManagerCBHandler.deleteSceneReplyCBStatus);
     EXPECT_EQ(sceneIDForDependencyCheck, sceneManagerCBHandler.deleteSceneReplyCBID);
+
+    replyReceivedFlag = false;
+
+    localStatus = CONTROLLER_CLIENT_OK;
+    localStatus = sceneElementManager.DeleteSceneElement(sceneElementIDPresetForDependencyCheck);
+    ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
+
+    //wait to receive reply
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (replyReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(LSF_OK, sceneElementManagerCBHandler.deleteSceneElementReplyCBStatus);
+    EXPECT_EQ(sceneElementIDPresetForDependencyCheck, sceneElementManagerCBHandler.deleteSceneElementReplyCBID);
+
+    replyReceivedFlag = false;
+
+    localStatus = CONTROLLER_CLIENT_OK;
+    localStatus = sceneElementManager.DeleteSceneElement(sceneElementIDTransitionForDependencyCheck);
+    ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
+
+    //wait to receive reply
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (replyReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(LSF_OK, sceneElementManagerCBHandler.deleteSceneElementReplyCBStatus);
+    EXPECT_EQ(sceneElementIDTransitionForDependencyCheck, sceneElementManagerCBHandler.deleteSceneElementReplyCBID);
+
+    replyReceivedFlag = false;
+
+    localStatus = CONTROLLER_CLIENT_OK;
+    localStatus = sceneElementManager.DeleteSceneElement(sceneElementIDPulseForDependencyCheck);
+    ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
+
+    //wait to receive reply
+    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
+        if (replyReceivedFlag) {
+            break;
+        }
+        sleep(2);
+    }
+
+    EXPECT_EQ(LSF_OK, sceneElementManagerCBHandler.deleteSceneElementReplyCBStatus);
+    EXPECT_EQ(sceneElementIDPulseForDependencyCheck, sceneElementManagerCBHandler.deleteSceneElementReplyCBID);
 
     replyReceivedFlag = false;
 

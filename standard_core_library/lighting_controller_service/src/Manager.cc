@@ -46,13 +46,27 @@ Manager::Manager(ControllerService& controllerSvc, const std::string& filePath)
     read(false),
     filePath(filePath),
     checkSum(0),
+    updatesCheckSum(0),
     timeStamp(0),
+    updatesTimeStamp(0),
     blobUpdateCycle(false),
     initialState(false),
     sendUpdate(false)
 {
     QCC_DbgTrace(("%s", __func__));
     readBlobMessages.clear();
+    readUpdateBlobMessages.clear();
+
+    updateFilePath = filePath;
+    QCC_DbgPrintf(("Original = %s", filePath.c_str()));
+
+    std::string findStr = ".lsf";
+    size_t replaceLocation = updateFilePath.find(findStr);
+    if (replaceLocation != std::string::npos) {
+        updateFilePath.erase(replaceLocation, findStr.length());
+        updateFilePath.append("_update.lsf");
+        QCC_DbgPrintf(("Modified = %s", updateFilePath.c_str()));
+    }
 }
 
 static uint32_t GetAdler32Checksum(const uint8_t* data, size_t len) {
@@ -92,6 +106,21 @@ void Manager::WriteFileWithChecksumAndTimestamp(const std::string& str, uint32_t
     fstream.close();
 }
 
+void Manager::WriteUpdatesFileWithChecksumAndTimestamp(const std::string& str, uint32_t checksum, uint64_t timestamp)
+{
+    QCC_DbgTrace(("%s", __func__));
+    std::ofstream fstream(updateFilePath.c_str(), std::ios_base::out);
+    if (!fstream.is_open()) {
+        QCC_LogError(ER_FAIL, ("File not found: %s\n", updateFilePath.c_str()));
+        return;
+    }
+
+    fstream << timestamp << std::endl;
+    fstream << checksum << std::endl;
+    fstream << str;
+    fstream.close();
+}
+
 bool Manager::ValidateFileAndRead(std::istringstream& filestream)
 {
     QCC_DbgTrace(("%s", __func__));
@@ -103,6 +132,22 @@ bool Manager::ValidateFileAndRead(std::istringstream& filestream)
     if (b) {
         checkSum = checksum;
         timeStamp = timestamp;
+    }
+
+    return b;
+}
+
+bool Manager::ValidateUpdateFileAndRead(std::istringstream& filestream)
+{
+    QCC_DbgTrace(("%s", __func__));
+    uint32_t checksum;
+    uint64_t timestamp;
+
+    bool b = ValidateUpdateFileAndReadInternal(checksum, timestamp, filestream);
+
+    if (b) {
+        updatesCheckSum = checksum;
+        updatesTimeStamp = timestamp;
     }
 
     return b;
@@ -120,6 +165,44 @@ bool Manager::ValidateFileAndReadInternal(uint32_t& checksum, uint64_t& timestam
 
     if (!stream.is_open()) {
         QCC_LogError(ER_FAIL, ("File not found: %s\n", filePath.c_str()));
+        return false;
+    }
+
+    stream >> timestamp;
+
+    uint64_t currenttime = GetTimestampInMs();
+    QCC_DbgPrintf(("%s: timestamp=%llu", __func__, timestamp));
+    QCC_DbgPrintf(("%s: Updated %llu ticks ago", __func__, (currenttime - timestamp)));
+
+    stream >> checksum;
+
+    QCC_DbgPrintf(("%s: checksum=%u", __func__, checksum));
+
+    // put the rest of the file into the filestream
+    std::stringbuf rest;
+    stream >> &rest;
+    std::string data = rest.str();
+    filestream.str(data);
+
+    // check the adler checksum
+    uint32_t adler = GetChecksum(data);
+
+    stream.close();
+    return adler == checksum;
+}
+
+bool Manager::ValidateUpdateFileAndReadInternal(uint32_t& checksum, uint64_t& timestamp, std::istringstream& filestream)
+{
+    QCC_DbgPrintf(("%s: updateFilePath=%s", __func__, updateFilePath.c_str()));
+
+    if (updateFilePath.empty()) {
+        return false;
+    }
+
+    std::ifstream stream(updateFilePath.c_str());
+
+    if (!stream.is_open()) {
+        QCC_LogError(ER_FAIL, ("File not found: %s\n", updateFilePath.c_str()));
         return false;
     }
 
@@ -173,6 +256,16 @@ void Manager::ScheduleFileRead(Message& message)
     readMutex.Unlock();
 }
 
+void Manager::ScheduleUpdateFileRead(Message& message)
+{
+    QCC_DbgTrace(("%s", __func__));
+    readMutex.Lock();
+    readUpdateBlobMessages.push_back(message);
+    read = true;
+    controllerService.ScheduleFileReadWrite(this);
+    readMutex.Unlock();
+}
+
 void Manager::TriggerUpdate(void)
 {
     QCC_DbgTrace(("%s", __func__));
@@ -187,5 +280,13 @@ void Manager::GetBlobInfoInternal(uint32_t& checksum, uint64_t& timestamp)
     timestamp = timeStamp;
 }
 
+void Manager::GetUpdateBlobInfoInternal(uint32_t& checksum, uint64_t& timestamp)
+{
+    QCC_DbgTrace(("%s", __func__));
+    checksum = updatesCheckSum;
+    timestamp = updatesTimeStamp;
+}
+
 OPTIONAL_NAMESPACE_CLOSE
+
 }

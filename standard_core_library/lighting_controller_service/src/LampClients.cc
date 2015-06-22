@@ -769,7 +769,7 @@ void LampClients::ChangeLampState(const ajn::Message& inMsg, bool groupOperation
         return;
     }
 
-    if (groupOperation || effectOperation || (sceneOperation && ((0 == strcmp(ControllerServiceSceneInterfaceName, inMsg->GetInterface())) || (0 == strcmp(ControllerServiceMasterSceneInterfaceName, inMsg->GetInterface()))))) {
+    if (groupOperation || effectOperation || (sceneOperation && ((0 == strcmp(ControllerServiceSceneInterfaceName, inMsg->GetInterface())) || (0 == strcmp(ControllerServiceMasterSceneInterfaceName, inMsg->GetInterface())) || (0 == strcmp(ControllerServiceSceneElementInterfaceName, inMsg->GetInterface()))))) {
         size_t numArgs;
         const MsgArg* args;
         Message tempMsg = inMsg;
