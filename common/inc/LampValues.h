@@ -181,6 +181,8 @@ typedef enum {
     BASETYPE_E27,
     BASETYPE_E29,
     BASETYPE_E39,
+    BASETYPE_B22,
+    BASETYPE_GU10,
     BASETYPE_LASTVALUE
 } BaseType;
 
