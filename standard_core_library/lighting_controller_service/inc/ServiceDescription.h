@@ -41,6 +41,7 @@ extern const std::string ControllerServiceSceneWithSceneElementsDescription;
 extern const std::string ControllerServiceSceneElementDescription;
 extern const std::string ControllerServiceMasterSceneDescription;
 extern const std::string LeaderElectionAndStateSyncDescription;
+extern const std::string ControllerServiceDataSetDescription;
 
 OPTIONAL_NAMESPACE_CLOSE
 

@@ -497,6 +497,10 @@ class LampManagerCallbackHandler : public LampManagerCallback {
         lampList.clear();
         lampList = lampIDs;
     }
+
+    void GetConsolidatedLampDataSetReplyCB(const LSFResponseCode& responseCode, const LSFString& lampID, const LSFString& language, const LSFString& lampName, const LampDetails& lampDetails, const LampState& lampState, const LampParameters& lampParameters) {
+        gotReply = true;
+    }
 };
 
 class LampGroupManagerCallbackHandler : public LampGroupManagerCallback {
@@ -2065,7 +2069,7 @@ int main()
                 String uniqueId = NextTok(line);
                 printf("\nInvoking GetLampDataSet(%s)\n", uniqueId.c_str());
                 status = lampManager.GetLampDataSet(uniqueId.c_str());
-                numRepliesToWait = 3;
+                waitForReply = true;
             } else if (cmd == "84") {
                 String uniqueId = NextTok(line);
                 printf("\nInvoking GetLampGroupDataSet(%s)\n", uniqueId.c_str());

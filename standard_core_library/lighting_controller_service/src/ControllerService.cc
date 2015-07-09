@@ -490,6 +490,7 @@ void ControllerService::Initialize()
     AddMethodHandler("DeleteMasterScene", &masterSceneManager, &MasterSceneManager::DeleteMasterScene);
     AddMethodHandler("GetMasterScene", &masterSceneManager, &MasterSceneManager::GetMasterScene);
     AddMethodHandler("ApplyMasterScene", &masterSceneManager, &MasterSceneManager::ApplyMasterScene);
+    AddMethodHandler("GetLampDataSet", &lampManager, &LampManager::GetLampDataSet);
     messageHandlersLock.Unlock();
 }
 
@@ -578,6 +579,7 @@ QStatus ControllerService::RegisterMethodHandlers(void)
     const InterfaceDescription* controllerServiceSceneWithSceneElementsInterface = bus.GetInterface(ControllerServiceSceneWithSceneElementsInterfaceName);
     const InterfaceDescription* controllerServiceSceneElementInterface = bus.GetInterface(ControllerServiceSceneElementInterfaceName);
     const InterfaceDescription* controllerServiceMasterSceneInterface = bus.GetInterface(ControllerServiceMasterSceneInterfaceName);
+    const InterfaceDescription* controllerServiceDataSetInterface = bus.GetInterface(ControllerServiceDataSetInterfaceName);
 
     /*
      * Add method handlers for the various Controller Service interface methods
@@ -673,6 +675,7 @@ QStatus ControllerService::RegisterMethodHandlers(void)
         { controllerServiceMasterSceneInterface->GetMember("DeleteMasterScene"), static_cast<MessageReceiver::MethodHandler>(&ControllerService::MethodCallDispatcher) },
         { controllerServiceMasterSceneInterface->GetMember("GetMasterScene"), static_cast<MessageReceiver::MethodHandler>(&ControllerService::MethodCallDispatcher) },
         { controllerServiceMasterSceneInterface->GetMember("ApplyMasterScene"), static_cast<MessageReceiver::MethodHandler>(&ControllerService::MethodCallDispatcher) },
+        { controllerServiceDataSetInterface->GetMember("GetLampDataSet"), static_cast<MessageReceiver::MethodHandler>(&ControllerService::MethodCallDispatcher) }
     };
 
     status = AddMethodHandlers(methodEntries, sizeof(methodEntries) / sizeof(MethodEntry));
@@ -745,7 +748,8 @@ QStatus ControllerService::Start(const char* keyStoreFileLocation)
         { ControllerServiceSceneElementDescription, ControllerServiceSceneElementInterfaceName },
         { ControllerServiceMasterSceneDescription, ControllerServiceMasterSceneInterfaceName },
         { ControllerServiceTransitionEffectDescription, ControllerServiceTransitionEffectInterfaceName },
-        { ControllerServicePulseEffectDescription, ControllerServicePulseEffectInterfaceName }
+        { ControllerServicePulseEffectDescription, ControllerServicePulseEffectInterfaceName },
+        { ControllerServiceDataSetDescription, ControllerServiceDataSetInterfaceName }
     };
 
     status = CreateAndAddInterfaces(interfaceEntries, sizeof(interfaceEntries) / sizeof(InterfaceEntry));
@@ -1455,6 +1459,8 @@ QStatus ControllerService::Get(const char*ifcName, const char*propName, MsgArg& 
             status = val.Set("u", transitionEffectManager.GetControllerServiceTransitionEffectInterfaceVersion());
         } else if (0 == strcmp(ifcName, ControllerServicePulseEffectInterfaceName)) {
             status = val.Set("u", pulseEffectManager.GetControllerServicePulseEffectInterfaceVersion());
+        } else if (0 == strcmp(ifcName, ControllerServiceDataSetInterfaceName)) {
+            status = val.Set("u", lampManager.GetControllerServiceDataSetInterfaceVersion());
         } else {
             status = ER_BUS_OBJECT_NO_SUCH_INTERFACE;
         }

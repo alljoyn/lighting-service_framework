@@ -409,11 +409,30 @@ void LampManager::ResetLampStateField(ajn::Message& message)
     ResetLampStateFieldInternal(message, lampList, fieldName);
 }
 
-void LampManager::ResetLampStateInternal(ajn::Message& message, LSFStringList lamps, bool groupOperation)
+void LampManager::GetLampDataSet(ajn::Message& message)
+{
+    QCC_DbgPrintf(("%s: %s", __func__, message->ToString().c_str()));
+    size_t numArgs;
+    const MsgArg* args;
+    message->GetArgs(numArgs, args);
+
+    if (controllerService.CheckNumArgsInMessage(numArgs, 2)  != LSF_OK) {
+        return;
+    }
+
+    LSFString lampID = static_cast<LSFString>(args[0].v_string.str);
+    LSFString language = static_cast<LSFString>(args[1].v_string.str);
+
+    QCC_DbgPrintf(("lampID=%s language=%s", lampID.c_str(), language.c_str()));
+
+    lampClients.GetLampDataSet(lampID, language, message);
+}
+
+void LampManager::ResetLampStateInternal(ajn::Message& message, LSFStringList lamps, bool groupOperation, bool allLamps)
 {
     LampState defaultLampState;
 
-    QCC_DbgPrintf(("%s", __func__));
+    QCC_DbgPrintf(("%s: allLamps=%u", __func__, allLamps));
 
     LSFResponseCode responseCode = presetManager.GetDefaultLampStateInternal(defaultLampState);
 
@@ -426,7 +445,7 @@ void LampManager::ResetLampStateInternal(ajn::Message& message, LSFStringList la
     if (LSF_OK == responseCode) {
         LampsAndState transitionToStateComponent(lamps, defaultLampState, 0);
         transitionToState.push_back(transitionToStateComponent);
-        ChangeLampStateAndField(message, transitionToState, transitionToPreset, stateField, pulseWithState, pulseWithPreset, groupOperation);
+        ChangeLampStateAndField(message, transitionToState, transitionToPreset, stateField, pulseWithState, pulseWithPreset, groupOperation, allLamps);
     } else {
         QCC_LogError(ER_FAIL, ("%s: Error getting the default lamp state", __func__));
         if (groupOperation) {
@@ -446,11 +465,11 @@ void LampManager::ResetLampStateInternal(ajn::Message& message, LSFStringList la
     }
 }
 
-void LampManager::ResetLampStateFieldInternal(ajn::Message& message, LSFStringList lamps, LSFString stateFieldName, bool groupOperation)
+void LampManager::ResetLampStateFieldInternal(ajn::Message& message, LSFStringList lamps, LSFString stateFieldName, bool groupOperation, bool allLamps)
 {
     LampState defaultLampState;
 
-    QCC_DbgPrintf(("%s", __func__));
+    QCC_DbgPrintf(("%s: allLamps=%u", __func__, allLamps));
 
     LSFResponseCode responseCode = presetManager.GetDefaultLampStateInternal(defaultLampState);
     MsgArg arg;
@@ -477,7 +496,7 @@ void LampManager::ResetLampStateFieldInternal(ajn::Message& message, LSFStringLi
 
         LampsAndStateField stateFieldComponent(lamps, stateFieldName, arg, 0);
         stateField.push_back(stateFieldComponent);
-        ChangeLampStateAndField(message, transitionToState, transitionToPreset, stateField, pulseWithState, pulseWithPreset, groupOperation);
+        ChangeLampStateAndField(message, transitionToState, transitionToPreset, stateField, pulseWithState, pulseWithPreset, groupOperation, allLamps);
     } else {
         QCC_LogError(ER_FAIL, ("%s: Error getting the default lamp state", __func__));
         controllerService.SendMethodReplyWithResponseCodeIDAndName(message, responseCode, lamps.front(), stateFieldName);
@@ -505,13 +524,14 @@ void LampManager::ChangeLampStateAndField(Message& message,
                                           PulseLampsWithStateList& pulseWithStateComponent,
                                           PulseLampsWithPresetList& pulseWithPresetComponent,
                                           bool groupOperation,
+                                          bool allLamps,
                                           bool sceneOperation,
                                           LSFString sceneOrMasterSceneId,
                                           bool effectOperation)
 {
     LSFResponseCode responseCode = LSF_ERR_FAILURE;
 
-    QCC_DbgPrintf(("%s", __func__));
+    QCC_DbgPrintf(("%s: allLamps=%u", __func__, allLamps));
 
     uint64_t timestamp = 0;
     OEM_CS_GetSyncTimeStamp(timestamp);
@@ -645,7 +665,7 @@ void LampManager::ChangeLampStateAndField(Message& message,
         pulseWithPresetComponent.pop_front();
     }
 
-    lampClients.ChangeLampState(message, groupOperation, sceneOperation, effectOperation, stateParamsList, stateFieldParamsList, pulseParamsList, sceneOrMasterSceneId);
+    lampClients.ChangeLampState(message, groupOperation, sceneOperation, effectOperation, stateParamsList, stateFieldParamsList, pulseParamsList, sceneOrMasterSceneId, allLamps);
 }
 
 void LampManager::TransitionLampState(ajn::Message& message)
@@ -770,4 +790,10 @@ uint32_t LampManager::GetControllerServiceLampInterfaceVersion(void)
 {
     QCC_DbgPrintf(("%s: controllerLampInterfaceVersion=%d", __func__, ControllerServiceLampInterfaceVersion));
     return ControllerServiceLampInterfaceVersion;
+}
+
+uint32_t LampManager::GetControllerServiceDataSetInterfaceVersion(void)
+{
+    QCC_DbgPrintf(("%s: controllerDataSetInterfaceVersion=%d", __func__, ControllerServiceDataSetInterfaceVersion));
+    return ControllerServiceDataSetInterfaceVersion;
 }

@@ -377,6 +377,17 @@ class LampManagerCallback {
      * @param effectID - the requested effect id
      */
     virtual void SetLampEffectReplyCB(const LSFResponseCode& responseCode, const LSFString& lampID, const LSFString& effectID) { }
+    /**
+     * Get Lamp Data Set Reply CB
+     * @param responseCode
+     * @param lampID   - The requested lamp id
+     * @param language - The language associated with the name
+     * @param lampName - The lamp name
+     * @param lampDetails - The lamp details
+     * @param lampState - The lamp state
+     * @param lampParameters - The lamp parameters
+     */
+    virtual void GetConsolidatedLampDataSetReplyCB(const LSFResponseCode& responseCode, const LSFString& lampID, const LSFString& language, const LSFString& lampName, const LampDetails& lampDetails, const LampState& lampState, const LampParameters& lampParameters) { }
 };
 
 /**
@@ -815,12 +826,26 @@ class LampManager : public Manager {
     ControllerClientStatus GetLampDataSet(const LSFString& lampID, const LSFString& language = LSFString("en"));
 
     /**
+     * Get lamp data - get lamp details, get lamp name and get lamp state \n
+     * Calling to interface 'org.allseen.LSF.ControllerService.Lamp' to method 'GetLampDataSet'
+     * @param lampID
+     * @param language - to get the lamp name
+     * @return ControllerClientStatus
+     */
+    ControllerClientStatus GetConsolidatedLampDataSet(const LSFString& lampID, const LSFString& language = LSFString("en"));
+
+    /**
      * Set the effect defined by effectID on the lamp identified by lamp ID \n
      * @param lampID
      * @param effectID
      * @return ControllerClientStatus
      */
     ControllerClientStatus SetLampEffect(const LSFString& lampID, const LSFString& effectID);
+
+    /**
+     * Method Reply Handler for the GetConsolidatedLampDataSet
+     */
+    void GetConsolidatedLampDataSetReply(ajn::Message& message);
 
   private:
 

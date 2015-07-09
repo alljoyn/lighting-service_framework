@@ -192,6 +192,15 @@ class LampClients : public Manager, public ajn::BusAttachment::JoinSessionAsyncC
     void GetLampName(const LSFString& lampID, const LSFString& language, ajn::Message& msg);
 
     /**
+     * Get the Lamp Data Set
+     *
+     * @param lampID    The lamp id
+     * @param language  The language of the requested information
+     * @param msg   The original message
+     */
+    void GetLampDataSet(const LSFString& lampID, const LSFString& language, ajn::Message& msg);
+
+    /**
      * Set the Lamp name
      *
      * @param lampID    The lamp id
@@ -289,7 +298,7 @@ class LampClients : public Manager, public ajn::BusAttachment::JoinSessionAsyncC
      * change lamp state
      */
     void ChangeLampState(const ajn::Message& inMsg, bool groupOperation, bool sceneOperation, bool effectOperation, TransitionStateParamsList& transitionStateParams,
-                         TransitionStateFieldParamsList& transitionStateFieldparams, PulseStateParamsList& pulseParams, LSFString sceneOrMasterSceneID = LSFString());
+                         TransitionStateFieldParamsList& transitionStateFieldparams, PulseStateParamsList& pulseParams, LSFString sceneOrMasterSceneID = LSFString(), bool allLampsOp = false);
 
     /**
      * Get the lamp faults
@@ -401,8 +410,8 @@ class LampClients : public Manager, public ajn::BusAttachment::JoinSessionAsyncC
     typedef std::list<QueuedMethodCallElement> QueuedMethodCallElementList;
 
     struct QueuedMethodCall {
-        QueuedMethodCall(const ajn::Message& msg, ajn::MessageReceiver::ReplyHandler replyHandler) :
-            inMsg(msg), replyFunc(replyHandler), responseID(qcc::RandHexString(8).c_str()), responseCounter(), methodCallCount(0) {
+        QueuedMethodCall(const ajn::Message& msg, ajn::MessageReceiver::ReplyHandler replyHandler, bool allLampsOp = false) :
+            inMsg(msg), replyFunc(replyHandler), responseID(qcc::RandHexString(8).c_str()), responseCounter(), methodCallCount(0), allLampsOperation(allLampsOp) {
         }
 
         void AddMethodCallElement(QueuedMethodCallElement& element) {
@@ -416,6 +425,7 @@ class LampClients : public Manager, public ajn::BusAttachment::JoinSessionAsyncC
         ResponseCounter responseCounter;
         QueuedMethodCallElementList methodCallElements;
         uint32_t methodCallCount;
+        bool allLampsOperation;
     };
 
     struct QueuedMethodCallContext {
@@ -444,6 +454,7 @@ class LampClients : public Manager, public ajn::BusAttachment::JoinSessionAsyncC
     void HandleGetLampStateReply(ajn::Message& msg, void* context);
     void HandleReplyWithVariant(ajn::Message& msg, void* context);
     void HandleReplyWithKeyValuePairs(ajn::Message& msg, void* context);
+    void HandleDataSetReply(ajn::Message& msg, void* context);
 
     void DecrementWaitingAndSendResponse(QueuedMethodCall* queuedCall, uint32_t success, uint32_t failure, uint32_t notFound, const ajn::MsgArg* arg = NULL);
 

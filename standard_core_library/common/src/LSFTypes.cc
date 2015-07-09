@@ -37,6 +37,8 @@ namespace lsf {
 
 const LSFString CurrentStateIdentifier = LSFString("CURRENT_STATE");
 
+const LSFString AllLampsGroupIdentifier = LSFString("ALL_LAMPS_GROUP");
+
 const char* ControllerServiceObjectPath = "/org/allseen/LSF/ControllerService";
 const char* ControllerServiceInterfaceName = "org.allseen.LSF.ControllerService";
 const char* ControllerServiceLampInterfaceName = "org.allseen.LSF.ControllerService.Lamp";
@@ -48,6 +50,7 @@ const char* ControllerServiceSceneInterfaceName = "org.allseen.LSF.ControllerSer
 const char* ControllerServiceSceneWithSceneElementsInterfaceName = "org.allseen.LSF.ControllerService.SceneWithSceneElements";
 const char* ControllerServiceSceneElementInterfaceName = "org.allseen.LSF.ControllerService.SceneElement";
 const char* ControllerServiceMasterSceneInterfaceName = "org.allseen.LSF.ControllerService.MasterScene";
+const char* ControllerServiceDataSetInterfaceName = "org.allseen.LSF.ControllerService.DataSet";
 ajn::SessionPort ControllerServiceSessionPort = 43;
 
 const uint32_t ControllerServiceInterfaceVersion = 1;
@@ -61,6 +64,7 @@ const uint32_t ControllerServiceSceneWithSceneElementsInterfaceVersion = 1;
 const uint32_t ControllerServiceSceneElementInterfaceVersion = 1;
 const uint32_t ControllerServiceMasterSceneInterfaceVersion = 1;
 const uint32_t ControllerServiceLeaderElectionAndStateSyncInterfaceVersion = 1;
+const uint32_t ControllerServiceDataSetInterfaceVersion = 1;
 
 const char* LampServiceObjectPath = "/org/allseen/LSF/Lamp";
 const char* LampServiceInterfaceName = "org.allseen.LSF.LampService";

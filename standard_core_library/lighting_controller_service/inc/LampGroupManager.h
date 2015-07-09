@@ -272,7 +272,7 @@ class LampGroupManager : public Manager {
                                                  TransitionLampsLampGroupsToPresetList& transitionToPresetComponent,
                                                  PulseLampsLampGroupsWithStateList& pulseWithStateComponent,
                                                  PulseLampsLampGroupsWithPresetList& pulseWithPresetComponent,
-                                                 bool groupOperation = true, bool sceneOperation = false, LSFString sceneOrMasterSceneID = LSFString(), bool effectOperation = false);
+                                                 bool groupOperation = true, bool allLamps = false, bool sceneOperation = false, LSFString sceneOrMasterSceneID = LSFString(), bool effectOperation = false);
 
     LampGroupMap lampGroups;                     /**< lamp groups */
     std::set<LSFString> lampGroupUpdates;        /**< List of LampGroupIDs that were updated */

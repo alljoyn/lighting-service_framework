@@ -221,8 +221,6 @@ void LampGroupManager::GetLampGroupName(Message& message)
 
 void LampGroupManager::SetLampGroupName(Message& message)
 {
-
-
     QCC_DbgPrintf(("%s: %s", __func__, message->ToString().c_str()));
     LSFResponseCode responseCode = LSF_ERR_NOT_FOUND;
 
@@ -587,7 +585,12 @@ void LampGroupManager::ResetLampGroupState(Message& message)
     QCC_DbgPrintf(("%s: Got a list of %d lamps", __func__, lamps.size()));
 
     if (lamps.empty()) {
-        controllerService.SendMethodReplyWithResponseCodeAndID(message, responseCode, lampGroupId);
+        if (lampGroupId == AllLampsGroupIdentifier) {
+            QCC_DbgPrintf(("%s: Processing All Lamps Operation", __func__));
+            lampManager.ResetLampStateInternal(message, lamps, true, true);
+        } else {
+            controllerService.SendMethodReplyWithResponseCodeAndID(message, responseCode, lampGroupId);
+        }
     } else {
         lampManager.ResetLampStateInternal(message, lamps, true);
     }
@@ -629,7 +632,7 @@ void LampGroupManager::TransitionLampGroupState(Message& message)
         TransitionLampsLampGroupsToState component(lamps, lampGroupList, state, transitionPeriod);
         transitionToStateComponent.push_back(component);
 
-        responseCode = ChangeLampGroupStateAndField(message, transitionToStateComponent, transitionToPresetComponent, pulseWithStateComponent, pulseWithPresetComponent);
+        responseCode = ChangeLampGroupStateAndField(message, transitionToStateComponent, transitionToPresetComponent, pulseWithStateComponent, pulseWithPresetComponent, true, (lampGroupId == AllLampsGroupIdentifier));
 
         if (LSF_ERR_NOT_FOUND == responseCode) {
             controllerService.SendMethodReplyWithResponseCodeAndID(message, responseCode, lampGroupId);
@@ -681,7 +684,7 @@ void LampGroupManager::PulseLampGroupWithState(ajn::Message& message)
         PulseLampsLampGroupsWithState component(lamps, lampGroupList, fromLampGroupState, toLampGroupState, period, duration, numPulses);
         pulseWithStateComponent.push_back(component);
 
-        responseCode = ChangeLampGroupStateAndField(message, transitionToStateComponent, transitionToPresetComponent, pulseWithStateComponent, pulseWithPresetComponent);
+        responseCode = ChangeLampGroupStateAndField(message, transitionToStateComponent, transitionToPresetComponent, pulseWithStateComponent, pulseWithPresetComponent, true, (lampGroupID == AllLampsGroupIdentifier));
 
         if (LSF_ERR_NOT_FOUND == responseCode) {
             controllerService.SendMethodReplyWithResponseCodeAndID(message, responseCode, lampGroupID);
@@ -729,7 +732,7 @@ void LampGroupManager::PulseLampGroupWithPreset(ajn::Message& message)
         PulseLampsLampGroupsWithPreset component(lamps, lampGroupList, fromPresetID, toPresetID, period, duration, numPulses);
         pulseWithPresetComponent.push_back(component);
 
-        responseCode = ChangeLampGroupStateAndField(message, transitionToStateComponent, transitionToPresetComponent, pulseWithStateComponent, pulseWithPresetComponent);
+        responseCode = ChangeLampGroupStateAndField(message, transitionToStateComponent, transitionToPresetComponent, pulseWithStateComponent, pulseWithPresetComponent, true, (lampGroupID == AllLampsGroupIdentifier));
 
         if (LSF_ERR_NOT_FOUND == responseCode) {
             controllerService.SendMethodReplyWithResponseCodeAndID(message, responseCode, lampGroupID);
@@ -773,7 +776,7 @@ void LampGroupManager::TransitionLampGroupStateToPreset(Message& message)
         TransitionLampsLampGroupsToPreset component(lamps, lampGroupList, preset, transitionPeriod);
         transitionToPresetComponent.push_back(component);
 
-        responseCode = ChangeLampGroupStateAndField(message, transitionToStateComponent, transitionToPresetComponent, pulseWithStateComponent, pulseWithPresetComponent);
+        responseCode = ChangeLampGroupStateAndField(message, transitionToStateComponent, transitionToPresetComponent, pulseWithStateComponent, pulseWithPresetComponent, true, (lampGroupId == AllLampsGroupIdentifier));
 
         if (LSF_ERR_NOT_FOUND == responseCode) {
             controllerService.SendMethodReplyWithResponseCodeAndID(message, responseCode, lampGroupId);
@@ -815,12 +818,12 @@ void LampGroupManager::TransitionLampGroupStateField(Message& message)
     PulseLampsWithStateList pulseWithState;
     PulseLampsWithPresetList pulseWithPreset;
 
-    if (lamps.empty()) {
+    if (lamps.empty() && (lampGroupId != AllLampsGroupIdentifier)) {
         controllerService.SendMethodReplyWithResponseCodeIDAndName(message, responseCode, lampGroupId, fieldName);
     } else {
         LampsAndStateField stateFieldComponent(lamps, fieldName, *varArg, transitionPeriod);
         stateField.push_back(stateFieldComponent);
-        lampManager.ChangeLampStateAndField(message, transitionToState, transitionToPreset, stateField, pulseWithState, pulseWithPreset, true);
+        lampManager.ChangeLampStateAndField(message, transitionToState, transitionToPreset, stateField, pulseWithState, pulseWithPreset, true, (lampGroupId == AllLampsGroupIdentifier));
     }
 }
 
@@ -829,9 +832,9 @@ LSFResponseCode LampGroupManager::ChangeLampGroupStateAndField(Message& message,
                                                                TransitionLampsLampGroupsToPresetList& transitionToPresetComponent,
                                                                PulseLampsLampGroupsWithStateList& pulseWithStateComponent,
                                                                PulseLampsLampGroupsWithPresetList& pulseWithPresetComponent,
-                                                               bool groupOperation, bool sceneOperation, LSFString sceneOrMasterSceneID, bool effectOperation)
+                                                               bool groupOperation, bool allLamps, bool sceneOperation, LSFString sceneOrMasterSceneID, bool effectOperation)
 {
-    QCC_DbgTrace(("%s", __func__));
+    QCC_DbgPrintf(("%s: allLamps=%u", __func__, allLamps));
     LSFResponseCode responseCode = LSF_OK;
 
     LampsAndStateList transitionToStateList;
@@ -848,7 +851,7 @@ LSFResponseCode LampGroupManager::ChangeLampGroupStateAndField(Message& message,
 
         GetAllGroupLamps(transitionToStateComp.lampGroups, lampsAndState.lamps);
 
-        if (lampsAndState.lamps.size()) {
+        if (lampsAndState.lamps.size() || allLamps) {
             transitionToStateList.push_back(lampsAndState);
             numLamps += lampsAndState.lamps.size();
         }
@@ -862,7 +865,7 @@ LSFResponseCode LampGroupManager::ChangeLampGroupStateAndField(Message& message,
 
         GetAllGroupLamps(transitionToPresetComp.lampGroups, lampsAndPreset.lamps);
 
-        if (lampsAndPreset.lamps.size()) {
+        if (lampsAndPreset.lamps.size() || allLamps) {
             transitionToPresetList.push_back(lampsAndPreset);
             numLamps += lampsAndPreset.lamps.size();
         }
@@ -877,7 +880,7 @@ LSFResponseCode LampGroupManager::ChangeLampGroupStateAndField(Message& message,
 
         GetAllGroupLamps(pulseWithStateComp.lampGroups, pulseWithState.lamps);
 
-        if (pulseWithState.lamps.size()) {
+        if (pulseWithState.lamps.size() || allLamps) {
             pulseWithStateList.push_back(pulseWithState);
             numLamps += pulseWithState.lamps.size();
         }
@@ -892,7 +895,7 @@ LSFResponseCode LampGroupManager::ChangeLampGroupStateAndField(Message& message,
 
         GetAllGroupLamps(pulseWithPresetComp.lampGroups, pulseWithPreset.lamps);
 
-        if (pulseWithPreset.lamps.size()) {
+        if (pulseWithPreset.lamps.size() || allLamps) {
             pulseWithPresetList.push_back(pulseWithPreset);
             numLamps += pulseWithPreset.lamps.size();
         }
@@ -900,10 +903,10 @@ LSFResponseCode LampGroupManager::ChangeLampGroupStateAndField(Message& message,
         pulseWithPresetComponent.pop_front();
     }
 
-    if (numLamps == 0) {
+    if (numLamps == 0 && (!allLamps)) {
         responseCode = LSF_ERR_NOT_FOUND;
     } else {
-        lampManager.ChangeLampStateAndField(message, transitionToStateList, transitionToPresetList, stateFieldList, pulseWithStateList, pulseWithPresetList, groupOperation, sceneOperation, sceneOrMasterSceneID, effectOperation);
+        lampManager.ChangeLampStateAndField(message, transitionToStateList, transitionToPresetList, stateFieldList, pulseWithStateList, pulseWithPresetList, groupOperation, allLamps, sceneOperation, sceneOrMasterSceneID, effectOperation);
     }
 
     return responseCode;
@@ -934,10 +937,10 @@ void LampGroupManager::ResetLampGroupStateField(Message& message)
     responseCode = GetAllGroupLamps(lampGroupList, lamps);
     QCC_DbgPrintf(("%s: Got a list of %d lamps", __func__, lamps.size()));
 
-    if (lamps.empty()) {
+    if (lamps.empty() && (lampGroupId != AllLampsGroupIdentifier)) {
         controllerService.SendMethodReplyWithResponseCodeIDAndName(message, responseCode, lampGroupId, fieldName);
     } else {
-        lampManager.ResetLampStateFieldInternal(message, lamps, fieldName, true);
+        lampManager.ResetLampStateFieldInternal(message, lamps, fieldName, true, (lampGroupId == AllLampsGroupIdentifier));
     }
 }
 

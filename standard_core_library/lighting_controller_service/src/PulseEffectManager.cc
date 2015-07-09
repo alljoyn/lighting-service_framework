@@ -447,7 +447,7 @@ void PulseEffectManager::ApplyPulseEffectOnLamps(Message& msg)
 
         responseCode = lampGroupManagerPtr->ChangeLampGroupStateAndField(msg, transitionToStateComponent, transitionToPresetComponent,
                                                                          pulseWithStateComponent, pulseWithPresetComponent,
-                                                                         false, false, LSFString(), true);
+                                                                         false, false, false, LSFString(), true);
     }
 
     if (LSF_ERR_NOT_FOUND == responseCode) {
@@ -503,7 +503,7 @@ void PulseEffectManager::ApplyPulseEffectOnLampGroups(Message& msg)
 
         responseCode = lampGroupManagerPtr->ChangeLampGroupStateAndField(msg, transitionToStateComponent, transitionToPresetComponent,
                                                                          pulseWithStateComponent, pulseWithPresetComponent,
-                                                                         false, false, LSFString(), true);
+                                                                         false, (lampGroups.front() == AllLampsGroupIdentifier), false, LSFString(), true);
     }
 
     if (LSF_ERR_NOT_FOUND == responseCode) {

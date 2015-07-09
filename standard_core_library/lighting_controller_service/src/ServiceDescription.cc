@@ -849,6 +849,24 @@ const std::string LeaderElectionAndStateSyncDescription =
     "  </interface>"
     "</node>";
 
+const std::string ControllerServiceDataSetDescription =
+    "<node>"
+    "  <interface name='org.allseen.LSF.ControllerService.DataSet'>"
+    "    <property name='Version' type='u' access='read'/>"
+    "    <method name='GetLampDataSet'>"
+    "      <arg name='lampID' type='s' direction='in'/>"
+    "      <arg name='language' type='s' direction='in'/>"
+    "      <arg name='responseCode' type='u' direction='out'/>"
+    "      <arg name='lampID' type='s' direction='out'/>"
+    "      <arg name='language' type='s' direction='out'/>"
+    "      <arg name='lampName' type='s' direction='out'/>"
+    "      <arg name='lampDetails' type='a{sv}' direction='out'/>"
+    "      <arg name='lampState' type='a{sv}' direction='out'/>"
+    "      <arg name='lampParameters' type='a{sv}' direction='out'/>"
+    "    </method>"
+    "  </interface>"
+    "</node>";
+
 OPTIONAL_NAMESPACE_CLOSE
 
 }

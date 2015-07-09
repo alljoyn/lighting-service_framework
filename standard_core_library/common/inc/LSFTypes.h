@@ -71,6 +71,11 @@ typedef std::map<LSFString, LSFString> LampNameMap;
 extern const LSFString CurrentStateIdentifier;
 
 /**
+ * String used as an identifier for the All Lamps Group
+ */
+extern const LSFString AllLampsGroupIdentifier;
+
+/**
  * Controller Service Object Path
  */
 extern const char* ControllerServiceObjectPath;
@@ -124,6 +129,11 @@ extern const char* ControllerServiceSceneElementInterfaceName;
  * Controller Service Master Scene Interface Name
  */
 extern const char* ControllerServiceMasterSceneInterfaceName;
+
+/**
+ * Controller Service Data Set Interface Name
+ */
+extern const char* ControllerServiceDataSetInterfaceName;
 
 /**
  * Controller Service Session Port
@@ -184,6 +194,11 @@ extern const uint32_t ControllerServiceMasterSceneInterfaceVersion;
  * Controller Service Leader Election And State Sync Interface Version
  */
 extern const uint32_t ControllerServiceLeaderElectionAndStateSyncInterfaceVersion;
+
+/**
+ * Controller Service Data Set Interface Version
+ */
+extern const uint32_t ControllerServiceDataSetInterfaceVersion;
 
 /**
  * Lamp Service Object Path

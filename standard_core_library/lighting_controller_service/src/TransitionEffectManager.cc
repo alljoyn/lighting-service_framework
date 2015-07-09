@@ -449,7 +449,7 @@ void TransitionEffectManager::ApplyTransitionEffectOnLamps(Message& msg)
 
         responseCode = lampGroupManagerPtr->ChangeLampGroupStateAndField(msg, transitionToStateComponent, transitionToPresetComponent,
                                                                          pulseWithStateComponent, pulseWithPresetComponent,
-                                                                         false, false, LSFString(), true);
+                                                                         false, false, false, LSFString(), true);
     }
 
     if (LSF_ERR_NOT_FOUND == responseCode) {
@@ -503,7 +503,7 @@ void TransitionEffectManager::ApplyTransitionEffectOnLampGroups(Message& msg)
             transitionToStateComponent.push_back(component);
         }
         responseCode = lampGroupManagerPtr->ChangeLampGroupStateAndField(msg, transitionToStateComponent, transitionToPresetComponent, pulseWithStateComponent, pulseWithPresetComponent,
-                                                                         false, false, LSFString(), true);
+                                                                         false, (lampGroups.front() == AllLampsGroupIdentifier), false, LSFString(), true);
     }
 
     if (LSF_ERR_NOT_FOUND == responseCode) {

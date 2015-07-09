@@ -619,7 +619,7 @@ LSFResponseCode SceneElementManager::ApplySceneElementInternal(ajn::Message& mes
         } else {
             LSFResponseCode tempResponseCode = lampGroupManagerPtr->ChangeLampGroupStateAndField(message, transitionToStateComponent, transitionToPresetComponent,
                                                                                                  pulseWithStateComponent, pulseWithPresetComponent,
-                                                                                                 false, (sceneOrMasterSceneId.empty() ? false : true), sceneOrMasterSceneId, (sceneOrMasterSceneId.empty() ? true : false));
+                                                                                                 false, false, (sceneOrMasterSceneId.empty() ? false : true), sceneOrMasterSceneId, (sceneOrMasterSceneId.empty() ? true : false));
             if (LSF_ERR_NOT_FOUND == tempResponseCode) {
                 responseCode = LSF_ERR_FAILURE;
             }

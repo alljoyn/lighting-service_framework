@@ -43,10 +43,6 @@ static bool signalReceivedFlag = false;
 static bool sceneSignalReceivedFlag = false;
 static bool sceneElementSignalReceivedFlag = false;
 
-static bool getLampDataSetName = false;
-static bool getLampDataSetDetails = false;
-static bool getLampDataSetState = false;
-
 static bool getLampGroupDataSetGroup = false;
 static bool getLampGroupDataSetName = false;
 
@@ -257,7 +253,14 @@ class LampManagerCallbackHandler : public LampManagerCallback {
         getLampParametersEnergyUsageMilliwattsFieldReplyCBLampParametersEnergyUsageMilliwattsField(),
         getLampParametersLumensFieldReplyCBStatus(LSF_ERR_UNEXPECTED),
         getLampParametersLumensFieldReplyCBLampID(),
-        getLampParametersLumensFieldReplyCBLampParametersLumensField() { }
+        getLampParametersLumensFieldReplyCBLampParametersLumensField(),
+        getConsolidatedLampDataSetReplyCBStatus(LSF_ERR_UNEXPECTED),
+        getConsolidatedLampDataSetReplyCBLampID(),
+        getConsolidatedLampDataSetReplyCBLanguage(),
+        getConsolidatedLampDataSetReplyCBLampName(),
+        getConsolidatedLampDataSetReplyCBLampState(),
+        getConsolidatedLampDataSetReplyCBLampDetails(),
+        getConsolidatedLampDataSetReplyCBLampParameters() { }
 
     void GetAllLampIDsReplyCB(const LSFResponseCode& responseCode, const LSFStringList& lampIDs) {
         getAllLampIDsReplyCBStatus = responseCode;
@@ -286,7 +289,6 @@ class LampManagerCallbackHandler : public LampManagerCallback {
         getLampNameReplyCBLanguage = language;
         getLampNameReplyCBLampName = lampName;
         replyReceivedFlag = true;
-        getLampDataSetName = true;
     }
 
     void SetLampNameReplyCB(const LSFResponseCode& responseCode, const LSFString& lampID, const LSFString& language) {
@@ -307,7 +309,6 @@ class LampManagerCallbackHandler : public LampManagerCallback {
         getLampDetailsReplyCBLampID = lampID;
         getLampDetailsReplyCBLampDetails = lampDetails;
         replyReceivedFlag = true;
-        getLampDataSetDetails = true;
     }
 
     void GetLampParametersReplyCB(const LSFResponseCode& responseCode, const LSFString& lampID, const LampParameters& lampParameters) {
@@ -336,7 +337,6 @@ class LampManagerCallbackHandler : public LampManagerCallback {
         getLampStateReplyCBLampID = lampID;
         getLampStateReplyCBLampState = lampState;
         replyReceivedFlag = true;
-        getLampDataSetState = true;
     }
 
     void GetLampStateOnOffFieldReplyCB(const LSFResponseCode& responseCode, const LSFString& lampID, const bool& onOff) {
@@ -499,6 +499,17 @@ class LampManagerCallbackHandler : public LampManagerCallback {
         signalReceivedFlag = true;
     }
 
+    void GetConsolidatedLampDataSetReplyCB(const LSFResponseCode& responseCode, const LSFString& lampID, const LSFString& language, const LSFString& lampName, const LampDetails& lampDetails, const LampState& lampState, const LampParameters& lampParameters) {
+        getConsolidatedLampDataSetReplyCBStatus = responseCode;
+        getConsolidatedLampDataSetReplyCBLampID = lampID;
+        getConsolidatedLampDataSetReplyCBLanguage = language;
+        getConsolidatedLampDataSetReplyCBLampName = lampName;
+        getConsolidatedLampDataSetReplyCBLampState = lampState;
+        getConsolidatedLampDataSetReplyCBLampDetails = lampDetails;
+        getConsolidatedLampDataSetReplyCBLampParameters = lampParameters;
+        replyReceivedFlag = true;
+    }
+
     LSFResponseCode getAllLampIDsReplyCBStatus;
     LSFResponseCode getLampManufacturerReplyCBStatus;
     LSFString getLampManufacturerReplyCBLampID;
@@ -588,6 +599,13 @@ class LampManagerCallbackHandler : public LampManagerCallback {
     LSFString getLampParametersLumensFieldReplyCBLampID;
     uint32_t getLampParametersLumensFieldReplyCBLampParametersLumensField;
     LSFStringList lampList;
+    LSFResponseCode getConsolidatedLampDataSetReplyCBStatus;
+    LSFString getConsolidatedLampDataSetReplyCBLampID;
+    LSFString getConsolidatedLampDataSetReplyCBLanguage;
+    LSFString getConsolidatedLampDataSetReplyCBLampName;
+    LampState getConsolidatedLampDataSetReplyCBLampState;
+    LampDetails getConsolidatedLampDataSetReplyCBLampDetails;
+    LampParameters getConsolidatedLampDataSetReplyCBLampParameters;
 };
 
 class LampGroupManagerCallbackHandler : public LampGroupManagerCallback {
@@ -1958,7 +1976,7 @@ TEST_F(ControllerClientTest, Controller_Client_GetAllLampIDs) {
     EXPECT_EQ(listSize, lampManagerCBHandler.lampList.size());
 }
 
-TEST_F(ControllerClientTest, Controller_Client_GetLampDataSet) {
+TEST_F(ControllerClientTest, Controller_Client_GetConsolidatedLampDataSet) {
     replyReceivedFlag = false;
 
     ControllerClientStatus localStatus = CONTROLLER_CLIENT_OK;
@@ -1976,9 +1994,6 @@ TEST_F(ControllerClientTest, Controller_Client_GetLampDataSet) {
     EXPECT_EQ(LSF_OK, controllerClientCBHandler.connectedToControllerServiceCBStatus);
 
     replyReceivedFlag = false;
-    getLampDataSetState = false;
-    getLampDataSetDetails = false;
-    getLampDataSetName = false;
 
     localStatus = CONTROLLER_CLIENT_OK;
     localStatus = lampManager.GetAllLampIDs();
@@ -1997,56 +2012,36 @@ TEST_F(ControllerClientTest, Controller_Client_GetLampDataSet) {
     size_t listSize = 1;
     EXPECT_EQ(listSize, lampManagerCBHandler.lampList.size());
 
+    replyReceivedFlag = false;
+
     localStatus = CONTROLLER_CLIENT_OK;
     LSFString lampID = lampManagerCBHandler.lampList.front();
-    localStatus = lampManager.GetLampDataSet(lampID);
+    localStatus = lampManager.GetConsolidatedLampDataSet(lampID);
     ASSERT_EQ(CONTROLLER_CLIENT_OK, localStatus) << "  Actual Status: " << ControllerClientStatusText(localStatus);
 
     //wait to receive reply
     for (size_t msecs = 0; msecs < 2100; msecs += 5) {
-        if (getLampDataSetState) {
+        if (replyReceivedFlag) {
             break;
         }
         sleep(2);
     }
 
-    EXPECT_EQ(LSF_OK, lampManagerCBHandler.getLampStateReplyCBStatus);
-    EXPECT_EQ(lampID, lampManagerCBHandler.getLampStateReplyCBLampID);
+    EXPECT_EQ(LSF_OK, lampManagerCBHandler.getConsolidatedLampDataSetReplyCBStatus);
+    EXPECT_EQ(lampID, lampManagerCBHandler.getConsolidatedLampDataSetReplyCBLampID);
 
     LampState state(1, 0, 0, 0, 0);
-    EXPECT_EQ(state.onOff, lampManagerCBHandler.getLampStateReplyCBLampState.onOff);
-    EXPECT_EQ(state.hue, lampManagerCBHandler.getLampStateReplyCBLampState.hue);
-    EXPECT_EQ(state.saturation, lampManagerCBHandler.getLampStateReplyCBLampState.saturation);
-    EXPECT_EQ(state.colorTemp, lampManagerCBHandler.getLampStateReplyCBLampState.colorTemp);
-    EXPECT_EQ(state.brightness, lampManagerCBHandler.getLampStateReplyCBLampState.brightness);
-
-    //wait to receive reply
-    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
-        if (getLampDataSetName) {
-            break;
-        }
-        sleep(2);
-    }
-
-    EXPECT_EQ(LSF_OK, lampManagerCBHandler.getLampNameReplyCBStatus);
-    EXPECT_EQ(lampID, lampManagerCBHandler.getLampNameReplyCBLampID);
+    EXPECT_EQ(state.onOff, lampManagerCBHandler.getConsolidatedLampDataSetReplyCBLampState.onOff);
+    EXPECT_EQ(state.hue, lampManagerCBHandler.getConsolidatedLampDataSetReplyCBLampState.hue);
+    EXPECT_EQ(state.saturation, lampManagerCBHandler.getConsolidatedLampDataSetReplyCBLampState.saturation);
+    EXPECT_EQ(state.colorTemp, lampManagerCBHandler.getConsolidatedLampDataSetReplyCBLampState.colorTemp);
+    EXPECT_EQ(state.brightness, lampManagerCBHandler.getConsolidatedLampDataSetReplyCBLampState.brightness);
 
     LSFString language("en");
-    EXPECT_EQ(language, lampManagerCBHandler.getLampNameReplyCBLanguage);
+    EXPECT_EQ(language, lampManagerCBHandler.getConsolidatedLampDataSetReplyCBLanguage);
 
     LSFString name("Device Name");
-    EXPECT_EQ(name, lampManagerCBHandler.getLampNameReplyCBLampName);
-
-    //wait to receive reply
-    for (size_t msecs = 0; msecs < 2100; msecs += 5) {
-        if (getLampDataSetDetails) {
-            break;
-        }
-        sleep(2);
-    }
-
-    EXPECT_EQ(LSF_OK, lampManagerCBHandler.getLampDetailsReplyCBStatus);
-    EXPECT_EQ(lampID, lampManagerCBHandler.getLampDetailsReplyCBLampID);
+    EXPECT_EQ(name, lampManagerCBHandler.getConsolidatedLampDataSetReplyCBLampName);
 
     LampDetails details;
     details.make = MAKE_LIFX;
@@ -2069,24 +2064,30 @@ TEST_F(ControllerClientTest, Controller_Client_GetLampDataSet) {
     details.colorRenderingIndex = 0;
     details.lampID = lampID;
 
-    EXPECT_EQ(details.make, lampManagerCBHandler.getLampDetailsReplyCBLampDetails.make);
-    EXPECT_EQ(details.model, lampManagerCBHandler.getLampDetailsReplyCBLampDetails.model);
-    EXPECT_EQ(details.type, lampManagerCBHandler.getLampDetailsReplyCBLampDetails.type);
-    EXPECT_EQ(details.lampType, lampManagerCBHandler.getLampDetailsReplyCBLampDetails.lampType);
-    EXPECT_EQ(details.lampBaseType, lampManagerCBHandler.getLampDetailsReplyCBLampDetails.lampBaseType);
-    EXPECT_EQ(details.lampBeamAngle, lampManagerCBHandler.getLampDetailsReplyCBLampDetails.lampBeamAngle);
-    EXPECT_EQ(details.color, lampManagerCBHandler.getLampDetailsReplyCBLampDetails.color);
-    EXPECT_EQ(details.variableColorTemp, lampManagerCBHandler.getLampDetailsReplyCBLampDetails.variableColorTemp);
-    EXPECT_EQ(details.hasEffects, lampManagerCBHandler.getLampDetailsReplyCBLampDetails.hasEffects);
-    EXPECT_EQ(details.maxVoltage, lampManagerCBHandler.getLampDetailsReplyCBLampDetails.maxVoltage);
-    EXPECT_EQ(details.minVoltage, lampManagerCBHandler.getLampDetailsReplyCBLampDetails.minVoltage);
-    EXPECT_EQ(details.wattage, lampManagerCBHandler.getLampDetailsReplyCBLampDetails.wattage);
-    EXPECT_EQ(details.incandescentEquivalent, lampManagerCBHandler.getLampDetailsReplyCBLampDetails.incandescentEquivalent);
-    EXPECT_EQ(details.maxLumens, lampManagerCBHandler.getLampDetailsReplyCBLampDetails.maxLumens);
-    EXPECT_EQ(details.minTemperature, lampManagerCBHandler.getLampDetailsReplyCBLampDetails.minTemperature);
-    EXPECT_EQ(details.maxTemperature, lampManagerCBHandler.getLampDetailsReplyCBLampDetails.maxTemperature);
-    EXPECT_EQ(details.colorRenderingIndex, lampManagerCBHandler.getLampDetailsReplyCBLampDetails.colorRenderingIndex);
-    EXPECT_EQ(details.lampID, lampManagerCBHandler.getLampDetailsReplyCBLampDetails.lampID);
+    EXPECT_EQ(details.make, lampManagerCBHandler.getConsolidatedLampDataSetReplyCBLampDetails.make);
+    EXPECT_EQ(details.model, lampManagerCBHandler.getConsolidatedLampDataSetReplyCBLampDetails.model);
+    EXPECT_EQ(details.type, lampManagerCBHandler.getConsolidatedLampDataSetReplyCBLampDetails.type);
+    EXPECT_EQ(details.lampType, lampManagerCBHandler.getConsolidatedLampDataSetReplyCBLampDetails.lampType);
+    EXPECT_EQ(details.lampBaseType, lampManagerCBHandler.getConsolidatedLampDataSetReplyCBLampDetails.lampBaseType);
+    EXPECT_EQ(details.lampBeamAngle, lampManagerCBHandler.getConsolidatedLampDataSetReplyCBLampDetails.lampBeamAngle);
+    EXPECT_EQ(details.color, lampManagerCBHandler.getConsolidatedLampDataSetReplyCBLampDetails.color);
+    EXPECT_EQ(details.variableColorTemp, lampManagerCBHandler.getConsolidatedLampDataSetReplyCBLampDetails.variableColorTemp);
+    EXPECT_EQ(details.hasEffects, lampManagerCBHandler.getConsolidatedLampDataSetReplyCBLampDetails.hasEffects);
+    EXPECT_EQ(details.maxVoltage, lampManagerCBHandler.getConsolidatedLampDataSetReplyCBLampDetails.maxVoltage);
+    EXPECT_EQ(details.minVoltage, lampManagerCBHandler.getConsolidatedLampDataSetReplyCBLampDetails.minVoltage);
+    EXPECT_EQ(details.wattage, lampManagerCBHandler.getConsolidatedLampDataSetReplyCBLampDetails.wattage);
+    EXPECT_EQ(details.incandescentEquivalent, lampManagerCBHandler.getConsolidatedLampDataSetReplyCBLampDetails.incandescentEquivalent);
+    EXPECT_EQ(details.maxLumens, lampManagerCBHandler.getConsolidatedLampDataSetReplyCBLampDetails.maxLumens);
+    EXPECT_EQ(details.minTemperature, lampManagerCBHandler.getConsolidatedLampDataSetReplyCBLampDetails.minTemperature);
+    EXPECT_EQ(details.maxTemperature, lampManagerCBHandler.getConsolidatedLampDataSetReplyCBLampDetails.maxTemperature);
+    EXPECT_EQ(details.colorRenderingIndex, lampManagerCBHandler.getConsolidatedLampDataSetReplyCBLampDetails.colorRenderingIndex);
+    EXPECT_EQ(details.lampID, lampManagerCBHandler.getConsolidatedLampDataSetReplyCBLampDetails.lampID);
+
+    LampParameters parameters;
+    parameters.energyUsageMilliwatts = 15;
+    parameters.lumens = 100;
+    EXPECT_EQ(parameters.energyUsageMilliwatts, lampManagerCBHandler.getConsolidatedLampDataSetReplyCBLampParameters.energyUsageMilliwatts);
+    EXPECT_EQ(parameters.lumens, lampManagerCBHandler.getConsolidatedLampDataSetReplyCBLampParameters.lumens);
 }
 
 TEST_F(ControllerClientTest, Controller_Client_GetLampManufacturer) {

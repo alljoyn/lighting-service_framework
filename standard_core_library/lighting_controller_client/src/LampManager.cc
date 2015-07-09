@@ -640,6 +640,43 @@ void LampManager::GetLampSupportedLanguagesReply(Message& message)
     callback.GetLampSupportedLanguagesReplyCB(responseCode, lampID, languages);
 }
 
+void LampManager::GetConsolidatedLampDataSetReply(Message& message)
+{
+    QCC_DbgPrintf(("%s: Method Reply %s", __func__, (MESSAGE_METHOD_RET == message->GetType()) ? message->ToString().c_str() : "ERROR"));
+    size_t numArgs;
+    const MsgArg* args;
+    message->GetArgs(numArgs, args);
+
+    if (controllerClient.CheckNumArgsInMessage(numArgs, 7) != LSF_OK) {
+        return;
+    }
+
+    LSFResponseCode responseCode = static_cast<LSFResponseCode>(args[0].v_uint32);
+    LSFString lampID = static_cast<LSFString>(args[1].v_string.str);
+    LSFString language = static_cast<LSFString>(args[2].v_string.str);
+    LSFString lampName = static_cast<LSFString>(args[3].v_string.str);
+    LampDetails lampDetails(args[4]);
+    LampState lampState(args[5]);
+    LampParameters lampParameters(args[6]);
+
+    callback.GetConsolidatedLampDataSetReplyCB(responseCode, lampID, language, lampName, lampDetails, lampState, lampParameters);
+}
+
+ControllerClientStatus LampManager::GetConsolidatedLampDataSet(const LSFString& lampID, const LSFString& language)
+{
+    QCC_DbgPrintf(("%s: lampID=%s", __func__, lampID.c_str()));
+    MsgArg args[2];
+    args[0].Set("s", lampID.c_str());
+    args[1].Set("s", language.c_str());
+    return controllerClient.MethodCallAsync(
+               ControllerServiceDataSetInterfaceName,
+               "GetLampDataSet",
+               this,
+               &LampManager::GetConsolidatedLampDataSetReply,
+               args,
+               2);
+}
+
 ControllerClientStatus LampManager::GetLampDataSet(const LSFString& lampID, const LSFString& language)
 {
     ControllerClientStatus status = CONTROLLER_CLIENT_OK;

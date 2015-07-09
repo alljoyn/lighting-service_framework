@@ -318,10 +318,22 @@ class LampManager : public Manager {
      * @param message   The params
      */
     void ResetLampStateField(ajn::Message& message);
+
+    /**
+     * Process an AllJoyn call to org.allseen.LSF.ControllerService.DataSet.GetLampDataSet
+     *
+     * @param message   The params
+     */
+    void GetLampDataSet(ajn::Message& message);
+
     /**
      * Get interface version
      */
     uint32_t GetControllerServiceLampInterfaceVersion(void);
+    /**
+     * Get data set interface version
+     */
+    uint32_t GetControllerServiceDataSetInterfaceVersion(void);
     /**
      * connect to lamps
      */
@@ -337,9 +349,9 @@ class LampManager : public Manager {
 
   private:
 
-    void ResetLampStateInternal(ajn::Message& message, LSFStringList lamps, bool groupOperation = false);
+    void ResetLampStateInternal(ajn::Message& message, LSFStringList lamps, bool groupOperation = false, bool allLamps = false);
 
-    void ResetLampStateFieldInternal(ajn::Message& message, LSFStringList lamps, LSFString stateFieldName, bool groupOperation = false);
+    void ResetLampStateFieldInternal(ajn::Message& message, LSFStringList lamps, LSFString stateFieldName, bool groupOperation = false, bool allLamps = false);
 
     void ChangeLampStateAndField(ajn::Message& message,
                                  LampsAndStateList& transitionToStateComponent,
@@ -348,6 +360,7 @@ class LampManager : public Manager {
                                  PulseLampsWithStateList& pulseWithStateComponent,
                                  PulseLampsWithPresetList& pulseWithPresetComponent,
                                  bool groupOperation = false,
+                                 bool allLamps = false,
                                  bool sceneOperation = false,
                                  LSFString sceneOrMasterSceneId = LSFString(),
                                  bool effectOperation = false);

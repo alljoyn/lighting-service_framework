@@ -474,6 +474,21 @@ LSFResponseCode LampClients::DoMethodCallAsync(QueuedMethodCall* queuedCall)
         QueuedMethodCallElement element = elementList.front();
         LSFStringList lamps = element.lamps;
 
+        if (queuedCall->allLampsOperation) {
+            QCC_DbgPrintf(("%s: Processing All Lamps Operation", __func__));
+            for (LampMap::iterator lit = activeLamps.begin(); lit != activeLamps.end(); lit++) {
+                lamps.push_back(lit->first);
+            }
+
+            queuedCall->responseCounter.AddLamps(lamps.size());
+            responseLock.Lock();
+            ResponseMap::iterator it = responseMap.find(queuedCall->responseID);
+            if (it != responseMap.end()) {
+                it->second = queuedCall->responseCounter;
+            }
+            responseLock.Unlock();
+        }
+
         for (LSFStringList::const_iterator it = lamps.begin(); it != lamps.end(); it++) {
             QCC_DbgPrintf(("%s: Processing for LampID=%s", __func__, (*it).c_str()));
             LampMap::iterator lit = activeLamps.find(*it);
@@ -759,10 +774,10 @@ void LampClients::HandleGetReply(ajn::Message& message, void* context)
 }
 
 void LampClients::ChangeLampState(const ajn::Message& inMsg, bool groupOperation, bool sceneOperation, bool effectOperation, TransitionStateParamsList& transitionStateParams,
-                                  TransitionStateFieldParamsList& transitionStateFieldparams, PulseStateParamsList& pulseParams, LSFString sceneOrMasterSceneID)
+                                  TransitionStateFieldParamsList& transitionStateFieldparams, PulseStateParamsList& pulseParams, LSFString sceneOrMasterSceneID, bool allLampsOp)
 {
-    QCC_DbgTrace(("%s", __func__));
-    QueuedMethodCall* queuedCall = new QueuedMethodCall(inMsg, static_cast<MessageReceiver::ReplyHandler>(&LampClients::HandleReplyWithLampResponseCode));
+    QCC_DbgPrintf(("%s: allLampsOp=%u", __func__, allLampsOp));
+    QueuedMethodCall* queuedCall = new QueuedMethodCall(inMsg, static_cast<MessageReceiver::ReplyHandler>(&LampClients::HandleReplyWithLampResponseCode), allLampsOp);
 
     if (!queuedCall) {
         QCC_LogError(ER_FAIL, ("%s: Unable to allocate memory for call", __func__));
@@ -1160,6 +1175,295 @@ void LampClients::HandleReplyWithKeyValuePairs(Message& message, void* context)
     delete ctx;
 }
 
+void LampClients::HandleDataSetReply(Message& message, void* context)
+{
+    QCC_DbgPrintf(("%s: Method Reply %s", __func__, (MESSAGE_METHOD_RET == message->GetType()) ? message->ToString().c_str() : "ERROR"));
+    controllerService.GetBusAttachment().EnableConcurrentCallbacks();
+    QueuedMethodCallContext* ctx = static_cast<QueuedMethodCallContext*>(context);
+
+    if (ctx == NULL) {
+        QCC_LogError(ER_FAIL, ("%s: Received NULL context", __func__));
+        return;
+    }
+
+    QueuedMethodCall* queuedCall = ctx->queuedCallPtr;
+    bool sendResponse = false;
+    LSFResponseCode responseCode = LSF_OK;
+    ResponseCounter responseCounter;
+
+    QCC_DbgTrace(("%s: Received reply to call %s on lamp %s in %lu msec", __func__,
+                  ctx->method.c_str(), ctx->lampID.c_str(), (GetTimestampInMs() - ctx->timeSent)));
+
+    if (MESSAGE_METHOD_RET == message->GetType()) {
+        const MsgArg* args;
+        size_t numArgs;
+        message->GetArgs(numArgs, args);
+
+        if (numArgs == 1) {
+            size_t numEntries;
+            MsgArg* entries;
+
+            args[0].Get("a{sv}", &numEntries, &entries);
+
+            if (0 == strcmp(ctx->method.c_str(), "GetConfigurations")) {
+                for (size_t i = 0; i < numEntries; ++i) {
+                    char* key;
+                    MsgArg* value;
+                    entries[i].Get("{sv}", &key, &value);
+                    QCC_DbgPrintf(("%s: %s", __func__, key));
+                    if (0 == strcmp(key, "DeviceName")) {
+                        responseLock.Lock();
+                        ResponseMap::iterator it = responseMap.find(queuedCall->responseID);
+                        if (it != responseMap.end()) {
+                            it->second.successCount += 1;
+                            it->second.numWaiting -= 1;
+
+                            std::vector<ajn::MsgArg> tempReply;
+                            while (it->second.customReplyArgs.size()) {
+                                tempReply.push_back(it->second.customReplyArgs.front());
+                                it->second.customReplyArgs.pop_front();
+                            }
+                            tempReply[0] = *value;
+
+                            it->second.customReplyArgs.push_back(tempReply[0]);
+                            it->second.customReplyArgs.push_back(tempReply[1]);
+                            it->second.customReplyArgs.push_back(tempReply[2]);
+                            it->second.customReplyArgs.push_back(tempReply[3]);
+
+                            if (it->second.numWaiting == 0) {
+                                if (it->second.notFoundCount == it->second.total) {
+                                    responseCode = LSF_ERR_NOT_FOUND;
+                                    QCC_DbgPrintf(("%s: Response is LSF_ERR_NOT_FOUND for method %s", __func__, queuedCall->inMsg->GetMemberName()));
+                                } else if (it->second.successCount == it->second.total) {
+                                    responseCode = LSF_OK;
+                                    QCC_DbgPrintf(("%s: Response is LSF_OK for method %s", __func__, queuedCall->inMsg->GetMemberName()));
+                                } else if (it->second.failCount == it->second.total) {
+                                    responseCode = LSF_ERR_FAILURE;
+                                    QCC_DbgPrintf(("%s: Response is LSF_ERR_FAILURE for method %s", __func__, queuedCall->inMsg->GetMemberName()));
+                                } else if ((it->second.notFoundCount + it->second.successCount + it->second.failCount) == it->second.total) {
+                                    responseCode = LSF_ERR_PARTIAL;
+                                    QCC_DbgPrintf(("%s: Response is LSF_ERR_PARTIAL for method %s", __func__, queuedCall->inMsg->GetMemberName()));
+                                }
+
+                                responseCounter = it->second;
+                                responseMap.erase(it);
+                                sendResponse = true;
+                            }
+                        } else {
+                            QCC_LogError(ER_FAIL, ("%s: Response map entry not found for response ID = %s", __func__, queuedCall->responseID.c_str()));
+                        }
+                        responseLock.Unlock();
+                        break;
+                    }
+                }
+            } else if (0 == strcmp(ctx->method.c_str(), "GetAll")) {
+                char* key;
+                MsgArg* value;
+                entries[1].Get("{sv}", &key, &value);
+                QCC_DbgPrintf(("%s: %s", __func__, key));
+                if ((0 == strcmp(key, "OnOff")) || (0 == strcmp(key, "Hue")) || (0 == strcmp(key, "Saturation")) || (0 == strcmp(key, "Brightness")) || (0 == strcmp(key, "ColorTemp"))) {
+                    responseLock.Lock();
+                    ResponseMap::iterator it = responseMap.find(queuedCall->responseID);
+                    if (it != responseMap.end()) {
+                        it->second.successCount += 1;
+                        it->second.numWaiting -= 1;
+
+                        std::vector<ajn::MsgArg> tempReply;
+                        while (it->second.customReplyArgs.size()) {
+                            tempReply.push_back(it->second.customReplyArgs.front());
+                            it->second.customReplyArgs.pop_front();
+                        }
+                        tempReply[2] = args[0];
+
+                        it->second.customReplyArgs.push_back(tempReply[0]);
+                        it->second.customReplyArgs.push_back(tempReply[1]);
+                        it->second.customReplyArgs.push_back(tempReply[2]);
+                        it->second.customReplyArgs.push_back(tempReply[3]);
+
+                        if (it->second.numWaiting == 0) {
+                            if (it->second.notFoundCount == it->second.total) {
+                                responseCode = LSF_ERR_NOT_FOUND;
+                                QCC_DbgPrintf(("%s: Response is LSF_ERR_NOT_FOUND for method %s", __func__, queuedCall->inMsg->GetMemberName()));
+                            } else if (it->second.successCount == it->second.total) {
+                                responseCode = LSF_OK;
+                                QCC_DbgPrintf(("%s: Response is LSF_OK for method %s", __func__, queuedCall->inMsg->GetMemberName()));
+                            } else if (it->second.failCount == it->second.total) {
+                                responseCode = LSF_ERR_FAILURE;
+                                QCC_DbgPrintf(("%s: Response is LSF_ERR_FAILURE for method %s", __func__, queuedCall->inMsg->GetMemberName()));
+                            } else if ((it->second.notFoundCount + it->second.successCount + it->second.failCount) == it->second.total) {
+                                responseCode = LSF_ERR_PARTIAL;
+                                QCC_DbgPrintf(("%s: Response is LSF_ERR_PARTIAL for method %s", __func__, queuedCall->inMsg->GetMemberName()));
+                            }
+
+                            responseCounter = it->second;
+                            responseMap.erase(it);
+                            sendResponse = true;
+                        }
+                    } else {
+                        QCC_LogError(ER_FAIL, ("%s: Response map entry not found for response ID = %s", __func__, queuedCall->responseID.c_str()));
+                    }
+                    responseLock.Unlock();
+                } else if ((0 == strcmp(key, "Energy_Usage_Milliwatts")) || (0 == strcmp(key, "Brightness_Lumens"))) {
+                    responseLock.Lock();
+                    ResponseMap::iterator it = responseMap.find(queuedCall->responseID);
+                    if (it != responseMap.end()) {
+                        it->second.successCount += 1;
+                        it->second.numWaiting -= 1;
+
+                        std::vector<ajn::MsgArg> tempReply;
+                        while (it->second.customReplyArgs.size()) {
+                            tempReply.push_back(it->second.customReplyArgs.front());
+                            it->second.customReplyArgs.pop_front();
+                        }
+                        tempReply[3] = args[0];
+
+                        it->second.customReplyArgs.push_back(tempReply[0]);
+                        it->second.customReplyArgs.push_back(tempReply[1]);
+                        it->second.customReplyArgs.push_back(tempReply[2]);
+                        it->second.customReplyArgs.push_back(tempReply[3]);
+
+                        if (it->second.numWaiting == 0) {
+                            if (it->second.notFoundCount == it->second.total) {
+                                responseCode = LSF_ERR_NOT_FOUND;
+                                QCC_DbgPrintf(("%s: Response is LSF_ERR_NOT_FOUND for method %s", __func__, queuedCall->inMsg->GetMemberName()));
+                            } else if (it->second.successCount == it->second.total) {
+                                responseCode = LSF_OK;
+                                QCC_DbgPrintf(("%s: Response is LSF_OK for method %s", __func__, queuedCall->inMsg->GetMemberName()));
+                            } else if (it->second.failCount == it->second.total) {
+                                responseCode = LSF_ERR_FAILURE;
+                                QCC_DbgPrintf(("%s: Response is LSF_ERR_FAILURE for method %s", __func__, queuedCall->inMsg->GetMemberName()));
+                            } else if ((it->second.notFoundCount + it->second.successCount + it->second.failCount) == it->second.total) {
+                                responseCode = LSF_ERR_PARTIAL;
+                                QCC_DbgPrintf(("%s: Response is LSF_ERR_PARTIAL for method %s", __func__, queuedCall->inMsg->GetMemberName()));
+                            }
+
+                            responseCounter = it->second;
+                            responseMap.erase(it);
+                            sendResponse = true;
+                        }
+                    } else {
+                        QCC_LogError(ER_FAIL, ("%s: Response map entry not found for response ID = %s", __func__, queuedCall->responseID.c_str()));
+                    }
+                    responseLock.Unlock();
+                } else {
+                    responseLock.Lock();
+                    ResponseMap::iterator it = responseMap.find(queuedCall->responseID);
+                    if (it != responseMap.end()) {
+                        it->second.successCount += 1;
+                        it->second.numWaiting -= 1;
+
+                        std::vector<ajn::MsgArg> tempReply;
+                        while (it->second.customReplyArgs.size()) {
+                            tempReply.push_back(it->second.customReplyArgs.front());
+                            it->second.customReplyArgs.pop_front();
+                        }
+                        tempReply[1] = args[0];
+
+                        it->second.customReplyArgs.push_back(tempReply[0]);
+                        it->second.customReplyArgs.push_back(tempReply[1]);
+                        it->second.customReplyArgs.push_back(tempReply[2]);
+                        it->second.customReplyArgs.push_back(tempReply[3]);
+
+                        if (it->second.numWaiting == 0) {
+                            if (it->second.notFoundCount == it->second.total) {
+                                responseCode = LSF_ERR_NOT_FOUND;
+                                QCC_DbgPrintf(("%s: Response is LSF_ERR_NOT_FOUND for method %s", __func__, queuedCall->inMsg->GetMemberName()));
+                            } else if (it->second.successCount == it->second.total) {
+                                responseCode = LSF_OK;
+                                QCC_DbgPrintf(("%s: Response is LSF_OK for method %s", __func__, queuedCall->inMsg->GetMemberName()));
+                            } else if (it->second.failCount == it->second.total) {
+                                responseCode = LSF_ERR_FAILURE;
+                                QCC_DbgPrintf(("%s: Response is LSF_ERR_FAILURE for method %s", __func__, queuedCall->inMsg->GetMemberName()));
+                            } else if ((it->second.notFoundCount + it->second.successCount + it->second.failCount) == it->second.total) {
+                                responseCode = LSF_ERR_PARTIAL;
+                                QCC_DbgPrintf(("%s: Response is LSF_ERR_PARTIAL for method %s", __func__, queuedCall->inMsg->GetMemberName()));
+                            }
+
+                            responseCounter = it->second;
+                            responseMap.erase(it);
+                            sendResponse = true;
+                        }
+                    } else {
+                        QCC_LogError(ER_FAIL, ("%s: Response map entry not found for response ID = %s", __func__, queuedCall->responseID.c_str()));
+                    }
+                    responseLock.Unlock();
+                }
+            }
+        } else {
+            QCC_LogError(ER_BAD_ARG_COUNT, ("%s: Did not receive the expected number of arguments in the method reply", __func__));
+            responseLock.Lock();
+            ResponseMap::iterator it = responseMap.find(queuedCall->responseID);
+            if (it != responseMap.end()) {
+                it->second.failCount += 1;
+                it->second.numWaiting -= 1;
+
+                if (it->second.numWaiting == 0) {
+                    if (it->second.notFoundCount == it->second.total) {
+                        responseCode = LSF_ERR_NOT_FOUND;
+                        QCC_DbgPrintf(("%s: Response is LSF_ERR_NOT_FOUND for method %s", __func__, queuedCall->inMsg->GetMemberName()));
+                    } else if (it->second.successCount == it->second.total) {
+                        responseCode = LSF_OK;
+                        QCC_DbgPrintf(("%s: Response is LSF_OK for method %s", __func__, queuedCall->inMsg->GetMemberName()));
+                    } else if (it->second.failCount == it->second.total) {
+                        responseCode = LSF_ERR_FAILURE;
+                        QCC_DbgPrintf(("%s: Response is LSF_ERR_FAILURE for method %s", __func__, queuedCall->inMsg->GetMemberName()));
+                    } else if ((it->second.notFoundCount + it->second.successCount + it->second.failCount) == it->second.total) {
+                        responseCode = LSF_ERR_PARTIAL;
+                        QCC_DbgPrintf(("%s: Response is LSF_ERR_PARTIAL for method %s", __func__, queuedCall->inMsg->GetMemberName()));
+                    }
+
+                    responseCounter = it->second;
+                    responseMap.erase(it);
+                    sendResponse = true;
+                }
+            } else {
+                QCC_LogError(ER_FAIL, ("%s: Response map entry not found for response ID = %s", __func__, queuedCall->responseID.c_str()));
+            }
+            responseLock.Unlock();
+        }
+    } else {
+        responseLock.Lock();
+        ResponseMap::iterator it = responseMap.find(queuedCall->responseID);
+        if (it != responseMap.end()) {
+            it->second.failCount += 1;
+            it->second.numWaiting -= 1;
+
+            if (it->second.numWaiting == 0) {
+                if (it->second.notFoundCount == it->second.total) {
+                    responseCode = LSF_ERR_NOT_FOUND;
+                    QCC_DbgPrintf(("%s: Response is LSF_ERR_NOT_FOUND for method %s", __func__, queuedCall->inMsg->GetMemberName()));
+                } else if (it->second.successCount == it->second.total) {
+                    responseCode = LSF_OK;
+                    QCC_DbgPrintf(("%s: Response is LSF_OK for method %s", __func__, queuedCall->inMsg->GetMemberName()));
+                } else if (it->second.failCount == it->second.total) {
+                    responseCode = LSF_ERR_FAILURE;
+                    QCC_DbgPrintf(("%s: Response is LSF_ERR_FAILURE for method %s", __func__, queuedCall->inMsg->GetMemberName()));
+                } else if ((it->second.notFoundCount + it->second.successCount + it->second.failCount) == it->second.total) {
+                    responseCode = LSF_ERR_PARTIAL;
+                    QCC_DbgPrintf(("%s: Response is LSF_ERR_PARTIAL for method %s", __func__, queuedCall->inMsg->GetMemberName()));
+                }
+
+                responseCounter = it->second;
+                responseMap.erase(it);
+                sendResponse = true;
+            }
+        } else {
+            QCC_LogError(ER_FAIL, ("%s: Response map entry not found for response ID = %s", __func__, queuedCall->responseID.c_str()));
+        }
+        responseLock.Unlock();
+    }
+
+    if (sendResponse) {
+        QCC_DbgPrintf(("%s: Sending reply %s for method call %s and count %u size(standardReplyArgs)=%u, size(customReplyArgs)=%u", __func__,
+                       LSFResponseCodeText(responseCode), queuedCall->inMsg->GetMemberName(), queuedCall->methodCallCount, responseCounter.standardReplyArgs.size(), responseCounter.customReplyArgs.size()));
+        SendMethodReply(responseCode, queuedCall->inMsg, responseCounter.standardReplyArgs, responseCounter.customReplyArgs);
+
+        delete queuedCall;
+    }
+
+    delete ctx;
+}
+
 void LampClients::GetLampName(const LSFString& lampID, const LSFString& language, Message& inMsg)
 {
     QCC_DbgTrace(("%s", __func__));
@@ -1174,6 +1478,39 @@ void LampClients::GetLampName(const LSFString& lampID, const LSFString& language
     queuedCall->responseCounter.standardReplyArgs.push_back(MsgArg("s", lampID.c_str()));
     queuedCall->responseCounter.standardReplyArgs.push_back(MsgArg("s", language.c_str()));
     queuedCall->responseCounter.customReplyArgs.push_back(MsgArg("s", "<ERROR>"));
+    QueueLampMethod(queuedCall);
+}
+
+void LampClients::GetLampDataSet(const LSFString& lampID, const LSFString& language, ajn::Message& inMsg)
+{
+    QCC_DbgTrace(("%s", __func__));
+    QueuedMethodCall* queuedCall = new QueuedMethodCall(inMsg, static_cast<MessageReceiver::ReplyHandler>(&LampClients::HandleDataSetReply));
+    if (!queuedCall) {
+        QCC_LogError(ER_FAIL, ("%s: Unable to allocate memory for call", __func__));
+        return;
+    }
+    QueuedMethodCallElement element = QueuedMethodCallElement(lampID, ConfigServiceInterfaceName, "GetConfigurations");
+    element.args.push_back(MsgArg("s", language.c_str()));
+    queuedCall->AddMethodCallElement(element);
+    queuedCall->responseCounter.standardReplyArgs.push_back(MsgArg("s", lampID.c_str()));
+    queuedCall->responseCounter.standardReplyArgs.push_back(MsgArg("s", language.c_str()));
+    queuedCall->responseCounter.customReplyArgs.push_back(MsgArg("s", "<ERROR>"));
+
+    QueuedMethodCallElement element1 = QueuedMethodCallElement(lampID, org::freedesktop::DBus::Properties::InterfaceName, "GetAll");
+    element1.args.push_back(MsgArg("s", LampServiceDetailsInterfaceName));
+    queuedCall->AddMethodCallElement(element1);
+    queuedCall->responseCounter.customReplyArgs.push_back(MsgArg("a{sv}", 0, NULL));
+
+    QueuedMethodCallElement element2 = QueuedMethodCallElement(lampID, org::freedesktop::DBus::Properties::InterfaceName, "GetAll");
+    element2.args.push_back(MsgArg("s", LampServiceStateInterfaceName));
+    queuedCall->AddMethodCallElement(element2);
+    queuedCall->responseCounter.customReplyArgs.push_back(MsgArg("a{sv}", 0, NULL));
+
+    QueuedMethodCallElement element3 = QueuedMethodCallElement(lampID, org::freedesktop::DBus::Properties::InterfaceName, "GetAll");
+    element3.args.push_back(MsgArg("s", LampServiceParametersInterfaceName));
+    queuedCall->AddMethodCallElement(element3);
+    queuedCall->responseCounter.customReplyArgs.push_back(MsgArg("a{sv}", 0, NULL));
+
     QueueLampMethod(queuedCall);
 }
 
