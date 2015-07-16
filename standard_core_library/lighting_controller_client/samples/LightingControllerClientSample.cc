@@ -2068,7 +2068,7 @@ int main()
             } else if (cmd == "83") {
                 String uniqueId = NextTok(line);
                 printf("\nInvoking GetLampDataSet(%s)\n", uniqueId.c_str());
-                status = lampManager.GetLampDataSet(uniqueId.c_str());
+                status = lampManager.GetConsolidatedLampDataSet(uniqueId.c_str());
                 waitForReply = true;
             } else if (cmd == "84") {
                 String uniqueId = NextTok(line);
