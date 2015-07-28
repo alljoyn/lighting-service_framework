@@ -250,6 +250,8 @@ int main(int argc, char** argv)
 
     QCC_DbgTrace(("%s", __func__));
 
+    g_running = true;
+
     parseCommandLine(argc, argv);
 
     if (runForeground) {
