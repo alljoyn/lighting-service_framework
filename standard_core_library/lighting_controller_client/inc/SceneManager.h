@@ -62,15 +62,6 @@ class SceneManagerCallback {
     virtual void GetSceneNameReplyCB(const LSFResponseCode& responseCode, const LSFString& sceneID, const LSFString& language, const LSFString& sceneName) { }
 
     /**
-     * Indicates that a reply has been received for the method call GetSceneVersion method call.
-     *
-     * @param responseCode   The response code
-     * @param sceneID    The Lamp Group ID
-     * @param sceneVersion  The Lamp Group Version
-     */
-    virtual void GetSceneVersionReplyCB(const LSFResponseCode& responseCode, const LSFString& sceneID, const uint32_t& sceneVersion) { }
-
-    /**
      * Response to SceneManager::SetSceneName.
      *
      * @param responseCode    The response code: \n
@@ -243,18 +234,6 @@ class SceneManager : public Manager {
      * @param language   The requested language
      */
     ControllerClientStatus GetSceneName(const LSFString& sceneID, const LSFString& language = LSFString("en"));
-
-    /**
-     * Get the version of a Lamp Group. \n
-     * Response in SceneManagerCallback::GetSceneVersionCB
-     *
-     * @param sceneID    The Lamp Group ID
-     * @return
-     *      - CONTROLLER_CLIENT_OK if successful
-     *      - An error status otherwise
-     *
-     */
-    ControllerClientStatus GetSceneVersion(const LSFString& sceneID);
 
     /**
      * Set the name of a Scene. \n

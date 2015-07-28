@@ -62,15 +62,6 @@ class SceneElementManagerCallback {
     virtual void GetSceneElementNameReplyCB(const LSFResponseCode& responseCode, const LSFString& sceneElementID, const LSFString& language, const LSFString& sceneElementName) { }
 
     /**
-     * Indicates that a reply has been received for the method call GetSceneElementVersion method call.
-     *
-     * @param responseCode   The response code
-     * @param sceneElementID    The Scene Element ID
-     * @param sceneElementVersion  The Scene Element Version
-     */
-    virtual void GetSceneElementVersionReplyCB(const LSFResponseCode& responseCode, const LSFString& sceneElementID, const uint32_t& sceneElementVersion) { }
-
-    /**
      * Response to SceneElementManager::SetSceneElementName.
      *
      * @param responseCode    The response code: \n
@@ -205,18 +196,6 @@ class SceneElementManager : public Manager {
      * @param language   The requested language
      */
     ControllerClientStatus GetSceneElementName(const LSFString& sceneElementID, const LSFString& language = LSFString("en"));
-
-    /**
-     * Get the version of a Scene Element. \n
-     * Response in SceneElementManagerCallback::GetSceneElementVersionCB
-     *
-     * @param sceneElementID    The Scene Element ID
-     * @return
-     *      - CONTROLLER_CLIENT_OK if successful
-     *      - An error status otherwise
-     *
-     */
-    ControllerClientStatus GetSceneElementVersion(const LSFString& sceneElementID);
 
     /**
      * Set the name of a SceneElement. \n

@@ -58,15 +58,6 @@ class MasterSceneManagerCallback {
     virtual void GetMasterSceneNameReplyCB(const LSFResponseCode& responseCode, const LSFString& masterSceneID, const LSFString& language, const LSFString& masterSceneName) { }
 
     /**
-     * Indicates that a reply has been received for the method call GetMasterSceneVersion method call.
-     *
-     * @param responseCode   The response code
-     * @param masterSceneID    The Master Scene ID
-     * @param masterSceneVersion  The Master Scene Version
-     */
-    virtual void GetMasterSceneVersionReplyCB(const LSFResponseCode& responseCode, const LSFString& masterSceneID, const uint32_t& masterSceneVersion) { }
-
-    /**
      * Response to MasterSceneManager::SetMasterSceneName
      *
      * @param responseCode    The response code
@@ -189,18 +180,6 @@ class MasterSceneManager : public Manager {
      * @param language
      */
     ControllerClientStatus GetMasterSceneName(const LSFString& masterSceneID, const LSFString& language = LSFString("en"));
-
-    /**
-     * Get the version of a Master Scene. \n
-     * Response in MasterSceneManagerCallback::GetMasterSceneVersionCB
-     *
-     * @param masterSceneID    The Master Scene ID
-     * @return
-     *      - CONTROLLER_CLIENT_OK if successful
-     *      - An error status otherwise
-     *
-     */
-    ControllerClientStatus GetMasterSceneVersion(const LSFString& masterSceneID);
 
     /**
      * Set the masterSceneName of the specified masterScene. \n

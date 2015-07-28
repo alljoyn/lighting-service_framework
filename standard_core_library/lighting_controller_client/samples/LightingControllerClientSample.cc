@@ -22,6 +22,7 @@
 #include <SceneElementManager.h>
 #include <SceneManager.h>
 #include <MasterSceneManager.h>
+#include <PulseEffectManager.h>
 #include <ControllerServiceManager.h>
 #include <AJInitializer.h>
 
@@ -29,6 +30,7 @@
 #include <alljoyn/BusAttachment.h>
 #include <alljoyn/ProxyBusObject.h>
 #include <qcc/Debug.h>
+#include <inttypes.h>
 
 
 using namespace qcc;
@@ -45,6 +47,8 @@ LSFStringList lampList;
 LSFStringList lampGroupList;
 LSFStringList presetList;
 LSFStringList allSceneElementIDs;
+LSFStringList allTransitionEffectIDs;
+LSFStringList allPulseEffectIDs;
 LSFStringList sceneList;
 uint8_t lampIndex = 0;
 uint8_t lampGroupIndex = 0;
@@ -891,7 +895,326 @@ class PresetManagerCallbackHandler : public PresetManagerCallback {
 };
 
 class TransitionEffectManagerCallbackHandler : public TransitionEffectManagerCallback {
-    //TODO-IMPL
+    void GetAllTransitionEffectIDsReplyCB(const LSFResponseCode& responseCode, const LSFStringList& transitionEffectIDs) {
+        printf("\n%s(): responseCode = %s", __func__, LSFResponseCodeText(responseCode));
+        allTransitionEffectIDs = transitionEffectIDs;
+        if (responseCode == LSF_OK) {
+            LSFStringList::const_iterator it = transitionEffectIDs.begin();
+            uint8_t count = 1;
+            for (; it != transitionEffectIDs.end(); ++it) {
+                printf("\n(%d)%s", count, (*it).c_str());
+                count++;
+            }
+            printf("\n");
+        }
+        gotReply = true;
+    }
+    void ApplyTransitionEffectOnLampGroupsReplyCB(const LSFResponseCode& responseCode, const LSFString& transitionEffectID, const LSFStringList& lampGroupIDs) {
+        printf("\n%s: responseCode = %s transitionEffectID = %s", __func__, LSFResponseCodeText(responseCode), transitionEffectID.c_str());
+        gotReply = true;
+        if (LSF_OK != responseCode) {
+            gotSignal = true;
+        }
+        printf("\nlampGroupIDs: ");
+        LSFStringList::const_iterator it = lampGroupIDs.begin();
+        for (; it != lampGroupIDs.end(); ++it) {
+            printf("\n%s", (*it).c_str());
+        }
+
+
+    }
+    void GetTransitionEffectNameReplyCB(const LSFResponseCode& responseCode, const LSFString& transitionEffectID, const LSFString& language, const LSFString& transitionEffectName) {
+        LSFString uniqueId = transitionEffectID;
+
+        printf("\n%s: responseCode = %s transitionEffectID = %s language = %s", __func__, LSFResponseCodeText(responseCode), uniqueId.c_str(), language.c_str());
+
+        if (responseCode == LSF_OK) {
+            printf("\ntransitionEffectName = %s", transitionEffectName.c_str());
+        }
+        gotReply = true;
+        if (numRepliesToWait) {
+            numRepliesToWait--;
+        }
+    }
+
+    void GetTransitionEffectReplyCB(const LSFResponseCode& responseCode, const LSFString& transitionEffectID, const TransitionEffect& transitionEffect) {
+        printf("\n%s(): responseCode = %s, transitionEffectID=%s\n", __func__, LSFResponseCodeText(responseCode), transitionEffectID.c_str());
+        if (responseCode == LSF_OK) {
+            printf("\ntransitionEffect=\n%s", transitionEffect.state.c_str());
+            printf("\ntransitionPeriod = %" PRIu32 "\n", transitionEffect.transitionPeriod);
+        }
+        gotReply = true;
+        if (numRepliesToWait) {
+            numRepliesToWait--;
+        }
+    }
+    void SetTransitionEffectNameReplyCB(const LSFResponseCode& responseCode, const LSFString& transitionEffectID, const LSFString& language) {
+        LSFString uniqueId = transitionEffectID;
+        printf("\n%s: responseCode = %s transitionEffectID = %s language = %s", __func__, LSFResponseCodeText(responseCode), uniqueId.c_str(), language.c_str());
+        gotReply = true;
+        if (LSF_OK != responseCode) {
+            gotSignal = true;
+        }
+    }
+
+    void ApplyTransitionEffectOnLampsReplyCB(const LSFResponseCode& responseCode, const LSFString& transitionEffectID, const LSFStringList& lampIDs) {
+        printf("\n%s(): responseCode = %s, transitionEffectID=%s\n", __func__, LSFResponseCodeText(responseCode), transitionEffectID.c_str());
+        gotReply = true;
+        if (LSF_OK != responseCode) {
+            gotSignal = true;
+        }
+        /*printf("\n%s: responseCode = %s transitionEffectID = %s", __func__, LSFResponseCodeText(responseCode), transitionEffectID.c_str());
+           printf("\nlampIDs: ");
+           gotReply = true;
+           if (LSF_OK != responseCode) {
+            gotSignal = true;
+           }
+           LSFStringList::const_iterator it = lampIDs.begin();
+           for (; it != lampIDs.end(); ++it) {
+            printf("\n%s", (*it).c_str());
+           }
+           printf("\n");
+           if (numRepliesToWait) {
+            numRepliesToWait--;
+           }*/
+
+    }
+    void CreateTransitionEffectReplyCB(const LSFResponseCode& responseCode, const LSFString& transitionEffectID, const uint32_t& trackingID) {
+        printf("\n%s: responseCode=%s\n", __func__, LSFResponseCodeText(responseCode));
+        if (LSF_OK == responseCode) {
+            printf("transitionEffectID=%s\n", transitionEffectID.c_str());
+            allTransitionEffectIDs.push_back(transitionEffectID);
+        } else {
+            gotSignal = true;
+        }
+        gotReply = true;
+    }
+    void UpdateTransitionEffectReplyCB(const LSFResponseCode& responseCode, const LSFString& transitionEffectID) {
+        printf("\n%s(): responseCode = %s, transitionEffectID=%s\n", __func__, LSFResponseCodeText(responseCode), transitionEffectID.c_str());
+        gotReply = true;
+        if (LSF_OK != responseCode) {
+            gotSignal = true;
+        }
+    }
+    void DeleteTransitionEffectReplyCB(const LSFResponseCode& responseCode, const LSFString& transitionEffectID) {
+        printf("\n%s(): responseCode = %s, transitionEffectID=%s\n", __func__, LSFResponseCodeText(responseCode), transitionEffectID.c_str());
+        gotReply = true;
+        if (LSF_OK != responseCode) {
+            gotSignal = true;
+        }
+    }
+
+    void TransitionEffectsDeletedCB(const LSFStringList& transitionEffectIDs) {
+        printf("\n%s", __func__);
+        LSFStringList::const_iterator it = transitionEffectIDs.begin();
+        for (; it != transitionEffectIDs.end(); ++it) {
+            printf("\n%s", (*it).c_str());
+        }
+        printf("\n");
+        gotSignal = true;
+    }
+
+    void TransitionEffectsNameChangeCB(const LSFStringList& transitionEffectIDs) {
+        printf("\n%s", __func__);
+        LSFStringList::const_iterator it = transitionEffectIDs.begin();
+        for (; it != transitionEffectIDs.end(); ++it) {
+            printf("\n%s", (*it).c_str());
+        }
+        printf("\n");
+        gotSignal = true;
+    }
+
+    void TransitionEffectsCreatedCB(const LSFStringList& transitionEffectIDs) {
+        printf("\n%s", __func__);
+        LSFStringList::const_iterator it = transitionEffectIDs.begin();
+        for (; it != transitionEffectIDs.end(); ++it) {
+            printf("\n%s", (*it).c_str());
+        }
+        printf("\n");
+        gotSignal = true;
+
+    }
+    void TransitionEffectsUpdatedCB(const LSFStringList& transitionEffectIDs) {
+        printf("\n%s", __func__);
+        LSFStringList::const_iterator it = transitionEffectIDs.begin();
+        for (; it != transitionEffectIDs.end(); ++it) {
+            printf("\n%s", (*it).c_str());
+        }
+        printf("\n");
+        gotSignal = true;
+    }
+
+    void TransitionEffectsChangedCB(const LSFStringList& transitionEffectIDs) {
+        printf("\n%s", __func__);
+        LSFStringList::const_iterator it = transitionEffectIDs.begin();
+        for (; it != transitionEffectIDs.end(); ++it) {
+            printf("\n%s", (*it).c_str());
+        }
+        printf("\n");
+        gotSignal = true;
+    }
+};
+
+class PulseEffectManagerCallbackHandler : public PulseEffectManagerCallback {
+    void GetAllPulseEffectIDsReplyCB(const LSFResponseCode& responseCode, const LSFStringList& pulseEffectIDs) {
+        printf("\n%s(): responseCode = %s", __func__, LSFResponseCodeText(responseCode));
+        allPulseEffectIDs = pulseEffectIDs;
+        if (responseCode == LSF_OK) {
+            LSFStringList::const_iterator it = pulseEffectIDs.begin();
+            uint8_t count = 1;
+            for (; it != pulseEffectIDs.end(); ++it) {
+                printf("\n(%d)%s", count, (*it).c_str());
+                count++;
+            }
+            printf("\n");
+        }
+        gotReply = true;
+    }
+    void ApplyPulseEffectOnLampGroupsReplyCB(const LSFResponseCode& responseCode, const LSFString& pulseEffectID, const LSFStringList& lampGroupIDs) {
+        printf("\n%s: responseCode = %s pulseEffectID = %s", __func__, LSFResponseCodeText(responseCode), pulseEffectID.c_str());
+        printf("\nlampGroupIDs: ");
+        LSFStringList::const_iterator it = lampGroupIDs.begin();
+        for (; it != lampGroupIDs.end(); ++it) {
+            printf("\n%s", (*it).c_str());
+        }
+        printf("\n");
+        gotReply = true;
+        if (numRepliesToWait) {
+            numRepliesToWait--;
+        }
+        if (LSF_OK != responseCode) {
+            gotSignal = true;
+        }
+    }
+
+    void GetPulseEffectNameReplyCB(const LSFResponseCode& responseCode, const LSFString& pulseEffectID, const LSFString& language, const LSFString& pulseEffectName) {
+        LSFString uniqueId = pulseEffectID;
+
+        printf("\n%s: responseCode = %s pulseEffectID = %s language = %s", __func__, LSFResponseCodeText(responseCode), uniqueId.c_str(), language.c_str());
+
+        if (responseCode == LSF_OK) {
+            printf("\npulseEffectName = %s", pulseEffectName.c_str());
+        }
+        gotReply = true;
+        if (numRepliesToWait) {
+            numRepliesToWait--;
+        }
+    }
+
+    void GetPulseEffectReplyCB(const LSFResponseCode& responseCode, const LSFString& pulseEffectID, const PulseEffect& pulseEffect) {
+        printf("\n%s(): responseCode = %s, pulseEffectID=%s\n", __func__, LSFResponseCodeText(responseCode), pulseEffectID.c_str());
+        if (responseCode == LSF_OK) {
+            printf("\ntoLampState: %s", pulseEffect.toState.c_str());
+            printf("\npulsePeriod = %" PRIu32 "\n", pulseEffect.pulsePeriod);
+            printf("\npulseDuration = %" PRIu32 "\n", pulseEffect.pulseDuration);
+            printf("\nnumPulses = %" PRIu32 "\n", pulseEffect.numPulses);
+            printf("\nfromLampState: %s", pulseEffect.fromState.c_str());
+
+        }
+        gotReply = true;
+        if (numRepliesToWait) {
+            numRepliesToWait--;
+        }
+    }
+    void SetPulseEffectNameReplyCB(const LSFResponseCode& responseCode, const LSFString& pulseEffectID, const LSFString& language) {
+        LSFString uniqueId = pulseEffectID;
+        printf("\n%s: responseCode = %s pulseEffectID = %s language = %s", __func__, LSFResponseCodeText(responseCode), uniqueId.c_str(), language.c_str());
+        gotReply = true;
+        if (LSF_OK != responseCode) {
+            gotSignal = true;
+        }
+    }
+
+    void ApplyPulseEffectOnLampsReplyCB(const LSFResponseCode& responseCode, const LSFString& pulseEffectID, const LSFStringList& lampIDs) {
+        printf("\n%s: responseCode = %s pulseEffectID = %s", __func__, LSFResponseCodeText(responseCode), pulseEffectID.c_str());
+        printf("\nlampIDs: ");
+        LSFStringList::const_iterator it = lampIDs.begin();
+        for (; it != lampIDs.end(); ++it) {
+            printf("\n%s", (*it).c_str());
+        }
+        printf("\n");
+        gotReply = true;
+        if (numRepliesToWait) {
+            numRepliesToWait--;
+        }
+        if (LSF_OK != responseCode) {
+            gotSignal = true;
+        }
+    }
+    void CreatePulseEffectReplyCB(const LSFResponseCode& responseCode, const LSFString& pulseEffectID, const uint32_t& trackingID) {
+        printf("\n%s: responseCode=%s\n", __func__, LSFResponseCodeText(responseCode));
+        if (LSF_OK == responseCode) {
+            printf("pulseEffectID=%s\n", pulseEffectID.c_str());
+            allPulseEffectIDs.push_back(pulseEffectID);
+        } else {
+            gotSignal = true;
+        }
+        gotReply = true;
+    }
+    void UpdatePulseEffectReplyCB(const LSFResponseCode& responseCode, const LSFString& pulseEffectID) {
+        printf("\n%s(): responseCode = %s, pulseEffectID=%s\n", __func__, LSFResponseCodeText(responseCode), pulseEffectID.c_str());
+        gotReply = true;
+        if (LSF_OK != responseCode) {
+            gotSignal = true;
+        }
+    }
+    void DeletePulseEffectReplyCB(const LSFResponseCode& responseCode, const LSFString& pulseEffectID) {
+        printf("\n%s(): responseCode = %s, pulseEffectID=%s\n", __func__, LSFResponseCodeText(responseCode), pulseEffectID.c_str());
+        gotReply = true;
+        if (LSF_OK != responseCode) {
+            gotSignal = true;
+        }
+    }
+
+    void PulseEffectsDeletedCB(const LSFStringList& pulseEffectIDs) {
+        printf("\n%s", __func__);
+        LSFStringList::const_iterator it = pulseEffectIDs.begin();
+        for (; it != pulseEffectIDs.end(); ++it) {
+            printf("\n%s", (*it).c_str());
+        }
+        printf("\n");
+        gotSignal = true;
+    }
+
+    void PulseEffectsNameChangeCB(const LSFStringList& pulseEffectIDs) {
+        printf("\n%s", __func__);
+        LSFStringList::const_iterator it = pulseEffectIDs.begin();
+        for (; it != pulseEffectIDs.end(); ++it) {
+            printf("\n%s", (*it).c_str());
+        }
+        printf("\n");
+        gotSignal = true;
+    }
+
+    void PulseEffectsCreatedCB(const LSFStringList& pulseEffectIDs) {
+        printf("\n%s", __func__);
+        LSFStringList::const_iterator it = pulseEffectIDs.begin();
+        for (; it != pulseEffectIDs.end(); ++it) {
+            printf("\n%s", (*it).c_str());
+        }
+        printf("\n");
+        gotSignal = true;
+
+    }
+    void PulseEffectsUpdatedCB(const LSFStringList& pulseEffectIDs) {
+        printf("\n%s", __func__);
+        LSFStringList::const_iterator it = pulseEffectIDs.begin();
+        for (; it != pulseEffectIDs.end(); ++it) {
+            printf("\n%s", (*it).c_str());
+        }
+        printf("\n");
+        gotSignal = true;
+    }
+
+    void PulseEffectsChangedCB(const LSFStringList& pulseEffectIDs) {
+        printf("\n%s", __func__);
+        LSFStringList::const_iterator it = pulseEffectIDs.begin();
+        for (; it != pulseEffectIDs.end(); ++it) {
+            printf("\n%s", (*it).c_str());
+        }
+        printf("\n");
+        gotSignal = true;
+    }
 };
 
 class SceneElementManagerCallbackHandler : public SceneElementManagerCallback {
@@ -908,6 +1231,14 @@ class SceneElementManagerCallbackHandler : public SceneElementManagerCallback {
             printf("\n");
         }
         gotReply = true;
+    }
+
+    void DeleteSceneElementReplyCB(const LSFResponseCode& responseCode, const LSFString& sceneElementID) {
+        printf("\n%s(): responseCode = %s, sceneElementID=%s\n", __func__, LSFResponseCodeText(responseCode), sceneElementID.c_str());
+        gotReply = true;
+        if (LSF_OK != responseCode) {
+            gotSignal = true;
+        }
     }
 
     void GetSceneElementReplyCB(const LSFResponseCode& responseCode, const LSFString& sceneElementID, const SceneElement& sceneElement) {
@@ -1018,6 +1349,17 @@ class SceneManagerCallbackHandler : public SceneManagerCallback {
         if (LSF_OK == responseCode) {
             printf("sceneID=%s\n", sceneID.c_str());
             printf("trackingID=%d\n", trackingID);
+            sceneList.push_back(sceneID);
+        } else {
+            gotSignal = true;
+        }
+        gotReply = true;
+    }
+
+    void UpdateSceneWithSceneElementsReplyCB(const LSFResponseCode& responseCode, const LSFString& sceneID) {
+        printf("\n%s: responseCode=%s\n", __func__, LSFResponseCodeText(responseCode));
+        if (LSF_OK == responseCode) {
+            printf("sceneID=%s\n", sceneID.c_str());
             sceneList.push_back(sceneID);
         } else {
             gotSignal = true;
@@ -1229,104 +1571,124 @@ void PrintHelp() {
     printf("(1):   GetControllerServiceVersion\n");
     printf("(2):   LightingResetControllerService\n");
     printf("(3):   GetAllLampIDs\n");
-    printf("(4):   GetLampManufacturer\n");
-    printf("(5):   GetLampSupportedLanguages\n");
-    printf("(6):   GetLampName\n");
-    printf("(7):   SetLampName\n");
-    printf("(8):   GetLampState\n");
-    printf("(9):   GetLampStateOnOffField\n");
-    printf("(10):  GetLampStateHueField\n");
-    printf("(11):  GetLampStateSaturationField\n");
-    printf("(12):  GetLampStateBrightnessField\n");
-    printf("(13):  GetLampStateColorTempField\n");
-    printf("(14):  ResetLampState\n");
-    printf("(15):  ResetLampStateOnOffField\n");
-    printf("(16):  ResetLampStateHueField\n");
-    printf("(17):  ResetLampStateSaturationField\n");
-    printf("(18):  ResetLampStateBrightnessField\n");
-    printf("(19):  ResetLampStateColorTempField\n");
-    printf("(20):  TransitionLampState\n");
-    printf("(21):  PulseLampWithState\n");
-    printf("(22):  PulseLampWithPreset\n");
-    printf("(23):  TransitionLampStateOnOffField\n");
-    printf("(24):  TransitionLampStateHueField\n");
-    printf("(25):  TransitionLampStateSaturationField\n");
-    printf("(26):  TransitionLampStateBrightnessField\n");
-    printf("(27):  TransitionLampStateColorTempField\n");
-    printf("(28):  TransitionLampStateToPreset\n");
-    printf("(29):  GetLampFaults\n");
-    printf("(30):  ClearLampFault\n");
-    printf("(31):  GetLampServiceVersion\n");
-    printf("(32):  GetLampDetails\n");
-    printf("(33):  GetLampParameters\n");
-    printf("(34):  GetLampParametersEnergyUsageMilliwattsField\n");
-    printf("(35):  GetLampParametersLumensField\n");
+    printf("(4):   GetLampManufacturer                              lampID\n");
+    printf("(5):   GetLampSupportedLanguages                        lampID\n");
+    printf("(6):   GetLampName                                      lampID\n");
+    printf("(7):   SetLampName                                      lampID\n");
+    printf("(8):   GetLampState                                     lampID\n");
+    printf("(9):   GetLampStateOnOffField                           lampID\n");
+    printf("(10):  GetLampStateHueField                             lampID\n");
+    printf("(11):  GetLampStateSaturationField                      lampID\n");
+    printf("(12):  GetLampStateBrightnessField                      lampID\n");
+    printf("(13):  GetLampStateColorTempField                       lampID\n");
+    printf("(14):  ResetLampState                                   lampID\n");
+    printf("(15):  ResetLampStateOnOffField                         lampID\n");
+    printf("(16):  ResetLampStateHueField                           lampID\n");
+    printf("(17):  ResetLampStateSaturationField                    lampID\n");
+    printf("(18):  ResetLampStateBrightnessField                    lampID\n");;
+    printf("(19):  ResetLampStateColorTempField                     lampID\n");
+    printf("(20):  TransitionLampState                              lampID\n");
+    printf("(21):  PulseLampWithState                               lampID\n");
+    printf("(22):  PulseLampWithPreset                              lampID toPresetID\n");
+    printf("(23):  TransitionLampStateOnOffField                    lampID\n");
+    printf("(24):  TransitionLampStateHueField                      lampID\n");
+    printf("(25):  TransitionLampStateSaturationField               lampID\n");
+    printf("(26):  TransitionLampStateBrightnessField               lampID\n");
+    printf("(27):  TransitionLampStateColorTempField                lampID\n");
+    printf("(28):  TransitionLampStateToPreset                      lampID presetID\n");
+    printf("(29):  GetLampFaults                                    lampID\n");
+    printf("(30):  ClearLampFault                                   lampID\n");
+    printf("(31):  GetLampServiceVersion                            lampID\n");
+    printf("(32):  GetLampDetails                                   lampID\n");
+    printf("(33):  GetLampParameters                                lampID\n");
+    printf("(34):  GetLampParametersEnergyUsageMilliwattsField      lampID\n");
+    printf("(35):  GetLampParametersLumensField                     lampID\n");
     printf("(36):  GetAllLampGroupIDs\n");
-    printf("(37):  GetLampGroupName\n");
-    printf("(38):  SetLampGroupName\n");
+    printf("(37):  GetLampGroupName                                 lampGoupID\n");;
+    printf("(38):  SetLampGroupName                                 lampGoupID name\n");
     printf("(39):  CreateLampGroup\n");
-    printf("(40):  UpdateLampGroup\n");
-    printf("(41):  DeleteLampGroup\n");
-    printf("(42):  GetLampGroup\n");
-    printf("(43):  ResetLampGroupState\n");
-    printf("(44):  ResetLampGroupStateOnOffField\n");
-    printf("(45):  ResetLampGroupStateHueField\n");
-    printf("(46):  ResetLampGroupStateSaturationField\n");
-    printf("(47):  ResetLampGroupStateBrightnessField\n");
-    printf("(48):  ResetLampGroupStateColorTempField\n");
-    printf("(49):  TransitionLampGroupState\n");
-    printf("(50):  PulseLampGroupWithState\n");
-    printf("(51):  PulseLampGroupWithPreset\n");
-    printf("(52):  TransitionLampGroupStateOnOffField\n");
-    printf("(53):  TransitionLampGroupStateHueField\n");
-    printf("(54):  TransitionLampGroupStateSaturationField\n");
-    printf("(55):  TransitionLampGroupStateBrightnessField\n");
-    printf("(56):  TransitionLampGroupStateColorTempField\n");
-    printf("(57):  TransitionLampGroupStateToPreset\n");
+    printf("(40):  UpdateLampGroup                                  lampGoupID\n");
+    printf("(41):  DeleteLampGroup                                  lampGoupID\n");
+    printf("(42):  GetLampGroup                                     lampGoupID\n");
+    printf("(43):  ResetLampGroupState                              lampGoupID\n");
+    printf("(44):  ResetLampGroupStateOnOffField                    lampGoupID\n");
+    printf("(45):  ResetLampGroupStateHueField                      lampGoupID\n");
+    printf("(46):  ResetLampGroupStateSaturationField               lampGoupID\n");
+    printf("(47):  ResetLampGroupStateBrightnessField               lampGoupID\n");
+    printf("(48):  ResetLampGroupStateColorTempField                lampGoupID\n");
+    printf("(49):  TransitionLampGroupState                         lampGoupID\n");
+    printf("(50):  PulseLampGroupWithState                          lampGoupID\n");
+    printf("(51):  PulseLampGroupWithPreset                         lampGoupID toPresetID\n");
+    printf("(52):  TransitionLampGroupStateOnOffField               lampGoupID\n");
+    printf("(53):  TransitionLampGroupStateHueField                 lampGoupID\n");
+    printf("(54):  TransitionLampGroupStateSaturationField          lampGoupID\n");
+    printf("(55):  TransitionLampGroupStateBrightnessField          lampGoupID\n");
+    printf("(56):  TransitionLampGroupStateColorTempField           lampGoupID\n");
+    printf("(57):  TransitionLampGroupStateToPreset                 lampGoupID toPresetID\n");
     printf("(58):  GetDefaultLampState\n");
     printf("(59):  SetDefaultLampState\n");
     printf("(60):  GetAllPresetIDs\n");
-    printf("(61):  GetPresetName\n");
-    printf("(62):  SetPresetName\n");
+    printf("(61):  GetPresetName                            presetID\n");
+    printf("(62):  SetPresetName                            presetID name\n");
     printf("(63):  CreatePreset\n");
-    printf("(64):  UpdatePreset\n");
-    printf("(65):  DeletePreset\n");
-    printf("(66):  GetPreset\n");
+    printf("(64):  UpdatePreset                             presetID\n");
+    printf("(65):  DeletePreset                             presetID\n");
+    printf("(66):  GetPreset                                presetID\n");
     printf("(67):  GetAllSceneIDs\n");
-    printf("(68):  GetSceneName\n");
-    printf("(69):  SetSceneName\n");
+    printf("(68):  GetSceneName                             sceneID\n");
+    printf("(69):  SetSceneName                             sceneID name\n");
     printf("(70):  CreateScene\n");
-    printf("(71):  UpdateScene\n");
-    printf("(72):  DeleteScene\n");
-    printf("(73):  GetScene\n");
-    printf("(74):  ApplyScene\n");
+    printf("(71):  UpdateScene                              sceneID\n");
+    printf("(72):  DeleteScene                              sceneID\n");
+    printf("(73):  GetScene                                 sceneID\n");
+    printf("(74):  ApplyScene                               sceneID\n");
     printf("(75):  GetAllMasterSceneIDs\n");
-    printf("(76):  GetMasterSceneName\n");
-    printf("(77):  SetMasterSceneName\n");
+    printf("(76):  GetMasterSceneName                       masterSceneID\n");
+    printf("(77):  SetMasterSceneName                       masterSceneID name\n");
     printf("(78):  CreateMasterScene\n");
-    printf("(79):  UpdateMasterScene\n");
-    printf("(80):  DeleteMasterScene\n");
-    printf("(81):  GetMasterScene\n");
-    printf("(82):  ApplyMasterScene\n");
-    printf("(83):  GetLampDataSet\n");
-    printf("(84):  GetLampGroupDataSet\n");
-    printf("(85):  GetPresetDataSet\n");
-    printf("(86):  GetSceneDataSet\n");
-    printf("(87):  GetMasterSceneDataSet\n");
+    printf("(79):  UpdateMasterScene                        masterSceneID\n");
+    printf("(80):  DeleteMasterScene                        masterSceneID\n");
+    printf("(81):  GetMasterScene                           masterSceneID\n");
+    printf("(82):  ApplyMasterScene                         masterSceneID\n");
+    printf("(83):  GetLampDataSet                           lampID\n");
+    printf("(84):  GetLampGroupDataSet                      lampGroupID\n");
+    printf("(85):  GetPresetDataSet                         presetID\n");
+    printf("(86):  GetSceneDataSet                          sceneID\n");
+    printf("(87):  GetMasterSceneDataSet                    masterSceneID\n");
     printf("(88):  Stop\n");
     printf("(89):  Start\n");
-    printf("(90):  CreateTransitionEffect               name\n");
-    printf("(91):  CreateSceneElement                   name effectID lampID\n");
+    printf("(90):  CreateTransitionEffect                   name\n");
+    printf("(91):  CreateSceneElement                       name effectID lampID\n");
     printf("(92):  GetAllSceneElementIDs\n");
-    printf("(93):  GetSceneElement                      sceneElementID\n");
-    printf("(94):  ApplySceneElement                    sceneElementID\n");
-    printf("(95):  CreateSceneWithSceneElements         [name [sceneElementID ...]]\n");
-    printf("(96):  UpdateSceneWithSceneElements         sceneID [sceneElementID ...]\n");
-    printf("(97):  GetSceneWithSceneElements            sceneID\n");
+    printf("(93):  GetSceneElement                          sceneElementID\n");
+    printf("(94):  ApplySceneElement                        sceneElementID\n");
+    printf("(95):  CreateSceneWithSceneElements             [name [sceneElementID ...]]\n");
+    printf("(96):  UpdateSceneWithSceneElements             sceneID [sceneElementID ...]\n");
+    printf("(97):  GetSceneWithSceneElements                sceneID\n");
+    printf("(98):  GetTransitionEffect                      transitionEffectID\n");
+    printf("(99):  ApplyTransitionEffectOnLamps             transitionEffectID lampGroupIDs\n");
+    printf("(100): ApplyTransitionEffectOnLampGroups        transitionEffectIDs lampGroupIDs\n");
+    printf("(101): GetTransitionEffectName                  transitionEffectID\n");
+    printf("(102): GetAllTransitionEffectIDs\n");
+    printf("(103): SetTransitionEffectName                  transitionEffectID name\n");
+    printf("(104): UpdateTransitionEffect                   transitionEffectID\n");
+    printf("(105): DeleteTransitionEffect                   transitionEffectID\n");
+    printf("(106): GetTransitionEffectDataSet               transitionEffectID\n");
+    printf("(107): GetPulseEffect                           pulseEffectID\n");
+    printf("(108): ApplyPulseEffectOnLamps                  pulseEffectID lampIDs\n");
+    printf("(109): ApplyPulseEffectOnLampGroups             pulseEffectIDs lampGroupIDs\n");
+    printf("(110): GetPulseEffectName                       pulseEffectID\n");
+    printf("(111): GetAllPulseEffectIDs\n");
+    printf("(112): SetPulseEffectName                       pulseEffectID name\n");
+    printf("(113): UpdatePulseEffect                        pulseEffectID\n");
+    printf("(114): DeletePulseEffect                        pulseEffectID\n");
+    printf("(115): GetPulseEffectDataSet                    pulseEffectID\n");
+    printf("(116): CreatePulseEffect                        name\n");
 }
 
 int main()
 {
+
     AJInitializer ajInit;
     if (ajInit.Initialize() != ER_OK) {
         printf("Failed to initialize AllJoyn\n");
@@ -1350,6 +1712,7 @@ int main()
     SceneElementManagerCallbackHandler sceneElementManagerCBHandler;
     SceneManagerCallbackHandler sceneManagerCBHandler;
     MasterSceneManagerCallbackHandler masterSceneManagerCBHandler;
+    PulseEffectManagerCallbackHandler pulseEffectManagerCBHandler;
 
     ControllerClient client(bus, controllerClientCBHandler);
     ControllerServiceManager controllerServiceManager(client, controllerServiceManagerCBHandler);
@@ -1360,13 +1723,15 @@ int main()
     SceneElementManager sceneElementManager(client, sceneElementManagerCBHandler);
     SceneManager sceneManager(client, sceneManagerCBHandler);
     MasterSceneManager masterSceneManager(client, masterSceneManagerCBHandler);
+    PulseEffectManager pulseEffectManager(client, pulseEffectManagerCBHandler);
+
 
     ControllerClientStatus status = client.Start();
     printf("\nController Client Start() returned %s\n", ControllerClientStatusText(status));
 
     printf("\nController Client Version = %d\n", client.GetVersion());
 
-    printf("\nWaiting for the Controller Client to connect to a Controller Service...\n");
+    printf("\nWaiting for the Controller Client to connect to a Controller Service!\n");
 
     //Wait for the Controller Client to find and connect to a Controller Service
     while (!connectedToControllerService) ;
@@ -2099,7 +2464,6 @@ int main()
                 status = client.Start();
                 printf("\nController Client Start() returned %s\n", ControllerClientStatusText(status));
             } else if (cmd == "90") {
-                // printf("(90):  CreateTransitionEffect               name\n");
                 printf("\nInvoking CreateTransitionEffect(%s)", line.c_str());
                 uint32_t trackingID = 0;
                 LampState state(true, 2147483648u, 2147483648u, 2147483648u, 2147483648u);
@@ -2110,7 +2474,6 @@ int main()
                 status = transitionEffectManager.CreateTransitionEffect(trackingID, transitionEffect, name.c_str());
                 printf("\nCreateTransitionEffect() returned %s\n", ControllerClientStatusText(status));
             } else if (cmd == "91") {
-                // printf("(91):  CreateSceneElement                   name effectID lampID\n");
                 printf("\nInvoking CreateSceneElement(%s)", line.c_str());
                 uint32_t trackingID = 0;
                 LSFStringList lamps;
@@ -2128,20 +2491,17 @@ int main()
                 status = sceneElementManager.CreateSceneElement(trackingID, sceneElement, name.c_str());
                 printf("\nCreateSceneElement() returned %s\n", ControllerClientStatusText(status));
             } else if (cmd == "92") {
-                // printf("(92):  GetAllSceneElementIDs\n");
                 printf("\nInvoking GetAllSceneElementIDs()\n");
                 status = sceneElementManager.GetAllSceneElementIDs();
                 printf("GetAllSceneElementIDs() returned %s\n", ControllerClientStatusText(status));
                 waitForReply = true;
             } else if (cmd == "93") {
-                // printf("(93):  GetSceneElement                      sceneElementID\n");
                 String uniqueId = NextTok(line);
                 printf("\nInvoking GetSceneElement(%s)\n", uniqueId.c_str());
                 status = sceneElementManager.GetSceneElement(uniqueId.c_str());
                 printf("GetSceneElement() returned %s\n", ControllerClientStatusText(status));
                 waitForReply = true;
             } else if (cmd == "94") {
-                // printf("(94):  ApplySceneElement                    sceneElementID\n");
                 String uniqueId = NextTok(line);
                 printf("\nInvoking ApplySceneElement(%s)\n", uniqueId.c_str());
                 status = sceneElementManager.ApplySceneElement(uniqueId.c_str());
@@ -2149,7 +2509,6 @@ int main()
                 waitForReply = true;
                 waitForSignal = true;
             } else if (cmd == "95") {
-                // printf("(95):  CreateSceneWithSceneElements         [name [sceneElementID ...]]\n");
                 String sceneElementName = NextTok(line);
                 String sceneElementID = NextTok(line);
 
@@ -2166,13 +2525,11 @@ int main()
                 if (sceneElementIDs.empty()) {
                     sceneElementIDs = allSceneElementIDs;
                 }
-
                 if (sceneElementIDs.empty()) {
                     printf("\nYou need to call GetAllSceneElementIDs before making this call,\n");
                     printf("or specify at least one scene element ID in the command.\n");
                     return 0;
                 }
-
                 uint32_t trackingID = -1;
                 SceneWithSceneElements sceneWithSceneElements(sceneElementIDs);
                 printf("\nInvoking CreateSceneWithSceneElements(%s %s)\n", sceneElementName.c_str(), sceneWithSceneElements.c_str());
@@ -2181,7 +2538,6 @@ int main()
                 waitForReply = true;
                 waitForSignal = true;
             } else if (cmd == "96") {
-                // printf("(96):  UpdateSceneWithSceneElements         sceneID [sceneElementID ...]\n");
                 String sceneID = NextTok(line);
                 String sceneElementID = NextTok(line);
 
@@ -2190,17 +2546,14 @@ int main()
                     sceneElementIDs.push_back(sceneElementID.c_str());
                     sceneElementID = NextTok(line);
                 }
-
                 if (sceneElementIDs.empty()) {
                     sceneElementIDs = allSceneElementIDs;
                 }
-
                 if (sceneElementIDs.empty()) {
                     printf("\nYou need to call GetAllSceneElementIDs before making this call,\n");
                     printf("or specify at least one scene element ID in the command.\n");
                     return 0;
                 }
-
                 SceneWithSceneElements sceneWithSceneElements(sceneElementIDs);
                 printf("\nInvoking UpdateSceneWithSceneElements(%s %s)\n", sceneID.c_str(), sceneWithSceneElements.c_str());
                 status = sceneManager.UpdateSceneWithSceneElements(LSFString(sceneID.c_str()), sceneWithSceneElements);
@@ -2208,17 +2561,170 @@ int main()
                 waitForReply = true;
                 waitForSignal = true;
             } else if (cmd == "97") {
-                // printf("(97):  GetSceneWithSceneElements            sceneID\n");
                 String sceneID = NextTok(line);
                 printf("\nInvoking GetSceneWithSceneElements(%s)\n", sceneID.c_str());
                 status = sceneManager.GetSceneWithSceneElements(sceneID.c_str());
                 waitForReply = true;
+            } else if (cmd == "98") {
+                String uniqueId = NextTok(line);
+                printf("\nInvoking GetTransitionEffect(%s)\n", uniqueId.c_str());
+                status = transitionEffectManager.GetTransitionEffect(uniqueId.c_str());
+                printf("GetTransitionEffect() returned %s\n", ControllerClientStatusText(status));
+                waitForReply = true;
+            } else if (cmd == "99") {
+                LSFStringList lamps;
+                String transitionEffectID = NextTok(line);
+                String lampID = NextTok(line);
+                lamps.clear();
+                lamps.push_back(lampID.c_str());
+
+                status = transitionEffectManager.ApplyTransitionEffectOnLamps(transitionEffectID.c_str(), lamps);
+                printf("\nApplyTransitionEffectOnLamps() returned %s\n", ControllerClientStatusText(status));
+                waitForReply = true;
+                waitForSignal = true;
+            } else if (cmd == "100") {
+                LSFStringList lampGroupIDs;
+                String transitionEffectID = NextTok(line);
+                String lampGroupID = NextTok(line);
+                lampGroupIDs.clear();
+                lampGroupIDs.push_back(lampGroupID.c_str());
+
+                status = transitionEffectManager.ApplyTransitionEffectOnLampGroups(transitionEffectID.c_str(), lampGroupIDs);
+                printf("\nApplyTransitionEffectOnLampGroups() returned %s\n", ControllerClientStatusText(status));
+                waitForReply = true;
+                waitForSignal = true;
+            } else if (cmd == "101") {
+                ;
+                String transitionEffectID = NextTok(line);
+                printf("\nInvoking GetTransitionEffectName(%s)\n", transitionEffectID.c_str());
+                status = transitionEffectManager.GetTransitionEffectName(transitionEffectID.c_str());
+                waitForReply = true;
+            } else if (cmd == "102") {
+                String transitionEffectID = NextTok(line);
+                printf("\nInvoking GetAllTransitionEffectIDs()\n");
+                status = transitionEffectManager.GetAllTransitionEffectIDs();
+                waitForReply = true;
+            } else if (cmd == "103") {
+                String uniqueId = NextTok(line);
+                String name = NextTok(line);
+                printf("\nInvoking SetTransitionEffectName(%s, %s)\n", uniqueId.c_str(), name.c_str());
+                status = transitionEffectManager.SetTransitionEffectName(uniqueId.c_str(), name.c_str());
+                //waitForReply = true;
+                //waitForSignal = true;
+            } else if (cmd == "104") {
+                String transitionEffectID = NextTok(line);
+                printf("\nInvoking UpdateTransitionEffect(%s)\n", transitionEffectID.c_str());
+                LampState state(true, 2147483648u, 2147483648u, 2147483648u, 2147483648u);
+
+                uint32_t transitionPeriod = 5000;
+                TransitionEffect transitionEffect(state, transitionPeriod);
+
+                status = transitionEffectManager.UpdateTransitionEffect(transitionEffectID.c_str(), transitionEffect);
+                printf("\nUpdateTransitionEffect returned %s\n", ControllerClientStatusText(status));
+                waitForReply = true;
+                waitForSignal = true;
+            } else if (cmd == "105") {
+                String transitionEffectID = NextTok(line);
+                printf("\nInvoking DeleteTransitionEffect(%s)\n", transitionEffectID.c_str());
+                status = transitionEffectManager.DeleteTransitionEffect(transitionEffectID.c_str());
+                waitForReply = true;
+                waitForSignal = true;
+            } else if (cmd == "106") {
+                String uniqueId = NextTok(line);
+                printf("\nInvoking GetTransitionEffectDataSet(%s)\n", uniqueId.c_str());
+                status = transitionEffectManager.GetTransitionEffectDataSet(uniqueId.c_str());
+                numRepliesToWait = 2;
+            }  else if (cmd == "107") {
+                String uniqueId = NextTok(line);
+                printf("\nInvoking GetPulseEffect(%s)\n", uniqueId.c_str());
+                status = pulseEffectManager.GetPulseEffect(uniqueId.c_str());
+                printf("GetPulseEffect() returned %s\n", ControllerClientStatusText(status));
+                waitForReply = true;
+                //waitForSignal = true;
+            } else if (cmd == "108") {
+                LSFStringList lamps;
+                String pulseEffectID = NextTok(line);
+                String lampID = NextTok(line);
+                lamps.clear();
+                lamps.push_back(lampID.c_str());
+
+                status = pulseEffectManager.ApplyPulseEffectOnLamps(pulseEffectID.c_str(), lamps);
+                printf("\nApplyPulseEffectOnLamps() returned %s\n", ControllerClientStatusText(status));
+                waitForReply = true;
+            } else if (cmd == "109") {
+                LSFStringList lampGroupIDs;
+                String pulseEffectID = NextTok(line);
+                String lampGroupID = NextTok(line);
+                lampGroupIDs.clear();
+                lampGroupIDs.push_back(lampGroupID.c_str());
+
+                status = pulseEffectManager.ApplyPulseEffectOnLampGroups(pulseEffectID.c_str(), lampGroupIDs);
+                printf("\nApplyPulseEffectOnLampGroups() returned %s\n", ControllerClientStatusText(status));
+                waitForReply = true;
+                //waitForSignal = true;
+            } else if (cmd == "110") {
+                String pulseEffectID = NextTok(line);
+                printf("\nInvoking GetPulseEffectName(%s)\n", pulseEffectID.c_str());
+                status = pulseEffectManager.GetPulseEffectName(pulseEffectID.c_str());
+                waitForReply = true;
+            } else if (cmd == "111") {
+                String pulseEffectID = NextTok(line);
+                printf("\nInvoking GetAllPulseEffectIDs()\n");
+                status = pulseEffectManager.GetAllPulseEffectIDs();
+                waitForReply = true;
+            } else if (cmd == "112") {
+                // printf("(114):  SetPulseEffectName        pulseEffectID pulseEffectName\n");
+                String uniqueId = NextTok(line);
+                String name = NextTok(line);
+                printf("\nInvoking SetPulseEffectName(%s, %s)\n", uniqueId.c_str(), name.c_str());
+                status = pulseEffectManager.SetPulseEffectName(uniqueId.c_str(), name.c_str());
+                //waitForReply = true;
+                //waitForSignal = true;
+            } else if (cmd == "113") {
+                String pulseEffectID = NextTok(line);
+                printf("\nInvoking UpdatePulseEffect(%s)\n", pulseEffectID.c_str());
+                LampState toState(true, 2147483648u, 2147483648u, 2147483648u, 2147483648u);
+                LampState fromState(true, 0, 0, 0, 0);
+                uint32_t pulsePeriod = 5000;
+                uint32_t pulseDuration = 1000;
+                uint32_t numPulses = 5;
+                String name = NextTok(line);
+                PulseEffect(toState, pulsePeriod, pulseDuration, numPulses, fromState);
+                PulseEffect pulseEffect(toState, pulsePeriod, pulseDuration, numPulses, fromState);
+                status = pulseEffectManager.UpdatePulseEffect(pulseEffectID.c_str(), pulseEffect);
+                printf("\nUpdatePulseEffect returned %s\n", ControllerClientStatusText(status));
+                waitForReply = true;
+                waitForSignal = true;
+            } else if (cmd == "114") {
+                String pulseEffectID = NextTok(line);
+                printf("\nInvoking DeletePulseEffect(%s)\n", pulseEffectID.c_str());
+                status = pulseEffectManager.DeletePulseEffect(pulseEffectID.c_str());
+                waitForReply = true;
+                waitForSignal = true;
+            } else if (cmd == "115") {
+                String uniqueId = NextTok(line);
+                printf("\nInvoking GetPulseEffectDataSet(%s)\n", uniqueId.c_str());
+                status = pulseEffectManager.GetPulseEffectDataSet(uniqueId.c_str());
+                numRepliesToWait = 2;
+            } else if (cmd == "116") {
+                printf("\nInvoking CreatePulseEffect(%s)", line.c_str());
+                uint32_t trackingID = 0;
+                LampState toState(true, 2147483648u, 2147483648u, 2147483648u, 2147483648u);
+                LampState fromState(true, 5, 5, 5, 5);
+                uint32_t pulsePeriod = 5000;
+                uint32_t pulseDuration = 1000;
+                uint32_t numPulses = 10;
+                String name = NextTok(line);
+                PulseEffect(toState, pulsePeriod, pulseDuration, numPulses, fromState);
+                PulseEffect pulseEffect(toState, pulsePeriod, pulseDuration, numPulses, fromState);
+                status = pulseEffectManager.CreatePulseEffect(trackingID, pulseEffect, name.c_str());
+                printf("\nCreatePulseEffect returned %s\n", ControllerClientStatusText(status));
             } else if (cmd == "help") {
                 PrintHelp();
             } else if (cmd == "exit") {
                 break;
             } else {
-//                /unrecognizedCommand = true;
+                //unrecognizedCommand = true;
             }
 
             if (unrecognizedCommand) {
@@ -2244,10 +2750,8 @@ int main()
                     printf("\nCommand send failed\n");
                 }
             }
-
         }
     }
-
     bus.Stop();
     bus.Join();
 }

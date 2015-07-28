@@ -70,15 +70,6 @@ class LampManagerCallback {
     virtual void GetLampNameReplyCB(const LSFResponseCode& responseCode, const LSFString& lampID, const LSFString& language, const LSFString& lampName) { }
 
     /**
-     * Indicates that a reply has been received for the method call GetLampVersion method call.
-     *
-     * @param responseCode   The response code
-     * @param lampID    The Lamp ID
-     * @param lampVersion  The Lamp Version
-     */
-    virtual void GetLampVersionReplyCB(const LSFResponseCode& responseCode, const LSFString& lampID, const uint32_t& lampVersion) { }
-
-    /**
      * Indicates that a reply has been received for the GetLampManufacturer method call
      *
      * @param responseCode The response code
@@ -431,18 +422,6 @@ class LampManager : public Manager {
      * @return ControllerClientStatus
      */
     ControllerClientStatus GetLampName(const LSFString& lampID, const LSFString& language = LSFString("en"));
-
-    /**
-     * Get the version of a Lamp. \n
-     * Response in LampManagerCallback::GetLampVersionCB
-     *
-     * @param lampID    The Lamp ID
-     * @return
-     *      - CONTROLLER_CLIENT_OK if successful
-     *      - An error status otherwise
-     *
-     */
-    ControllerClientStatus GetLampVersion(const LSFString& lampID);
 
     /**
      * Set an Lamp's Name \n

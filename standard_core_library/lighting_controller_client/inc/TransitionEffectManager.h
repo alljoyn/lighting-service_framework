@@ -94,15 +94,6 @@ class TransitionEffectManagerCallback {
     virtual void GetTransitionEffectNameReplyCB(const LSFResponseCode& responseCode, const LSFString& transitionEffectID, const LSFString& language, const LSFString& transitionEffectName) { }
 
     /**
-     * Indicates that a reply has been received for the method call GetTransitionEffectVersion method call.
-     *
-     * @param responseCode   The response code
-     * @param transitionEffectID    The Transition Effect ID
-     * @param transitionEffectVersion  The Transition Effect Version
-     */
-    virtual void GetTransitionEffectVersionReplyCB(const LSFResponseCode& responseCode, const LSFString& transitionEffectID, const uint32_t& transitionEffectVersion) { }
-
-    /**
      * Response to TransitionEffectManager::SetTransitionEffectName. \n
      * response code LSF_OK on success. \n
      *      LSF_ERR_INVALID_ARGS - language not supported, name is too long. \n
@@ -236,18 +227,6 @@ class TransitionEffectManager : public Manager {
      * @param language
      */
     ControllerClientStatus GetTransitionEffectName(const LSFString& transitionEffectID, const LSFString& language = LSFString("en"));
-
-    /**
-     * Get the version of a Transition Effect. \n
-     * Response in TransitionEffectManagerCallback::GetTransitionEffectVersionCB
-     *
-     * @param transitionEffectID    The Transition Effect ID
-     * @return
-     *      - CONTROLLER_CLIENT_OK if successful
-     *      - An error status otherwise
-     *
-     */
-    ControllerClientStatus GetTransitionEffectVersion(const LSFString& transitionEffectID);
 
     /**
      * Set the name of a TransitionEffect. \n
