@@ -223,6 +223,7 @@ bool SceneFileManager::ValidateScene2FileAndReadInternal(uint32_t& checksum, uin
     std::stringbuf rest;
     stream >> &rest;
     std::string data = rest.str();
+    data.erase(std::remove(data.begin(), ++data.begin(), '\n'), ++data.begin());
     filestream.str(data);
 
     // check the adler checksum
