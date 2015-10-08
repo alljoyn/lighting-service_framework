@@ -1653,7 +1653,7 @@ void LeaderElectionObject::GetChecksumAndModificationTimestamp(const ajn::Interf
 
     uint32_t scene2checksum;
     uint64_t scene2timestamp;
-    controller.GetSceneElementManager().GetBlobInfo(scene2checksum, scene2timestamp);
+    controller.GetSceneManager().GetScene2BlobInfo(scene2checksum, scene2timestamp);
 
     uint64_t currentTimestamp = GetTimestampInMs();
     uint64_t blobTimeStamp = 0;
