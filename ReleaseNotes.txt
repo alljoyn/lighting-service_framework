@@ -1,0 +1,43 @@
+AllSeen Lighting Service Framework 15.04 Release Notes
+======================================================
+
+Platform Support
+----------------
+ 1) Linux Ubuntu 12.04 LTS (32 and 64 bit)
+
+Features added in Version 15.04
+--------------------------------
+ASALIGHT-154: Add API support for applying persisted Pulse/Transition effects
+ASALIGHT-155: Add definitions for SceneElement APIs
+ASALIGHT-156: Add definitions for the Scene APIs that create/update scenes using SceneElements
+ASALIGHT-169: Add support in Controller Client to enable the tracking of replies to all create API calls
+ASALIGHT-174: Add new sub-namespace to controller service to deal with header name conflicts
+ASALIGHT-196: Add support AllLamps Group in the Controller Service
+ASALIGHT-197: Add support for GetConsolidatedLampDataSet() API
+
+Issues Addressed in Version 15.04
+----------------------------------
+ASALIGHT-115: Lamp service not always responsive to state change actions from controller service
+ASALIGHT-124: Modify the Lamp Service to use the new heartbeat feature in AllJoyn Core
+ASALIGHT-176: Check if busHandler is NULL in ControllerClient.cc and return an error status from Start() accordingly
+ASALIGHT-191: Multiple replies are sent for ApplySceneWithSceneElements API call
+ASALIGHT-183: Modify LampService to set idle timeouts to 10 seconds
+ASALIGHT-244: Fix checksum problem for iOS when reading files
+ASALIGHT-256: Fix scene v2 checksum and timestamp in GetChecksumAndModificationTimestamp reply
+
+Known Issues in Version 15.04
+------------------------------
+ASALIGHT-128: Add support to restrict the LSF user traffic in the Controller Service
+ASALIGHT-146: Investigate concurrency issues with the c_str() functions implemented in LSFTypes
+ASALIGHT-247: Losing Lamps when switching leader to bundled controller
+
+For a complete list of open issues:
+https://jira.allseenalliance.org/issues/?jql=project %3D ASALIGHT AND status in (Open%2C "In Progress"%2C Reopened%2C New)
+
+Compatibility
+-------------
+Back-compatible with the 14.12 release
+
+Change history
+--------------
+
